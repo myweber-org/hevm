@@ -11,4 +11,10 @@ main = do
     let sampleData = [1..10]
     let result = processData sampleData
     putStrLn $ "Original: " ++ show sampleData
-    putStrLn $ "Processed: " ++ show result
+    putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
