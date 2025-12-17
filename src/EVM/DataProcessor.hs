@@ -62,3 +62,14 @@ filterCSVByDate csvContent startDate endDate = do
     readMaybe s = case reads s of
         [(x, "")] -> Just x
         _ -> Nothing
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
