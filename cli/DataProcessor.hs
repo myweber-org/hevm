@@ -35,3 +35,11 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumPositiveDoubles :: [Int] -> Int
 sumPositiveDoubles = sum . processNumbers
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformFunction xs =
+    map transformFunction (filter predicate xs)
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (\x -> x * x + 1)
