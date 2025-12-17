@@ -4,30 +4,15 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    let result = processData sampleData
-    putStrLn $ "Original: " ++ show sampleData
-    putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
-module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+validateInput :: [Int] -> Bool
+validateInput = all (\x -> x >= -100 && x <= 100)
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print result
+safeProcess :: [Int] -> Maybe Int
+safeProcess xs
+    | validateInput xs = Just (sumProcessedData xs)
+    | otherwise = Nothing
