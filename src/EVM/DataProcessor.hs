@@ -39,3 +39,26 @@ main = do
     let result = processNumbers numbers
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show result
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [(String, Day, Double)]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let rows = tail csv -- Skip header
+    processedRows <- mapM parseRow rows
+    return $ filter (\(_, date, _) -> date >= startDate && date <= endDate) processedRows
+  where
+    parseRow :: [String] -> Either String (String, Day, Double)
+    parseRow [name, dateStr, valueStr] = do
+        date <- parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr
+        value <- maybe (Left "Invalid value") Right (readMaybe valueStr)
+        return (name, date, value)
+    parseRow _ = Left "Invalid row format"
+
+    readMaybe :: Read a => String -> Maybe a
+    readMaybe s = case reads s of
+        [(x, "")] -> Just x
+        _ -> Nothing
