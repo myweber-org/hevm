@@ -37,4 +37,26 @@ main = do
     args <- getArgs
     case args of
         [filepath] -> processFile filepath
-        _ -> putStrLn "Usage: wordfreq <filename>"
+        _ -> putStrLn "Usage: wordfreq <filename>"module WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower
+
+sortByFrequency :: Map String Int -> [(String, Int)]
+sortByFrequency = sortOn (negate . snd) . Map.toList
+
+wordFrequencyReport :: String -> [(String, Int)]
+wordFrequencyReport = sortByFrequency . countWords
+
+main :: IO ()
+main = do
+  let text = "Hello world hello Haskell world of functional programming"
+  mapM_ print $ wordFrequencyReport text
