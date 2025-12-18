@@ -7,4 +7,7 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = map (^2) . filter even
