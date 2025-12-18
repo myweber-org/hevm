@@ -50,4 +50,16 @@ validateRowLengths rows = all (== expectedLength) (map length rows)
 filterValidRows :: CSVData -> CSVData
 filterValidRows rows = 
     let expected = if null rows then 0 else length (head rows)
-    in filter (\row -> length row == expected) rows
+    in filter (\row -> length row == expected) rowsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
