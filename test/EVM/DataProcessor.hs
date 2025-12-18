@@ -15,4 +15,7 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
