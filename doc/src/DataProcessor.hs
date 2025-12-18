@@ -52,3 +52,25 @@ main = do
             in putStrLn $ "Processed result: " ++ show result
         Nothing -> 
             putStrLn "Input validation failed: values must be between -100 and 100"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
+
+main :: IO ()
+main = do
+    let dataSet = [1..10]
+    putStrLn "Original data:"
+    print dataSet
+    
+    putStrLn "\nEven numbers squared:"
+    print $ processEvenSquares dataSet
+    
+    putStrLn "\nSum of squared even numbers:"
+    print $ sumProcessedData even (\x -> x * x) dataSet
