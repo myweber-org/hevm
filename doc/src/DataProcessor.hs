@@ -28,3 +28,27 @@ sumProcessed = sum . processNumbers
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = 
+    if all (\x -> x >= -100 && x <= 100) xs
+        then Just xs
+        else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    case validateInput sampleData of
+        Just validData -> 
+            let result = processData validData
+            in putStrLn $ "Processed result: " ++ show result
+        Nothing -> 
+            putStrLn "Input validation failed: values must be between -100 and 100"
