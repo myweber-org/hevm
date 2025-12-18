@@ -13,3 +13,10 @@ sumProcessed = sum . processNumbers
 calculateAverage :: [Int] -> Maybe Double
 calculateAverage [] = Nothing
 calculateAverage xs = Just (fromIntegral (sum xs) / fromIntegral (length xs))
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
