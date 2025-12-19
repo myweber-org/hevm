@@ -48,4 +48,13 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of positive doubled: " ++ show (sumPositiveDoubled numbers)
-    putStrLn $ "First element (safe): " ++ show (safeHead numbers)
+    putStrLn $ "First element (safe): " ++ show (safeHead numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
