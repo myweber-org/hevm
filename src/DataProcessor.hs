@@ -34,4 +34,20 @@ processEvenSquares :: [Int] -> [Int]
 processEvenSquares = filterAndTransform even (\x -> x * x)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
+sumProcessedData = sum . processEvenSquaresmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (\x -> x * x + 1)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< 0) xs = Nothing
+    | otherwise = Just xs
