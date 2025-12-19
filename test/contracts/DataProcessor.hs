@@ -74,3 +74,26 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
+
+combineData :: [Int] -> [Int] -> [Int]
+combineData xs ys = filter even (xs ++ ys)
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 4, -5, 6]
+    putStrLn $ "Original: " ++ show sampleData
+    putStrLn $ "Processed: " ++ show (processData sampleData)
+    putStrLn $ "Is valid: " ++ show (validateData sampleData)
+    
+    let otherData = [7, 8, 9, 10]
+    putStrLn $ "Combined: " ++ show (combineData sampleData otherData)
