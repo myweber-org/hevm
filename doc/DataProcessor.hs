@@ -64,3 +64,53 @@ movingAverage n xs
 tails :: [a] -> [[a]]
 tails [] = [[]]
 tails (x:xs) = (x:xs) : tails xs
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- Format name by capitalizing first letter of each word
+formatName :: String -> String
+formatName = unwords . map capitalize . words
+  where
+    capitalize [] = []
+    capitalize (x:xs) = toUpper x : map toLower xs
+
+-- Transform list of strings to CSV format
+toCSV :: [String] -> String
+toCSV = intercalate ","
+
+-- Process user data: validate and transform
+processUserData :: String -> String -> Either String (String, String)
+processUserData name phone
+  | not (validateAlpha name) = Left "Invalid name: must contain only letters"
+  | not (validateNumeric normalizedPhone) = Left "Invalid phone: must contain only digits"
+  | length normalizedPhone < 10 = Left "Invalid phone: must have at least 10 digits"
+  | otherwise = Right (formatName name, normalizedPhone)
+  where
+    normalizedPhone = normalizePhone phone
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let testName = "john doe"
+      testPhone = "+1 (555) 123-4567"
+  
+  case processUserData testName testPhone of
+    Left err -> putStrLn $ "Error: " ++ err
+    Right (formattedName, formattedPhone) -> do
+      putStrLn $ "Formatted Name: " ++ formattedName
+      putStrLn $ "Formatted Phone: " ++ formattedPhone
+      putStrLn $ "CSV Format: " ++ toCSV [formattedName, formattedPhone]
