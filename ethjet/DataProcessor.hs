@@ -23,4 +23,10 @@ exampleUsage = do
     let windowSize = 3
     putStrLn $ "Data series: " ++ show dataSeries
     putStrLn $ "Moving average with window " ++ show windowSize ++ ":"
-    print $ movingAverage windowSize dataSeries
+    print $ movingAverage windowSize dataSeriesmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
