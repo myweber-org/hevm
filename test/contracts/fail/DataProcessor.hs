@@ -89,4 +89,17 @@ processSampleData = do
     let sampleData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "3-point moving average: " ++ show (movingAverage 3 sampleData)
-    putStrLn $ "5-point moving average: " ++ show (movingAverage 5 sampleData)
+    putStrLn $ "5-point moving average: " ++ show (movingAverage 5 sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
