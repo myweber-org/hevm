@@ -112,4 +112,16 @@ main = do
     putStrLn $ "Even squares: " ++ show processed
     putStrLn $ "Total: " ++ show total
     putStrLn $ "Count: " ++ show count
-    putStrLn $ "Average: " ++ show avg
+    putStrLn $ "Average: " ++ show avgmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
