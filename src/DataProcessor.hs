@@ -1,10 +1,27 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (sort)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+type DataPoint = (Int, Double)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+filterByThreshold :: Double -> [DataPoint] -> [DataPoint]
+filterByThreshold threshold = filter (\(_, value) -> value > threshold)
+
+normalizeData :: [DataPoint] -> [DataPoint]
+normalizeData points = map normalize points
+  where
+    maxVal = maximum $ map snd points
+    normalize (id, val) = (id, val / maxVal)
+
+calculateStatistics :: [DataPoint] -> (Double, Double, Double)
+calculateStatistics points = (minimum values, maximum values, average values)
+  where
+    values = map snd points
+    average xs = sum xs / fromIntegral (length xs)
+
+sortByValue :: [DataPoint] -> [DataPoint]
+sortByValue = sortOn snd
+
+processDataPipeline :: Double -> [DataPoint] -> [DataPoint]
+processDataPipeline threshold = 
+    sortByValue . normalizeData . filterByThreshold threshold
