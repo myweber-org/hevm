@@ -16,4 +16,25 @@ main = do
     let processed = processData inputData
     putStrLn $ "Input: " ++ show inputData
     putStrLn $ "Processed: " ++ show processed
-    putStrLn $ "Validation: " ++ show (validateData processed)
+    putStrLn $ "Validation: " ++ show (validateData processed)module DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+    
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+    let windowSize = 3
+    putStrLn $ "Original data: " ++ show dataSeries
+    putStrLn $ "Moving average (window=" ++ show windowSize ++ "): " 
+        ++ show (movingAverage windowSize dataSeries)
