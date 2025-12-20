@@ -84,4 +84,13 @@ processCSVString :: String -> Either String String
 processCSVString input = do
     parsed <- parseCSV input
     processed <- processCSVData parsed
-    return $ formatOutput processed
+    return $ formatOutput processedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
