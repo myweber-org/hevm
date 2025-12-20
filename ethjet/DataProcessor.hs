@@ -44,3 +44,14 @@ safeHead (x:_) = Just x
 
 sumPositiveDoubles :: [Int] -> Int
 sumPositiveDoubles = sum . processNumbers
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedList :: [Int] -> Int
+sumProcessedList = foldl' (+) 0 . processEvenSquares
+  where foldl' = foldl
