@@ -94,3 +94,20 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV csvData = map (map read . splitOn ",") (lines csvData)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[a]] -> [[a]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVData :: String -> [Double]
+processCSVData csvData = calculateAverages (parseCSV csvData)
