@@ -77,4 +77,78 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum of even squares: " ++ show (sumProcessed numbers)module DataProcessor where
+
+import Data.Char (isAlpha, isDigit, toLower)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes)
+
+data ValidationError = InvalidEmail String
+                     | InvalidPhone String
+                     | InvalidUsername String
+                     deriving (Show, Eq)
+
+data UserProfile = UserProfile
+    { username :: String
+    , email :: String
+    , phone :: String
+    , age :: Int
+    } deriving (Show)
+
+validateEmail :: String -> Maybe ValidationError
+validateEmail email
+    | '@' `notElem` email = Just $ InvalidEmail "Missing @ symbol"
+    | '.' `notElem` (dropWhile (/= '@') email) = Just $ InvalidEmail "Missing domain separator"
+    | length email > 254 = Just $ InvalidEmail "Email too long"
+    | otherwise = Nothing
+
+validatePhone :: String -> Maybe ValidationError
+validatePhone phone
+    | not (all isDigit cleaned) = Just $ InvalidPhone "Contains non-digit characters"
+    | length cleaned < 10 = Just $ InvalidPhone "Too short"
+    | length cleaned > 15 = Just $ InvalidPhone "Too long"
+    | otherwise = Nothing
+    where cleaned = filter isDigit phone
+
+validateUsername :: String -> Maybe ValidationError
+validateUsername name
+    | length name < 3 = Just $ InvalidUsername "Too short"
+    | length name > 20 = Just $ InvalidUsername "Too long"
+    | not (all isValidChar name) = Just $ InvalidUsername "Contains invalid characters"
+    | otherwise = Nothing
+    where isValidChar c = isAlpha c || isDigit c || c `elem` "_-"
+
+normalizeEmail :: String -> String
+normalizeEmail = map toLower . trim
+    where trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+validateProfile :: UserProfile -> [ValidationError]
+validateProfile profile = catMaybes
+    [ validateUsername (username profile)
+    , validateEmail (email profile)
+    , validatePhone (phone profile)
+    ]
+
+transformProfile :: UserProfile -> UserProfile
+transformProfile profile = profile
+    { email = normalizeEmail (email profile)
+    , phone = normalizePhone (phone profile)
+    }
+
+processProfile :: UserProfile -> Either [ValidationError] UserProfile
+processProfile profile =
+    case validateProfile profile of
+        [] -> Right $ transformProfile profile
+        errors -> Left errors
+
+formatErrors :: [ValidationError] -> String
+formatErrors errors = intercalate "; " $ map show errors
+
+createProfile :: String -> String -> String -> Int -> Either String UserProfile
+createProfile name email phone ageVal =
+    case processProfile (UserProfile name email phone ageVal) of
+        Right profile -> Right profile
+        Left errors -> Left $ "Validation failed: " ++ formatErrors errors
