@@ -35,3 +35,21 @@ processData :: BL.ByteString -> Either String (Double, Double)
 processData input = do
     rows <- parseCSV input
     return $ computeAverages rows
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (*2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenNumbers
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processEvenNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
