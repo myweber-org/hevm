@@ -159,4 +159,36 @@ main = do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processData validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Input validation failed: values must be greater than -1000"
+        Nothing -> putStrLn "Input validation failed: values must be greater than -1000"module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Record = (String, Double)
+
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case words line of
+    [name, valStr] -> case readMaybe valStr of
+        Just val -> Just (name, val)
+        Nothing -> Nothing
+    _ -> Nothing
+
+calculateAverage :: [Record] -> Double
+calculateAverage records = 
+    let total = foldl' (\acc (_, val) -> acc + val) 0 records
+        count = fromIntegral (length records)
+    in if count > 0 then total / count else 0
+
+processData :: String -> Maybe Double
+processData csvContent = do
+    let linesOfFile = lines csvContent
+    records <- traverse parseCSVLine linesOfFile
+    return $ calculateAverage records
+
+sampleData :: String
+sampleData = unlines
+    [ "Alice 85.5"
+    , "Bob 92.0"
+    , "Charlie 78.5"
+    , "Diana 88.0"
+    ]
