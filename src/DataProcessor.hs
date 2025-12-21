@@ -236,4 +236,13 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | windowSize > length xs = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    windows n = takeWhile ((== n) . length) . map (take n) . tails
+    average list = sum list / fromIntegral (length list)
