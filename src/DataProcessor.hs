@@ -224,4 +224,16 @@ processCSVData = calculateAverages . parseCSV
 validateRowLengths :: [[Double]] -> Bool
 validateRowLengths rows = all (== expectedLength) (map length rows)
   where
-    expectedLength = if null rows then 0 else length (head rows)
+    expectedLength = if null rows then 0 else length (head rows)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-3, 1, 0, 5, -2, 8]
+    let result = processNumbers numbers
+    print result
