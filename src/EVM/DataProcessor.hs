@@ -75,4 +75,10 @@ main = do
             print sampleData
             putStrLn "Processed data (positive numbers doubled):"
             print $ processData sampleData
-        else putStrLn "Input validation failed"
+        else putStrLn "Input validation failed"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
