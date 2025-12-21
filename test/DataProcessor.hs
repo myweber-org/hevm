@@ -1,123 +1,67 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (*2)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    print resultmodule DataProcessor where
-
-movingAverage :: (Fractional a) => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
-  where
-    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)module DataProcessor where
-
+import Data.Char (isDigit, isAlpha)
 import Data.List (intercalate)
-import Data.Char (isDigit)
 
-type CSVRow = [String]
-type CSVData = [CSVRow]
+type ValidationRule = String -> Bool
+type Transformation = String -> String
 
-parseCSV :: String -> Either String CSVData
-parseCSV input = case lines input of
-    [] -> Left "Empty input"
-    rows -> traverse parseRow rows
+validateNumeric :: ValidationRule
+validateNumeric = all isDigit
+
+validateAlpha :: ValidationRule
+validateAlpha = all isAlpha
+
+validateLength :: Int -> ValidationRule
+validateLength n s = length s == n
+
+transformToUpper :: Transformation
+transformToUpper = map toUpper
+
+transformPadLeft :: Int -> Char -> Transformation
+transformPadLeft n c s = replicate (n - length s) c ++ s
+
+processField :: ValidationRule -> Transformation -> String -> Maybe String
+processField validate transform input =
+    if validate input
+        then Just $ transform input
+        else Nothing
+
+processCSVRow :: [String] -> [ValidationRule] -> [Transformation] -> Maybe [String]
+processCSVRow row validations transforms =
+    sequence $ zipWith3 processField validations transforms row
+
+validateCSV :: [[String]] -> [ValidationRule] -> [Transformation] -> ([[String]], [String])
+validateCSV rows validations transforms =
+    foldr processRow ([], []) rows
   where
-    parseRow row = case splitOnComma row of
-        [] -> Left "Empty row"
-        cells -> Right cells
+    processRow row (success, errors) =
+        case processCSVRow row validations transforms of
+            Just processed -> (processed:success, errors)
+            Nothing -> (success, show row : errors)
 
-splitOnComma :: String -> [String]
-splitOnComma = foldr f [[]]
-  where
-    f ',' (x:xs) = []:x:xs
-    f c (x:xs) = (c:x):xs
-    f _ [] = error "Impossible pattern"
+formatErrors :: [String] -> String
+formatErrors errors =
+    "Validation failed for rows:\n" ++ intercalate "\n" errors
 
-validateNumericField :: String -> Either String Int
-validateNumericField s
-    | all isDigit s = Right (read s)
-    | otherwise = Left $ "Invalid numeric field: " ++ s
+sampleData :: [[String]]
+sampleData =
+    [ ["123", "abc", "2023"]
+    , ["456", "def", "2024"]
+    , ["78x", "ghi", "2025"]
+    ]
 
-processCSVData :: CSVData -> Either String [(String, Int)]
-processCSVData rows = case rows of
-    [] -> Left "No data rows"
-    header:dataRows -> do
-        validatedRows <- traverse validateRow dataRows
-        return validatedRows
-  where
-    validateRow row = case row of
-        [name, valueStr] -> do
-            value <- validateNumericField valueStr
-            return (name, value)
-        _ -> Left $ "Invalid row format: " ++ show row
+sampleValidations :: [ValidationRule]
+sampleValidations =
+    [ validateNumeric
+    , validateAlpha
+    , validateLength 4
+    ]
 
-formatOutput :: [(String, Int)] -> String
-formatOutput dataPairs =
-    "Name,Value\n" ++
-    intercalate "\n" (map (\(name, val) -> name ++ "," ++ show val) dataPairs)
-
-processCSVString :: String -> Either String String
-processCSVString input = do
-    parsed <- parseCSV input
-    processed <- processCSVData parsed
-    return $ formatOutput processedmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData xs = all (> 0) xs && length xs > 3
-
-combineProcessors :: [Int] -> [Int]
-combineProcessors xs = if validateData xs then processData xs else []
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (* 2)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+sampleTransforms :: [Transformation]
+sampleTransforms =
+    [ transformPadLeft 5 '0'
+    , transformToUpper
+    , id
+    ]
