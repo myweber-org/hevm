@@ -200,3 +200,28 @@ testMovingAverage = do
     print $ movingAverage 3 testData
     putStrLn "\nTesting moving average with window size 5:"
     print $ movingAverage 5 testData
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") (lines content)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows 
+    then []
+    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
+
+validateRowLengths :: [[Double]] -> Bool
+validateRowLengths rows = all (== expectedLength) (map length rows)
+  where
+    expectedLength = if null rows then 0 else length (head rows)
