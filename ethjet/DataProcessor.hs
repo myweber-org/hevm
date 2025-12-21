@@ -1,57 +1,60 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, mapMaybe)
+import Text.Read (readMaybe)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
+data ValidationError = InvalidColumnCount Int Int
+                     | InvalidInteger String
+                     | InvalidDouble String
+                     | RowParseError Int String
+                     deriving (Show, Eq)
 
-import Data.List (tails)
+type Row = [String]
+type ValidatedRow = Either ValidationError (Int, Double, String)
 
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | n > length xs = error "Window size exceeds list length"
-    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+parseCSV :: String -> [Row]
+parseCSV content = map (splitOn ',') (lines content)
   where
-    avg window = sum window / fromIntegral n
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper ch (current:rest)
+          | ch == delimiter = "":current:rest
+          | otherwise = (ch:current):rest
 
--- Example usage with a helper function
-exampleUsage :: IO ()
-exampleUsage = do
-    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-    let windowSize = 3
-    putStrLn $ "Data series: " ++ show dataSeries
-    putStrLn $ "Moving average with window " ++ show windowSize ++ ":"
-    print $ movingAverage windowSize dataSeriesmodule DataProcessor where
+validateRow :: Int -> Row -> ValidatedRow
+validateRow rowNum cells
+  | length cells /= 3 = Left $ InvalidColumnCount 3 (length cells)
+  | otherwise = case (parseInt (cells !! 0), parseDouble (cells !! 1)) of
+      (Just idVal, Just scoreVal) -> Right (idVal, scoreVal, cells !! 2)
+      (Nothing, _) -> Left $ InvalidInteger (cells !! 0)
+      (_, Nothing) -> Left $ InvalidDouble (cells !! 1)
+  where
+    parseInt :: String -> Maybe Int
+    parseInt = readMaybe
+    
+    parseDouble :: String -> Maybe Double
+    parseDouble = readMaybe
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+processCSVData :: String -> ([ValidatedRow], [ValidationError])
+processCSVData content = partitionResults $ zipWith validateRow [1..] rows
+  where
+    rows = parseCSV content
+    partitionResults = foldr splitResult ([], [])
+    splitResult row (valids, errs) = case row of
+      Left err -> (valids, err:errs)
+      Right val -> (row:valids, errs)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-module DataProcessor where
+formatResults :: ([ValidatedRow], [ValidationError]) -> String
+formatResults (validRows, errors) = 
+  "Valid rows: " ++ show (length validRows) ++ "\n" ++
+  "Errors: " ++ show (length errors) ++ "\n" ++
+  if null errors then "" else "Error details:\n" ++ formatErrors errors
+  where
+    formatErrors = intercalate "\n" . map show
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedList :: [Int] -> Int
-sumProcessedList = foldl' (+) 0 . processEvenSquares
-  where foldl' = foldl
+safeReadCSV :: FilePath -> IO (Either String ([ValidatedRow], [ValidationError]))
+safeReadCSV path = do
+  content <- readFile path
+  return $ Right $ processCSVData content
