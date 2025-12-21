@@ -151,4 +151,10 @@ createProfile :: String -> String -> String -> Int -> Either String UserProfile
 createProfile name email phone ageVal =
     case processProfile (UserProfile name email phone ageVal) of
         Right profile -> Right profile
-        Left errors -> Left $ "Validation failed: " ++ formatErrors errors
+        Left errors -> Left $ "Validation failed: " ++ formatErrors errorsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (* 2)
