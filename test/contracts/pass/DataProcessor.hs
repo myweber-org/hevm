@@ -70,3 +70,13 @@ main = do
     putStrLn $ formatValidationReport (validRows, errors)
     putStrLn "Valid rows:"
     mapM_ print validRows
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
