@@ -157,4 +157,24 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform even (* 2)
+processData = filterAndTransform even (* 2)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -100) xs then Just xs else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [1, -5, 10, -2, 15]
+    case validateInput sampleData of
+        Just validData -> do
+            putStrLn "Original data:"
+            print sampleData
+            putStrLn "Processed data (positive numbers doubled):"
+            print $ processNumbers validData
+        Nothing -> putStrLn "Input contains invalid numbers"
