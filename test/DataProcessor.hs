@@ -138,3 +138,35 @@ filterAndTransform predicate transformer =
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 10) (* 2)
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble s = case reads s of
+    [(val, "")] -> Just val
+    _ -> Nothing
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows colIndex
+    | null validValues = Nothing
+    | otherwise = Just (sum validValues / fromIntegral (length validValues))
+  where
+    columnValues = mapMaybe (safeGetColumn colIndex) rows
+    validValues = mapMaybe safeReadDouble columnValues
+    safeGetColumn idx row
+        | idx >= 0 && idx < length row = Just (row !! idx)
+        | otherwise = Nothing
+
+processCSVFile :: String -> IO (Maybe Double)
+processCSVFile filename = do
+    content <- readFile filename
+    let parsed = parseCSV content
+    return $ calculateColumnAverage parsed 2
