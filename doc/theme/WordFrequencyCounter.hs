@@ -58,4 +58,42 @@ main = do
     let report = wordFrequencyReport sampleText 1 5
     
     putStrLn "Word Frequency Report:"
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) report
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) reportmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type WordCount = Map.Map T.Text Int
+
+countWords :: T.Text -> WordCount
+countWords = Map.fromListWith (+) . map (\w -> (w, 1)) . filter (not . T.null) . map normalize . T.words
+  where
+    normalize = T.toLower . T.filter Char.isLetter
+
+sortByFrequency :: WordCount -> [(T.Text, Int)]
+sortByFrequency = List.sortOn (negate . snd) . Map.toList
+
+filterByMinFrequency :: Int -> WordCount -> WordCount
+filterByMinFrequency minFreq = Map.filter (>= minFreq)
+
+printWordFrequencies :: [(T.Text, Int)] -> IO ()
+printWordFrequencies = mapM_ (\(word, count) -> TIO.putStrLn $ T.pack (show count) <> " " <> word)
+
+processText :: T.Text -> Int -> IO ()
+processText text minFreq = do
+    let counts = countWords text
+    let filtered = filterByMinFrequency minFreq counts
+    let sorted = sortByFrequency filtered
+    printWordFrequencies sorted
+
+main :: IO ()
+main = do
+    putStrLn "Enter text (end with Ctrl+D on empty line):"
+    content <- TIO.getContents
+    putStrLn "Enter minimum frequency:"
+    minFreqInput <- getLine
+    let minFreq = read minFreqInput :: Int
+    processText content minFreq
