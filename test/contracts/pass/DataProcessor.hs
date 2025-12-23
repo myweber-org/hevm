@@ -104,3 +104,25 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processNumbers input
     print result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedList :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedList predicate transformer = 
+    sum . filterAndTransform predicate transformer
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn "Original list:"
+    print numbers
+    putStrLn "Even numbers squared:"
+    print $ processEvenSquares numbers
+    putStrLn "Sum of even squares:"
+    print $ sumProcessedList even (\x -> x * x) numbers
