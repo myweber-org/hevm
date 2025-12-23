@@ -99,3 +99,20 @@ formatOutput ((avg1, avg2), records) =
     "Average value 2: " ++ show avg2 ++ "\n" ++
     "Individual records:\n" ++
     unlines (map (\(name, v1, v2) -> name ++ ": " ++ show v1 ++ ", " ++ show v2) records)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)
