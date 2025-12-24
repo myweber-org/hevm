@@ -182,3 +182,52 @@ filterCSVByDate csvContent startDate endDate = do
                     (Just date, [(value, "")]) -> (name, date, value) : processRows rows
                     _ -> processRows rows
             _ -> processRows rows
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type ValidationError = String
+
+validateRow :: Int -> CSVRow -> Either ValidationError CSVRow
+validateRow rowNum row
+    | length row /= 3 = Left $ "Row " ++ show rowNum ++ ": Expected 3 columns, got " ++ show (length row)
+    | not (all numeric [row !! 0, row !! 2]) = Left $ "Row " ++ show rowNum ++ ": Non-numeric values in numeric columns"
+    | not (validName (row !! 1)) = Left $ "Row " ++ show rowNum ++ ": Invalid name format"
+    | otherwise = Right row
+  where
+    numeric str = not (null str) && all isDigit str
+    validName name = length name >= 2 && length name <= 50 && all (\c -> c == ' ' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) name
+
+parseCSV :: String -> Either ValidationError [CSVRow]
+parseCSV content = 
+    let rows = map (splitOn ',') (lines content)
+        validated = zipWith validateRow [1..] rows
+    in sequence validated
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr f [[]]
+      where
+        f c (x:xs) | c == delimiter = []:x:xs
+                   | otherwise = (c:x):xs
+
+calculateTotals :: [CSVRow] -> (Int, Double)
+calculateTotals rows = 
+    foldl (\(count, total) row -> 
+        let id = read (row !! 0) :: Int
+            amount = read (row !! 2) :: Double
+        in (count + 1, total + amount)) (0, 0.0) rows
+
+processCSVData :: String -> Either ValidationError String
+processCSVData input = do
+    rows <- parseCSV input
+    let (count, total) = calculateTotals rows
+    return $ "Processed " ++ show count ++ " rows with total amount: " ++ show total
+
+formatReport :: [CSVRow] -> String
+formatReport rows = 
+    let header = "ID,Name,Amount"
+        separator = replicate 30 '-'
+        formattedRows = map (intercalate ",") rows
+    in unlines $ header : separator : formattedRows
