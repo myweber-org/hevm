@@ -1,26 +1,28 @@
-module WordFrequency where
 
-import Data.Char (toLower, isAlpha)
+module TextUtils.WordFrequency where
+
+import Data.Char (isAlpha, toLower)
 import Data.List (sortOn)
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Ord (Down(..))
 
 type WordCount = Map String Int
 
 countWords :: String -> WordCount
 countWords = foldr incrementWord Map.empty . words
   where
-    incrementWord word acc =
-      let cleaned = filter isAlpha (map toLower word)
-       in if null cleaned
-            then acc
-            else Map.insertWith (+) cleaned 1 acc
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
 
-topWords :: Int -> WordCount -> [(String, Int)]
-topWords n = take n . sortOn (negate . snd) . Map.toList
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
 
-analyzeText :: String -> Int -> [(String, Int)]
-analyzeText text n = topWords n (countWords text)
-
-displayResults :: [(String, Int)] -> String
-displayResults = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = unlines $
+  "Total unique words: " ++ show (Map.size counts) :
+  "Top 10 most frequent words:" :
+  map formatWord (topNWords 10 text)
+  where
+    counts = countWords text
+    formatWord (word, count) = "  " ++ word ++ ": " ++ show count
