@@ -22,4 +22,16 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = map (^2) . filter even
+
+exampleList :: [Int]
+exampleList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+main :: IO ()
+main = do
+    let result = processEvenSquares exampleList
+    putStrLn $ "Original list: " ++ show exampleList
+    putStrLn $ "Processed list (even numbers squared): " ++ show result
