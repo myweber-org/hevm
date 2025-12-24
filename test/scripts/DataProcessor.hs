@@ -159,3 +159,26 @@ sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
 validateInput xs = if all (> -100) xs then Just xs else Nothing
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [(String, Day, Double)]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (\(_, dateStr, _) -> 
+            case parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr of
+                Just date -> date >= startDate && date <= endDate
+                Nothing -> False) (processRows csv)
+    return filtered
+  where
+    processRows :: CSV -> [(String, Day, Double)]
+    processRows [] = []
+    processRows (row:rows) = 
+        case row of
+            [name, dateStr, valueStr] -> 
+                case (parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr, reads valueStr) of
+                    (Just date, [(value, "")]) -> (name, date, value) : processRows rows
+                    _ -> processRows rows
+            _ -> processRows rows
