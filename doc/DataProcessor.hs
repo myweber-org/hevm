@@ -28,4 +28,17 @@ main = do
     let testData = [1..10]
     putStrLn $ "Original data: " ++ show testData
     putStrLn $ "Processed data: " ++ show (processEvenSquares testData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData testData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData testData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processNumbers input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
