@@ -315,3 +315,13 @@ profilesEqual p1 p2 =
   username p1 == username p2 &&
   email p1 == email p2 &&
   age p1 == age p2
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
