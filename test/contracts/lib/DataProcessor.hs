@@ -246,3 +246,72 @@ sumProcessedData = sum . processData
 
 validateInput :: [Int] -> Bool
 validateInput xs = not (null xs) && all (> -100) xs
+module DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (fromMaybe)
+
+type Username = String
+type Email = String
+type Age = Int
+
+data UserProfile = UserProfile
+  { username :: Username
+  , email :: Email
+  , age :: Age
+  } deriving (Show, Eq)
+
+validateUsername :: Username -> Maybe Username
+validateUsername name
+  | length name < 3 = Nothing
+  | length name > 20 = Nothing
+  | not (all isValidUsernameChar name) = Nothing
+  | otherwise = Just (normalizeUsername name)
+  where
+    isValidUsernameChar c = isAlpha c || c == '_' || c == '-'
+    normalizeUsername = map toLower
+
+validateEmail :: Email -> Maybe Email
+validateEmail emailStr
+  | '@' `notElem` emailStr = Nothing
+  | '.' `notElem` (dropWhile (/= '@') emailStr) = Nothing
+  | any isSpace emailStr = Nothing
+  | otherwise = Just (map toLower emailStr)
+
+validateAge :: Age -> Maybe Age
+validateAge a
+  | a < 0 = Nothing
+  | a > 150 = Nothing
+  | otherwise = Just a
+
+createUserProfile :: Username -> Email -> Age -> Maybe UserProfile
+createUserProfile un em ag = do
+  validUsername <- validateUsername un
+  validEmail <- validateEmail em
+  validAge <- validateAge ag
+  return $ UserProfile validUsername validEmail validAge
+
+sanitizeInput :: String -> String
+sanitizeInput = unwords . words
+
+formatProfileDisplay :: UserProfile -> String
+formatProfileDisplay profile =
+  intercalate "\n"
+    [ "Username: " ++ username profile
+    , "Email: " ++ email profile
+    , "Age: " ++ show (age profile)
+    ]
+
+defaultProfile :: UserProfile
+defaultProfile = UserProfile "guest" "guest@example.com" 0
+
+safeCreateProfile :: Username -> Email -> Age -> UserProfile
+safeCreateProfile un em ag =
+  fromMaybe defaultProfile $ createUserProfile un em ag
+
+profilesEqual :: UserProfile -> UserProfile -> Bool
+profilesEqual p1 p2 =
+  username p1 == username p2 &&
+  email p1 == email p2 &&
+  age p1 == age p2
