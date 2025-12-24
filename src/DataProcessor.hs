@@ -7,4 +7,13 @@ processNumbers = map (^2) . filter (>0)
 validateAndProcess :: [Int] -> Maybe [Int]
 validateAndProcess xs
     | null xs = Nothing
-    | otherwise = Just (processNumbers xs)
+    | otherwise = Just (processNumbers xs)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
