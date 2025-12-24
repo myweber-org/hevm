@@ -1,46 +1,34 @@
+
 module WordFrequency where
 
-import qualified Data.Map as Map
-import Data.Char (toLower, isAlphaNum)
-import Data.List (sortOn)
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
 
-type FrequencyMap = Map.Map String Int
+type WordCount = (String, Int)
 
-countWords :: String -> FrequencyMap
-countWords = foldr updateWord Map.empty . words
-  where
-    updateWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlphaNum
+histogramBar :: Int -> Int -> String
+histogramBar count maxWidth = replicate (count * maxWidth `div` maxCount) '█'
+  where maxCount = max 1 count
 
-getTopWords :: Int -> String -> [(String, Int)]
-getTopWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
+analyzeText :: String -> [WordCount]
+analyzeText text = 
+  let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+      grouped = map (\ws -> (head ws, length ws)) $ group $ sort wordsList
+  in take 10 $ sortOn (Down . snd) grouped
 
-processFile :: FilePath -> Int -> IO ()
-processFile path n = do
-    content <- readFile path
-    let topWords = getTopWords n content
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWordsmodule WordFrequency where
+displayHistogram :: [WordCount] -> IO ()
+displayHistogram counts = do
+  putStrLn "\nTop 10 Most Frequent Words:"
+  putStrLn "============================="
+  let maxCount = maximum (map snd counts)
+  mapM_ (\(word, count) -> 
+    putStrLn $ word ++ " " ++ replicate (12 - length word) '.' ++ 
+               " " ++ show count ++ " " ++ histogramBar count 20) counts
 
-import qualified Data.Map.Strict as Map
-import Data.Char (isAlpha, toLower)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type FrequencyMap = Map.Map String Int
-
-countWords :: String -> FrequencyMap
-countWords = foldr insertWord Map.empty . words
-  where
-    insertWord w = Map.insertWith (+) (normalize w) 1
-    normalize = map toLower . filter isAlpha
-
-getTopWords :: Int -> String -> [(String, Int)]
-getTopWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
-
-processFile :: FilePath -> IO ()
-processFile path = do
-    content <- readFile path
-    let topWords = getTopWords 10 content
-    putStrLn "Top 10 most frequent words:"
-    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWords
+main :: IO ()
+main = do
+  putStrLn "Enter text to analyze (press Ctrl+D when done):"
+  content <- getContents
+  let frequencies = analyzeText content
+  displayHistogram frequencies
