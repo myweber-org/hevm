@@ -249,4 +249,24 @@ validateInput xs
     | null xs = Nothing
     | any (< -100) xs = Nothing
     | any (> 100) xs = Nothing
-    | otherwise = Just xs
+    | otherwise = Just xsmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map avg $ filter (\w -> length w == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
+
+validateInput :: Fractional a => Int -> [a] -> Either String [a]
+validateInput windowSize dataPoints
+    | windowSize <= 0 = Left "Window size must be positive"
+    | windowSize > length dataPoints = Left "Window size exceeds data length"
+    | otherwise = Right $ smoothData windowSize dataPoints
