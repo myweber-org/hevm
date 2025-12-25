@@ -269,4 +269,14 @@ validateInput :: Fractional a => Int -> [a] -> Either String [a]
 validateInput windowSize dataPoints
     | windowSize <= 0 = Left "Window size must be positive"
     | windowSize > length dataPoints = Left "Window size exceeds data length"
-    | otherwise = Right $ smoothData windowSize dataPoints
+    | otherwise = Right $ smoothData windowSize dataPointsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
