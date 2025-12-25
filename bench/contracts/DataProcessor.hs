@@ -7,9 +7,12 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
 main :: IO ()
 main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    if validateInput sampleData
+        then print $ processData sampleData
+        else putStrLn "Invalid input data"
