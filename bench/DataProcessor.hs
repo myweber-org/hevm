@@ -1,10 +1,10 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    windows n = takeWhile (\w -> length w == n) . map (take n) . tails
+    average ws = sum ws / fromIntegral (length ws)
