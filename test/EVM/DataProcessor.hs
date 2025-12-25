@@ -4,25 +4,19 @@ module DataProcessor where
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput [] = Nothing
+validateInput xs = Just xs
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print result
+    let sampleData = [5, 15, 8, 20, 3, 25]
+    case validateInput sampleData of
+        Nothing -> putStrLn "Empty input list"
+        Just data' -> do
+            let result = processData data'
+            putStrLn $ "Original: " ++ show sampleData
+            putStrLn $ "Processed: " ++ show result
