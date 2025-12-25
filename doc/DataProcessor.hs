@@ -41,4 +41,21 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processNumbers input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . tails
+    
+    average :: Fractional a => [a] -> a
+    average ys = sum ys / fromIntegral (length ys)
+
+-- Helper function from Data.List
+tails :: [a] -> [[a]]
+tails [] = [[]]
+tails xs@(_:ys) = xs : tails ys
