@@ -157,4 +157,20 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
+main :: IO ()
+main = do
+    let inputData = [1, -2, 3, 0, 5, -8]
+    if validateInput inputData
+        then print $ processData inputData
+        else putStrLn "Input validation failed"
