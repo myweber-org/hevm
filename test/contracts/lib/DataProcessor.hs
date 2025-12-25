@@ -382,4 +382,10 @@ main = do
             let result = processData validData
             putStrLn $ "Original: " ++ show validData
             putStrLn $ "Processed: " ++ show result
-        Nothing -> putStrLn "Invalid input detected"
+        Nothing -> putStrLn "Invalid input detected"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
