@@ -196,4 +196,49 @@ main :: IO ()
 main = do
     let numbers = [1..10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = if null input
+                 then Left "Empty input"
+                 else Right $ map parseRow (lines input)
+  where
+    parseRow :: String -> CSVRow
+    parseRow = splitByComma
+
+    splitByComma :: String -> [String]
+    splitByComma [] = []
+    splitByComma str = 
+        let (cell, rest) = break (== ',') str
+        in trim cell : case rest of
+                        ',' : xs -> splitByComma xs
+                        _        -> []
+
+    trim :: String -> String
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Left "Empty data"
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index cannot be negative"
+    | any (\row -> colIndex >= length row) rows = Left "Column index out of bounds"
+    | not (all (isNumeric . (!! colIndex)) rows) = Left "Column contains non-numeric values"
+    | otherwise = Right rows
+  where
+    isNumeric :: String -> Bool
+    isNumeric = all (\c -> isDigit c || c == '.')
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage rows colIndex = do
+    validated <- validateNumericColumn rows colIndex
+    let values = map (read . (!! colIndex)) validated
+    return (sum values / fromIntegral (length values))
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate ",")
