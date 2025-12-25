@@ -2,25 +2,21 @@
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = 
-    filterAndTransform even (\x -> x * x)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer =
-    sum . filterAndTransform predicate transformer
+validateInput :: [Int] -> Maybe [Int]
+validateInput [] = Nothing
+validateInput xs = Just xs
 
 main :: IO ()
 main = do
-    let sampleData = [1..10]
-    putStrLn "Original data:"
-    print sampleData
-    
-    putStrLn "\nEven numbers squared:"
-    print $ processEvenSquares sampleData
-    
-    putStrLn "\nSum of even squares:"
-    print $ sumProcessedData even (\x -> x * x) sampleData
+    let sampleData = [-3, 1, 0, 5, -2, 8]
+    case validateInput sampleData of
+        Nothing -> putStrLn "Empty input list"
+        Just data' -> do
+            let result = processData data'
+            putStrLn $ "Original: " ++ show sampleData
+            putStrLn $ "Processed: " ++ show result
