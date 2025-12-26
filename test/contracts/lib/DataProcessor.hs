@@ -2,18 +2,13 @@
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-processEvenNumbers :: [Int] -> [Int]
-processEvenNumbers = filterAndTransform even (* 2)
-
-processOddNumbers :: [Int] -> [Int]
-processOddNumbers = filterAndTransform odd (+ 1)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    putStrLn $ "Original: " ++ show numbers
-    putStrLn $ "Even doubled: " ++ show (processEvenNumbers numbers)
-    putStrLn $ "Odd incremented: " ++ show (processOddNumbers numbers)
+    let input = [1, -2, 3, -4, 5]
+    let result = processNumbers input
+    print result
