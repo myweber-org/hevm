@@ -1,22 +1,13 @@
-
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput [] = Nothing
-validateInput xs = Just xs
+processData = filterAndTransform (> 0) (* 2)
 
 main :: IO ()
 main = do
-    let sampleData = [5, 15, 8, 20, 3, 25]
-    case validateInput sampleData of
-        Nothing -> putStrLn "Empty input list"
-        Just data' -> do
-            let result = processData data'
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
