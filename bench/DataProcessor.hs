@@ -1,10 +1,15 @@
+
 module DataProcessor where
 
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage windowSize xs
-    | windowSize <= 0 = error "Window size must be positive"
-    | length xs < windowSize = []
-    | otherwise = map average $ windows windowSize xs
-  where
-    windows n = takeWhile (\w -> length w == n) . map (take n) . tails
-    average ws = sum ws / fromIntegral (length ws)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
