@@ -1,30 +1,42 @@
 module WordFrequency where
 
-import Data.Char (toLower, isAlphaNum)
-import Data.List (sortOn)
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
 
-type WordCount = (String, Int)
+type WordFreq = (String, Int)
 
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        frequencyMap = foldr (\word -> insertWord word) [] wordsList
-    in take 10 $ sortOn (Down . snd) frequencyMap
+countWords :: String -> [WordFreq]
+countWords text = map (\ws -> (head ws, length ws)) 
+                  . group 
+                  . sort 
+                  . words 
+                  . map normalizeChar 
+                  $ text
   where
-    cleanWord = map toLower . filter isAlphaNum
-    
-    insertWord :: String -> [WordCount] -> [WordCount]
-    insertWord word [] = [(word, 1)]
-    insertWord word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : insertWord word rest
+    normalizeChar c
+      | isAlpha c = toLower c
+      | otherwise = ' '
 
-displayResults :: [WordCount] -> String
-displayResults counts = 
-    unlines $ "Top 10 most frequent words:" : map formatEntry counts
-  where
-    formatEntry (word, count) = word ++ ": " ++ show count
+sortByFrequency :: [WordFreq] -> [WordFreq]
+sortByFrequency = sortOn (Down . snd)
 
-processText :: String -> String
-processText text = displayResults $ countWords text
+filterByMinFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n . sortByFrequency
+
+analyzeText :: String -> Int -> Int -> [WordFreq]
+analyzeText text minFreq topN = 
+  getTopNWords topN 
+  . filterByMinFrequency minFreq 
+  . countWords 
+  $ text
+
+displayResults :: [WordFreq] -> IO ()
+displayResults freqList = do
+  putStrLn "Word Frequency Analysis:"
+  putStrLn "-------------------------"
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqList
+  putStrLn $ "Total unique words: " ++ show (length freqList)
