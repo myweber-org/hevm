@@ -65,3 +65,29 @@ main = do
             putStrLn "Processing valid data..."
             print $ processData sampleData
         else putStrLn "Invalid input data detected"
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Record = (String, Double, Double)
+
+parseCSV :: String -> [Record]
+parseCSV content = mapMaybe parseLine (lines content)
+  where
+    parseLine line = case splitOn "," line of
+      [name, val1, val2] -> 
+        case (reads val1, reads val2) of
+          ([(v1, "")], [(v2, "")]) -> Just (name, v1, v2)
+          _ -> Nothing
+      _ -> Nothing
+
+calculateAverages :: [Record] -> (Double, Double)
+calculateAverages records = (avg firsts, avg seconds)
+  where
+    firsts = map (\(_, v1, _) -> v1) records
+    seconds = map (\(_, _, v2) -> v2) records
+    avg xs = sum xs / fromIntegral (length xs)
+
+processData :: String -> (Double, Double)
+processData = calculateAverages . parseCSV
