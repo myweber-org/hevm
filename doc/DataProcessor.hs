@@ -131,4 +131,15 @@ main = do
     let sampleData = [-3, 1, 0, 4, -2, 5]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Data validation: " ++ show (validateData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
