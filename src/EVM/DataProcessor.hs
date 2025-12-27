@@ -139,4 +139,26 @@ validateInput :: [Int] -> Maybe [Int]
 validateInput xs = 
     if all (\x -> x >= -100 && x <= 100) xs
     then Just xs
-    else Nothing
+    else Nothingmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Record = (String, Double)
+
+parseCSV :: String -> [Record]
+parseCSV content = map parseLine (lines content)
+  where
+    parseLine line = case splitOn "," line of
+      [name, value] -> (name, read value)
+      _ -> error "Invalid CSV format"
+
+computeAverage :: [Record] -> Double
+computeAverage records = 
+  if null records 
+    then 0.0
+    else total / count
+  where
+    (total, count) = foldl (\(sum, cnt) (_, val) -> (sum + val, cnt + 1)) (0.0, 0) records
+
+processData :: String -> Double
+processData = computeAverage . parseCSV
