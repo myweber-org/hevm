@@ -1,85 +1,41 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha)
+import Data.List (intercalate)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+data ValidationError = InvalidFormat String | MissingField String
+    deriving (Show, Eq)
 
-sumProcessedList :: [Int] -> Int
-sumProcessedList = sum . processEvenSquares
+validatePhone :: String -> Either ValidationError String
+validatePhone phone
+    | all isDigit phone && length phone == 10 = Right phone
+    | otherwise = Left $ InvalidFormat "Phone must be 10 digits"
 
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original list: " ++ show sampleData
-    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList sampleData)module DataProcessor where
+validateEmail :: String -> Either ValidationError String
+validateEmail email
+    | '@' `elem` email && '.' `elem` (dropWhile (/= '@') email) = Right email
+    | otherwise = Left $ InvalidFormat "Invalid email format"
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-validateInput :: [Int] -> Bool
-validateInput = all (\x -> x >= -100 && x <= 100)
-
-safeProcessData :: [Int] -> Maybe [Int]
-safeProcessData xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothingmodule DataProcessor where
-
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
+transformName :: String -> String
+transformName = unwords . map capitalize . words
   where
-    windows :: Int -> [a] -> [[a]]
-    windows m = takeWhile ((== m) . length) . map (take m) . tails
-    
-    average :: [Double] -> Double
-    average ys = sum ys / fromIntegral (length ys)
+    capitalize [] = []
+    capitalize (x:xs) = toUpper x : map toLower xs
+    toUpper = toEnum . (+ (-32)) . fromEnum
+    toLower c = if c >= 'A' && c <= 'Z'
+                then toEnum (fromEnum c + 32)
+                else c
 
--- Helper function from Data.List
-tails :: [a] -> [[a]]
-tails [] = [[]]
-tails xs@(_:ys) = xs : tails ys
-module DataProcessor where
+processRecord :: [(String, String)] -> Either ValidationError [(String, String)]
+processRecord fields = do
+    phone <- maybe (Left $ MissingField "phone") validatePhone $ lookup "phone" fields
+    email <- maybe (Left $ MissingField "email") validateEmail $ lookup "email" fields
+    let name = maybe "" transformName $ lookup "name" fields
+    return [("name", name), ("phone", phone), ("email", email)]
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn "Original list:"
-    print numbers
-    
-    putStrLn "\nSquares of even numbers:"
-    let squares = processEvenSquares numbers
-    print squares
-    
-    putStrLn "\nSum of squares of even numbers:"
-    print $ sumProcessed (\x -> x * x) (filter even numbers)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+formatCSV :: [[(String, String)]] -> String
+formatCSV records = 
+    let headers = ["name", "phone", "email"]
+        headerLine = intercalate "," headers
+        recordLines = map (intercalate "," . map snd) records
+    in unlines $ headerLine : recordLines
