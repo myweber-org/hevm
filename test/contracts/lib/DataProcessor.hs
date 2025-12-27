@@ -1,39 +1,25 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.Char (isDigit, toUpper)
+import Data.List (intercalate)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+-- Validate if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processData
-module DataProcessor where
+-- Transform a string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+-- Process a list of strings: validate digits and transform to uppercase
+processData :: [String] -> [String]
+processData = map toUppercase . filter validateDigits
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (^2)
+-- Format processed data into a single string
+formatOutput :: [String] -> String
+formatOutput items = "Processed items: " ++ intercalate ", " items
 
-sumProcessed :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessed predicate transformer = sum . filterAndTransform predicate transformer
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed even (^2) numbers)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+-- Main processing pipeline
+processPipeline :: [String] -> String
+processPipeline = formatOutput . processData
