@@ -16,3 +16,22 @@ main = do
     putStrLn $ "Original list: " ++ show sampleData
     putStrLn $ "Even squares: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of even squares: " ++ show (sumProcessedList sampleData)
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [Record]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (isDateInRange startDate endDate) csv
+    return filtered
+
+isDateInRange :: Day -> Day -> Record -> Bool
+isDateInRange start end record =
+    case record of
+        (dateStr:_) -> 
+            case parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr of
+                Just date -> date >= start && date <= end
+                Nothing -> False
+        _ -> False
