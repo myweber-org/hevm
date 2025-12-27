@@ -1,15 +1,18 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Text.CSV
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show result
+filterCSVByDate :: Day -> Day -> CSV -> Either String CSV
+filterCSVByDate startDate endDate csv = do
+    let header = head csv
+    records <- mapM parseRecord (tail csv)
+    let filtered = filter (\(_, dateStr, _) -> 
+            case parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr of
+                Just date -> date >= startDate && date <= endDate
+                Nothing -> False) records
+    return $ header : map (\(id, date, value) -> [id, date, value]) filtered
+  where
+    parseRecord [id, date, value] = Right (id, date, value)
+    parseRecord _ = Left "Invalid record format"
