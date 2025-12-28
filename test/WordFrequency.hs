@@ -1,54 +1,50 @@
 module WordFrequency where
 
-import qualified Data.Map.Strict as Map
 import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
-
-type FrequencyMap = Map.Map String Int
-
-countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
-  where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
-
-topWords :: Int -> String -> [(String, Int)]
-topWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
-
-displayFrequency :: [(String, Int)] -> String
-displayFrequency = unlines . map (\(w, c) -> w ++ ": " ++ show c)
-
-analyzeText :: Int -> String -> String
-analyzeText n = displayFrequency . topWords nmodule WordFrequency where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
+import qualified Data.Set as Set
 
 type WordCount = (String, Int)
 
+-- Common English stopwords
+stopwords :: Set.Set String
+stopwords = Set.fromList ["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"]
+
+-- Simple stemming: remove common suffixes
+stem :: String -> String
+stem word
+  | length word > 3 && "ing" `isSuffixOf` word = take (length word - 3) word
+  | length word > 2 && "ed" `isSuffixOf` word = take (length word - 2) word
+  | length word > 1 && "s" `isSuffixOf` word = take (length word - 1) word
+  | otherwise = word
+  where isSuffixOf suffix str = suffix == drop (length str - length suffix) str
+
+-- Clean and normalize a word
+cleanWord :: String -> String
+cleanWord = map toLower . filter isAlpha
+
+-- Count word frequencies in a text
 countWords :: String -> [WordCount]
 countWords text = 
-    let words' = filter (not . null) $ map cleanWord $ words text
-        cleaned = filter (all isAlpha) words'
-        grouped = foldr countWord [] cleaned
-    in take 10 $ sortOn (Down . snd) grouped
-  where
-    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
-    
-    countWord :: String -> [WordCount] -> [WordCount]
-    countWord word [] = [(word, 1)]
-    countWord word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : countWord word rest
+  let wordsList = words text
+      cleaned = map cleanWord wordsList
+      filtered = filter (\w -> not (Set.member w stopwords) && not (null w)) cleaned
+      stemmed = map stem filtered
+      grouped = group (sort stemmed)
+      counts = map (\ws -> (head ws, length ws)) grouped
+  in sortOn (Down . snd) counts
 
-displayFrequency :: [WordCount] -> String
-displayFrequency counts = unlines $ map showCount counts
-  where
-    showCount (word, count) = word ++ ": " ++ show count
+-- Pretty print word frequencies
+printFrequencies :: [WordCount] -> IO ()
+printFrequencies counts = do
+  putStrLn "Word frequencies:"
+  putStrLn "-----------------"
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
 
-analyzeText :: String -> String
-analyzeText text = 
-    let freq = countWords text
-    in "Top 10 most frequent words:\n" ++ displayFrequency freq
+-- Example usage
+main :: IO ()
+main = do
+  let sampleText = "The quick brown fox jumps over the lazy dog. The dog barks at the fox."
+  let frequencies = countWords sampleText
+  printFrequencies frequencies
