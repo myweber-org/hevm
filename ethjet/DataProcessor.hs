@@ -22,3 +22,13 @@ main = do
     let numbers = [1..10]
     let result = processNumbers numbers
     print result
+module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
+
+main :: IO ()
+main = do
+    let input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    let result = processData input
+    print result
