@@ -17,3 +17,16 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -1000) xs then Just xs else Nothing
