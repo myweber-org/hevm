@@ -69,4 +69,7 @@ computeAverages rows =
     else map avg $ transpose rows
   where
     avg xs = sum xs / fromIntegral (length xs)
-    transpose = foldr (zipWith (:)) (repeat [])
+    transpose = foldr (zipWith (:)) (repeat [])module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
