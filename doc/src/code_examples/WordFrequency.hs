@@ -27,4 +27,31 @@ main = do
   case args of
     [] -> interact processText
     [fileName] -> readFile fileName >>= putStrLn . processText
-    _ -> putStrLn "Usage: WordFrequency [filename] (reads from stdin if no file)"
+    _ -> putStrLn "Usage: WordFrequency [filename] (reads from stdin if no file)"module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        wordMap = foldr countWord [] cleanedWords
+    in take 10 $ sortOn (Down . snd) wordMap
+  where
+    cleanWord = filter isAlpha
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+displayResults :: [WordCount] -> String
+displayResults counts = 
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
+
+analyzeText :: String -> String
+analyzeText = displayResults . countWords
