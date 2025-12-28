@@ -1,30 +1,20 @@
 
 module DataProcessor where
 
-processData :: [Int] -> [Int]
-processData = map (^2) . filter even
-
-sampleData :: [Int]
-sampleData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-main :: IO ()
-main = do
-    let result = processData sampleData
-    putStrLn $ "Processed data: " ++ show result
-module DataProcessor where
-
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+filterAndTransform predicate transform = map transform . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>= 0) xs then Just xs else Nothing
 
 main :: IO ()
 main = do
-    let numbers = [-3, 1, 4, -1, 5, 9, -2, 6]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    let sampleData = [1, -2, 3, 0, 5, -8]
+    case validateInput sampleData of
+        Just validData -> do
+            let result = processData validData
+            putStrLn $ "Processed data: " ++ show result
+        Nothing -> putStrLn "Invalid input: contains negative numbers"
