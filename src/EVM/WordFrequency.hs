@@ -63,4 +63,35 @@ analyzeText text =
         , "Unique words: " ++ show uniqueWords
         , ""
         , "Top 5 most frequent words:"
-        ] ++ map (\(w,c) -> "  " ++ w ++ ": " ++ show c) topWords
+        ] ++ map (\(w,c) -> "  " ++ w ++ ": " ++ show c) topWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map clean $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = group $ sort cleaned
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+  where
+    clean = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+histogram :: [WordCount] -> String
+histogram counts = unlines $ map showBar counts
+  where
+    maxCount = maximum $ map snd counts
+    scale = 50.0 / fromIntegral maxCount
+    showBar (word, count) = 
+        word ++ " " ++ replicate (round (fromIntegral count * scale)) '█' ++ " " ++ show count
+
+printWordFrequency :: String -> IO ()
+printWordFrequency text = do
+    let counts = countWords text
+    putStrLn "Word Frequency Analysis:"
+    putStrLn "========================"
+    putStrLn $ histogram $ take 20 counts
+    putStrLn $ "\nTotal unique words: " ++ show (length counts)
