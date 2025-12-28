@@ -55,4 +55,18 @@ sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+validateInput xs = if all (> -100) xs then Just xs else Nothingmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
+
+computeAverages :: [[Double]] -> [Double]
+computeAverages rows = 
+    if null rows 
+    then []
+    else map avg $ transpose rows
+  where
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
