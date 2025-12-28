@@ -96,4 +96,37 @@ main = do
     putStrLn "Enter minimum frequency:"
     minFreqInput <- getLine
     let minFreq = read minFreqInput :: Int
-    processText content minFreq
+    processText content minFreqmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = group $ sort cleaned
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+printHistogram :: [WordCount] -> IO ()
+printHistogram counts = do
+    putStrLn "Word Frequency Histogram:"
+    putStrLn "=========================="
+    mapM_ printBar counts
+  where
+    printBar (word, count) = 
+        putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")"
+    maxBarLength = 50
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when done):"
+    input <- getContents
+    let frequencies = countWords input
+    printHistogram frequencies
