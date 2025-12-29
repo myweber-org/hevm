@@ -1,23 +1,18 @@
-
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn "Original list:"
-    print numbers
-    
-    putStrLn "\nSquares of even numbers:"
-    print $ processEvenSquares numbers
-    
-    putStrLn "\nSum of doubled numbers:"
-    print $ sumProcessed (*2) numbers
+validateInput :: [Int] -> Bool
+validateInput = all (\x -> x >= -100 && x <= 100)
+
+safeProcessData :: [Int] -> Maybe [Int]
+safeProcessData xs
+    | validateInput xs = Just (processData xs)
+    | otherwise = Nothing
