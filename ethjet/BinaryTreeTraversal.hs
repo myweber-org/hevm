@@ -20,4 +20,8 @@ sampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     Empty
-                    (Node 6 Empty Empty))
+                    (Node 6 Empty Empty))data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
+
+inorder :: BinaryTree a -> [a]
+inorder Leaf = []
+inorder (Node left value right) = inorder left ++ [value] ++ inorder right
