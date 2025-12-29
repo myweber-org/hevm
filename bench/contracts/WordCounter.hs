@@ -42,4 +42,18 @@ main :: IO ()
 main = do
   putStrLn "Enter text (empty line to finish):"
   input <- getContents
-  wordStats input
+  wordStats inputmodule WordCounter where
+
+import Data.Char (isSpace)
+import System.IO (hFlush, stdout)
+
+countWords :: String -> Int
+countWords = length . words
+
+main :: IO ()
+main = do
+    putStr "Enter text: "
+    hFlush stdout
+    input <- getLine
+    let wordCount = countWords input
+    putStrLn $ "Word count: " ++ show wordCount
