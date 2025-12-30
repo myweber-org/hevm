@@ -1,14 +1,15 @@
+
 module DataProcessor where
 
-import Data.List.Split (splitOn)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-parseCSV :: String -> [[Double]]
-parseCSV content = map (map read . splitOn ",") $ lines content
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (\x -> x * x + 1)
 
-computeAverages :: [[Double]] -> [Double]
-computeAverages rows
-    | null rows = []
-    | otherwise = map avg $ transpose rows
-  where
-    avg xs = sum xs / fromIntegral (length xs)
-    transpose = foldr (zipWith (:)) (repeat [])
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
