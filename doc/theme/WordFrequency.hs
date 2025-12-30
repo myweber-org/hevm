@@ -51,4 +51,28 @@ processText = formatOutput . countWords
 main :: IO ()
 main = do
     input <- getContents
-    putStr $ processText input
+    putStr $ processText inputmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = [(String, Int)]
+
+countWords :: String -> WordCount
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        grouped = foldr (\word acc -> case lookup word acc of
+                            Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                            Nothing -> (word, 1) : acc) [] cleaned
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+
+displayFrequency :: WordCount -> String
+displayFrequency counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+analyzeText :: String -> String
+analyzeText = displayFrequency . countWords
