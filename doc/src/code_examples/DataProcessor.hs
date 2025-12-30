@@ -22,3 +22,16 @@ processEvenSquares = filterAndTransform even (^2)
 sumProcessed :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
 sumProcessed predicate transformer = 
     sum . filterAndTransform predicate transformer
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
