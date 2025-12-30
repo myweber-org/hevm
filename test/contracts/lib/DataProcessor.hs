@@ -9,4 +9,7 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
