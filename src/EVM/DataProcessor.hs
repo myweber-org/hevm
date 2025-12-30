@@ -31,4 +31,17 @@ main = do
             putStrLn $ "Original: " ++ show validData
             putStrLn $ "Processed: " ++ show (processNumbers validData)
             putStrLn $ "Sum: " ++ show (sumProcessed validData)
-        Nothing -> putStrLn "Invalid input detected"
+        Nothing -> putStrLn "Invalid input detected"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -100) xs then Just xs else Nothing
