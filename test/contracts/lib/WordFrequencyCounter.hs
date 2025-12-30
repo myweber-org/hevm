@@ -1,25 +1,39 @@
 module WordFrequencyCounter where
 
-import Data.Char (isAlpha, toLower)
-import Data.List (sortOn)
-import Data.Map (Map)
-import qualified Data.Map as Map
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified System.Environment as Env
 
-countWords :: String -> Map String Int
-countWords text = Map.fromListWith (+) wordCounts
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . extractWords
   where
-    words' = filter (not . null) (map cleanWord (words text))
-    cleanWord = map toLower . filter isAlpha
-    wordCounts = map (\w -> (w, 1)) words'
+    extractWords = words . map normalizeChar
+    normalizeChar c
+      | Char.isAlpha c = Char.toLower c
+      | otherwise = ' '
+    
+    incrementWord word = Map.insertWith (+) word 1
 
-topWords :: Int -> String -> [(String, Int)]
-topWords n text = take n (sortOn (\(_, count) -> negate count) (Map.toList (countWords text)))
+formatResults :: WordCount -> String
+formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
 
-displayResults :: [(String, Int)] -> String
-displayResults results = unlines (map (\(word, count) -> word ++ ": " ++ show count) results)
+processText :: String -> String
+processText = formatResults . countWords
 
 main :: IO ()
 main = do
-    let sampleText = "Hello world! Hello Haskell. Haskell is fun. World of Haskell."
-    putStrLn "Word frequencies:"
-    putStrLn (displayResults (topWords 5 sampleText))
+  args <- Env.getArgs
+  case args of
+    [] -> do
+      putStrLn "Reading from stdin..."
+      content <- getContents
+      putStrLn $ processText content
+    [filename] -> do
+      content <- readFile filename
+      putStrLn $ processText content
+    _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no filename)"
