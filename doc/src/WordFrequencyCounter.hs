@@ -27,4 +27,37 @@ analyzeText = formatOutput . sortByFrequency . countWords
 main :: IO ()
 main = do
     input <- getContents
-    putStrLn $ analyzeText input
+    putStrLn $ analyzeText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+
+printHistogram :: [WordFreq] -> IO ()
+printHistogram freqs = do
+    putStrLn "Word Frequency Histogram:"
+    putStrLn "=========================="
+    mapM_ (\(word, count) -> 
+        putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")") 
+        freqs
+    putStrLn "=========================="
+
+processText :: String -> IO ()
+processText text = do
+    let frequencies = countWords text
+    putStrLn $ "Total unique words: " ++ show (length frequencies)
+    putStrLn $ "Total words: " ++ show (sum $ map snd frequencies)
+    printHistogram $ take 10 frequencies
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world hello haskell world programming haskell functional programming"
+    processText sampleText
