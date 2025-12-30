@@ -1,9 +1,11 @@
-module Fibonacci where
+module FibonacciSequence where
 
 fibonacci :: Int -> Integer
-fibonacci n = fibs !! n
+fibonacci = (map fib [0..] !!)
   where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacci (n - 1) + fibonacci (n - 2)
 
 main :: IO ()
 main = do
