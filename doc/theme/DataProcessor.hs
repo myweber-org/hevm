@@ -1,58 +1,14 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-validateInput :: [Int] -> Bool
-validateInput = all (\x -> x >= -100 && x <= 100)
-
-safeProcessData :: [Int] -> Maybe [Int]
-safeProcessData xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothing
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processEvenSquares
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed numbers)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (*2)
+computeAverages :: [[Double]] -> [Double]
+computeAverages rows
+    | null rows = []
+    | otherwise = map avg $ transpose rows
+  where
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
