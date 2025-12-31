@@ -14,4 +14,14 @@ fibonacci n = fibs !! n
 
 -- Alternative implementation using fix for memoization
 fibonacci' :: Int -> Integer
-fibonacci' = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))
+fibonacci' = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+main :: IO ()
+main = do
+  putStrLn "Fibonacci sequence up to 10 terms:"
+  print $ fibonacci 10
