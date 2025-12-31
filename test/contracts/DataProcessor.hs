@@ -1,17 +1,19 @@
+
 module DataProcessor where
 
-import Data.List (tails)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
 
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
-  where
-    average window = sum window / fromIntegral n
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
--- Example usage (commented out for production):
--- main :: IO ()
--- main = do
---     let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
---     print $ movingAverage 3 dataSeries
+sumProcessedList :: [Int] -> Int
+sumProcessedList = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original list: " ++ show sampleData
+    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList sampleData)
