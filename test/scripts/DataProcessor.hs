@@ -7,18 +7,18 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processDatamodule DataProcessor where
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (> -100) xs
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+main :: IO ()
+main = do
+    let sampleData = [1, -5, 3, 0, 8, -2]
+    if validateInput sampleData
+        then do
+            putStrLn $ "Original data: " ++ show sampleData
+            putStrLn $ "Processed data: " ++ show (processData sampleData)
+            putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+        else putStrLn "Invalid input data"
