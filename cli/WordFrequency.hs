@@ -27,4 +27,30 @@ displayResults counts =
     unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
 
 analyzeText :: String -> String
-analyzeText = displayResults . countWords
+analyzeText = displayResults . countWordsmodule WordFrequency where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlpha)
+
+countWords :: String -> Map.Map String Int
+countWords text = 
+    let wordsList = filter (not . null) $ map (map toLower . filter isAlpha) $ words text
+    in Map.fromListWith (+) [(word, 1) | word <- wordsList]
+
+mostFrequent :: Map.Map String Int -> [(String, Int)]
+mostFrequent wordMap = 
+    take 5 $ reverse $ sortOn snd $ Map.toList wordMap
+  where
+    sortOn f = map snd . sortBy (comparing fst) . map (\x -> (f x, x))
+
+displayResults :: String -> IO ()
+displayResults input = do
+    let freqMap = countWords input
+    putStrLn "Top 5 most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) $ mostFrequent freqMap
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze:"
+    text <- getContents
+    displayResults text
