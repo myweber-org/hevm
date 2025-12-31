@@ -56,4 +56,32 @@ main :: IO ()
 main = do
     let numbers = [1..10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (intercalate)
+import Text.CSV
+
+parseCSV :: String -> Either String [[String]]
+parseCSV = parseCSV
+
+calculateAverages :: [[String]] -> Either String [Double]
+calculateAverages rows = 
+    if null rows 
+    then Left "Empty data"
+    else Right $ map rowAverage rows
+  where
+    rowAverage :: [String] -> Double
+    rowAverage vals = 
+        let nums = map read vals :: [Double]
+        in sum nums / fromIntegral (length nums)
+
+formatResults :: [Double] -> String
+formatResults averages = 
+    "Averages: " ++ intercalate ", " (map show averages) ++ 
+    "\nOverall average: " ++ show (sum averages / fromIntegral (length averages))
+
+processCSVData :: String -> Either String String
+processCSVData csvText = do
+    parsed <- parseCSV csvText
+    averages <- calculateAverages parsed
+    return $ formatResults averages
