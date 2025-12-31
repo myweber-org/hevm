@@ -1,54 +1,21 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    print resultmodule DataProcessor where
+safeMovingAverage :: Int -> [Double] -> Maybe [Double]
+safeMovingAverage n xs
+    | n <= 0 = Nothing
+    | n > length xs = Nothing
+    | otherwise = Just $ movingAverage n xs
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (^2)
-
-sumProcessed :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessed predicate transformer = 
-    sum . filterAndTransform predicate transformer
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (* 2)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedList :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedList predicate transformer = sum . filterAndTransform predicate transformer
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessedList even (\x -> x * x) numbers)
+testData :: [Double]
+testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
