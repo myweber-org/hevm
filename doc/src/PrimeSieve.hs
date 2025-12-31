@@ -1,24 +1,15 @@
-
 module PrimeSieve where
 
 sieve :: Int -> [Int]
 sieve limit
     | limit < 2 = []
-    | otherwise = go [2..limit] []
-  where
-    go []     primes = reverse primes
-    go (x:xs) primes = go (filter (\n -> n `mod` x /= 0) xs) (x:primes)
-
-primesUpTo :: Int -> [Int]
-primesUpTo = sievemodule PrimeSieve where
-
-primesUpTo :: Int -> [Int]
-primesUpTo n
-    | n < 2     = []
-    | otherwise = sieve [2..n]
+    | otherwise = sieve' [2..limit] []
     where
-        sieve [] = []
-        sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+        sieve' [] primes = reverse primes
+        sieve' (p:xs) primes = sieve' (filter (\x -> x `mod` p /= 0) xs) (p:primes)
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
 
 main :: IO ()
 main = do
