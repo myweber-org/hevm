@@ -1,21 +1,12 @@
+
 module DataProcessor where
 
-import Data.List (tails)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
 
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | n > length xs = error "Window size exceeds list length"
-    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
-  where
-    average :: [Double] -> Double
-    average ys = sum ys / fromIntegral (length ys)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-safeMovingAverage :: Int -> [Double] -> Maybe [Double]
-safeMovingAverage n xs
-    | n <= 0 = Nothing
-    | n > length xs = Nothing
-    | otherwise = Just $ movingAverage n xs
-
-testData :: [Double]
-testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
