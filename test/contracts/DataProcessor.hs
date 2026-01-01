@@ -1,48 +1,18 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+    where
+        window = take n xs
+        avg = sum window / fromIntegral n
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    let padSize = windowSize `div` 2
+        padded = replicate padSize (head dataPoints) ++ dataPoints ++ replicate padSize (last dataPoints)
+    in movingAverage windowSize padded
 
-sumProcessedList :: [Int] -> Int
-sumProcessedList = sum . processEvenSquares
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original list: " ++ show sampleData
-    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList sampleData)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just xmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+calculateTrend :: (Fractional a, Ord a) => [a] -> [Ordering]
+calculateTrend values = zipWith compare (tail values) values
