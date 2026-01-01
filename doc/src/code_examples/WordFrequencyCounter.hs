@@ -1,0 +1,44 @@
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+        frequencies = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) frequencies
+  where
+    cleanWord = filter isAlpha
+
+filterByFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByFrequency minFreq = filter (\(_, freq) -> freq >= minFreq)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n
+
+printFrequencies :: [WordFreq] -> IO ()
+printFrequencies freqs = 
+    mapM_ (\(word, freq) -> putStrLn $ word ++ ": " ++ show freq) freqs
+
+analyzeText :: String -> Int -> Int -> IO ()
+analyzeText text minFreq topN = do
+    putStrLn "Word Frequency Analysis:"
+    putStrLn "------------------------"
+    let allFreqs = countWords text
+        filtered = filterByFrequency minFreq allFreqs
+        topWords = getTopNWords topN filtered
+    printFrequencies topWords
+    putStrLn $ "Total unique words: " ++ show (length allFreqs)
+    putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered)
+
+sampleText :: String
+sampleText = "The quick brown fox jumps over the lazy dog. The dog was not amused by the fox."
+
+main :: IO ()
+main = analyzeText sampleText 2 5
