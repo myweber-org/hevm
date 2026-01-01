@@ -94,4 +94,32 @@ printWordFrequency text = do
     putStrLn "Word Frequency Analysis:"
     putStrLn "========================"
     putStrLn $ histogram $ take 20 counts
-    putStrLn $ "\nTotal unique words: " ++ show (length counts)
+    putStrLn $ "\nTotal unique words: " ++ show (length counts)module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map toLower <$> wordsList
+        frequencyMap = foldr (\word acc -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] cleanedWords
+    in sortOn (Down . snd) frequencyMap
+  where
+    cleanWord = filter isAlpha
+
+displayFrequency :: [WordCount] -> String
+displayFrequency counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+analyzeText :: String -> String
+analyzeText text = 
+    let counts = countWords text
+    in "Word Frequency Analysis:\n" ++ displayFrequency counts
