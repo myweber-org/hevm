@@ -27,3 +27,16 @@ movingAverage n xs
     avg window = sum window / fromIntegral n
 
 -- Example usage: movingAverage 3 [1,2,3,4,5] = [2.0,3.0,4.0]
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, 0, 5, -7]
+    let result = processNumbers input
+    print result
