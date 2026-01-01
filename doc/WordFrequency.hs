@@ -21,4 +21,36 @@ analyzeText text = do
   putStrLn "Top 10 most frequent words:"
   mapM_ printWord (topNWords 10 text)
   where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type FrequencyMap = Map.Map T.Text Int
+
+countWords :: T.Text -> FrequencyMap
+countWords text =
+    let wordsList = T.words $ T.toLower $ T.filter (\c -> Char.isAlpha c || Char.isSpace c) text
+    in Map.fromListWith (+) [(w, 1) | w <- wordsList]
+
+getTopWords :: Int -> FrequencyMap -> [(T.Text, Int)]
+getTopWords n freqMap =
+    take n $ List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) $ Map.toList freqMap
+
+processFile :: FilePath -> IO ()
+processFile filePath = do
+    content <- TIO.readFile filePath
+    let freqMap = countWords content
+        topWords = getTopWords 10 freqMap
+    
+    putStrLn "Top 10 most frequent words:"
+    mapM_ (\(word, count) -> TIO.putStrLn $ T.concat [word, T.pack ": ", T.pack (show count)]) topWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter file path:"
+    filePath <- getLine
+    processFile filePath
