@@ -26,4 +26,7 @@ validateData :: [Int] -> Bool
 validateData xs = all (> 0) xs && length xs > 3
 
 combineProcessors :: [Int] -> [Int]
-combineProcessors xs = if validateData xs then processData xs else []
+combineProcessors xs = if validateData xs then processData xs else []module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
