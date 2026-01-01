@@ -129,4 +129,24 @@ main = do
     putStrLn "Enter text to analyze (press Ctrl+D when done):"
     input <- getContents
     let frequencies = countWords input
-    printHistogram frequencies
+    printHistogram frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+countWordFrequency :: String -> [(String, Int)]
+countWordFrequency text =
+  let wordsList = words text
+      lowerWords = map (map toLower) wordsList
+      sortedWords = sort lowerWords
+      groupedWords = group sortedWords
+      frequencies = map (\ws -> (head ws, length ws)) groupedWords
+  in sortOn (Down . snd) frequencies
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqs =
+  unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+processText :: String -> String
+processText = displayFrequencies . countWordFrequency
