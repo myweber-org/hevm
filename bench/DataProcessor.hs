@@ -15,3 +15,13 @@ smoothData windowSize dataPoints =
     let avg = movingAverage windowSize dataPoints
         padding = replicate (windowSize `div` 2) (head dataPoints)
     in padding ++ avg ++ padding
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
