@@ -33,4 +33,29 @@ main = do
         Just validData -> do
             let result = sumProcessedData validData
             putStrLn $ "Sum of processed data: " ++ show result
-        Nothing -> putStrLn "Input contains values less than -100"
+        Nothing -> putStrLn "Input contains values less than -100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | otherwise = Just xs
+
+main :: IO ()
+main = do
+    let sampleData = [-3, 1, 0, 5, -2, 8]
+    case validateInput sampleData of
+        Nothing -> putStrLn "Empty input list"
+        Just data' -> do
+            putStrLn $ "Original data: " ++ show data'
+            putStrLn $ "Processed data: " ++ show (processData data')
+            putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles data')
