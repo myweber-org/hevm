@@ -53,4 +53,34 @@ formatResults counts =
     unlines (map (\(word, count) -> word ++ ": " ++ show count) counts)
 
 processText :: String -> String
-processText text = formatResults $ countWords text
+processText text = formatResults $ countWords textmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        wordMap = foldl (\acc word -> insertWord word acc) [] cleanedWords
+    in sortOn (Down . snd) wordMap
+  where
+    cleanWord = filter isAlpha
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency (press Ctrl+D when done):"
+    input <- getContents
+    let frequencies = countWords input
+    putStrLn "\nWord frequencies (sorted by count):"
+    putStrLn $ formatOutput frequencies
