@@ -96,3 +96,13 @@ main = do
     print $ movingAverage 3 testData
     putStrLn "\nTesting moving average with window size 5:"
     print $ movingAverage 5 testData
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
