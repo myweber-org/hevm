@@ -1,38 +1,20 @@
-module DataProcessor where
 
-import Data.List (tails)
-
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map avg $ filter (\w -> length w == n) $ tails xs
-  where
-    avg window = sum window / fromIntegral n
-
-smoothData :: Fractional a => Int -> [a] -> [a]
-smoothData windowSize = movingAverage windowSize
-
-validateWindowSize :: Int -> Maybe Int
-validateWindowSize n
-    | n > 0 = Just n
-    | otherwise = Nothing
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+  | null xs = Nothing
+  | any (< -1000) xs = Nothing
+  | any (> 1000) xs = Nothing
+  | otherwise = Just xs
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of doubled evens: " ++ 
-        show (sumProcessed (*2) (filter even numbers))
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs = do
+  validated <- validateInput xs
+  return $ processData validated
