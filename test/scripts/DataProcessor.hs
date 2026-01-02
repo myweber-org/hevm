@@ -5,4 +5,13 @@ processData :: [Int] -> [Int]
 processData = map (^2) . filter (>0)
 
 validateData :: [Int] -> Bool
-validateData xs = all (>=0) (processData xs)
+validateData xs = all (>=0) (processData xs)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
