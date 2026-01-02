@@ -1,43 +1,26 @@
+
 module WordCounter where
 
 import Data.Char (isSpace)
-import Data.List (words)
+import Data.List (groupBy)
 
 countWords :: String -> Int
 countWords = length . words
 
-countCharacters :: String -> Int
-countCharacters = length
+countUniqueWords :: String -> Int
+countUniqueWords = length . groupBy (==) . words
 
-countLines :: String -> Int
-countLines = length . lines
+wordFrequency :: String -> [(String, Int)]
+wordFrequency = map (\ws -> (head ws, length ws)) . groupBy (==) . words
 
-trim :: String -> String
-trim = f . f
-  where f = reverse . dropWhile isSpace
-
-main :: IO ()
-main = do
-    putStrLn "Enter some text (press Ctrl+D to end input on Unix/Linux, Ctrl+Z on Windows):"
-    input <- getContents
-    let cleaned = trim input
-    putStrLn $ "Word count: " ++ show (countWords cleaned)
-    putStrLn $ "Character count: " ++ show (countCharacters cleaned)
-    putStrLn $ "Line count: " ++ show (countLines cleaned)
-module WordCounter where
-
-import Data.Char (isSpace)
-import Data.List (group, sort)
-
-countWords :: String -> [(String, Int)]
-countWords text = 
-    let wordsList = filter (not . all isSpace) $ splitWords text
-        lowerWords = map (map toLower) wordsList
-        sortedWords = sort lowerWords
-        grouped = group sortedWords
-    in map (\ws -> (head ws, length ws)) grouped
-  where
-    splitWords = words . map (\c -> if isSpace c then ' ' else c)
-    toLower c
-        | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
-        | otherwise = c
+processText :: String -> String
+processText text = unlines
+    [ "Total words: " ++ show total
+    , "Unique words: " ++ show unique
+    , "Word frequencies:"
+    , unlines (map (\(w, c) -> "  " ++ w ++ ": " ++ show c) freq)
+    ]
+    where
+        total = countWords text
+        unique = countUniqueWords text
+        freq = wordFrequency text
