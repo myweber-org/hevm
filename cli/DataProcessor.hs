@@ -51,3 +51,10 @@ main = do
     putStrLn $ "Processed: " ++ show (processNumbers testData)
     putStrLn $ "Sum: " ++ show (sumPositiveDoubles testData)
     putStrLn $ "Head: " ++ show (safeHead testData)
+module DataProcessor where
+
+filterAndSquareEvens :: [Int] -> [Int]
+filterAndSquareEvens xs = map (^2) (filter even xs)
+
+processData :: [Int] -> [Int]
+processData = filterAndSquareEvens
