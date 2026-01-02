@@ -1,15 +1,8 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+processData :: [Int] -> [Int]
+processData = map (^2) . filter (>0)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processEvenSquares
+validateData :: [Int] -> Bool
+validateData xs = all (>=0) (processData xs)
