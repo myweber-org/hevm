@@ -1,106 +1,78 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processNumbers input
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData = all (> 0)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Original list: " ++ show input
-    putStrLn $ "Processed list: " ++ show result
-module DataProcessor where
-
-import Data.Char (isDigit, isSpace)
+import Data.Char (toLower, isAlpha, isSpace)
 import Data.List (intercalate)
+import Data.Maybe (catMaybes)
 
-type ValidationRule = String -> Bool
-type Transformation = String -> String
+type Username = String
+type Email = String
+type Age = Int
 
-validateNumeric :: ValidationRule
-validateNumeric = all isDigit
+data UserProfile = UserProfile
+  { username :: Username
+  , email :: Email
+  , age :: Age
+  } deriving (Show, Eq)
 
-validateNonEmpty :: ValidationRule
-validateNonEmpty = not . all isSpace
-
-trimWhitespace :: Transformation
-trimWhitespace = reverse . dropWhile isSpace . reverse . dropWhile isSpace
-
-toUpperCase :: Transformation
-toUpperCase = map toUpper
+normalizeUsername :: Username -> Maybe Username
+normalizeUsername name
+  | null trimmed = Nothing
+  | any (not . isValidChar) trimmed = Nothing
+  | length trimmed < 3 = Nothing
+  | length trimmed > 20 = Nothing
+  | otherwise = Just (map toLower trimmed)
   where
-    toUpper c
-      | c >= 'a' && c <= 'z' = toEnum (fromEnum c - 32)
-      | otherwise = c
+    trimmed = filter (not . isSpace) name
+    isValidChar c = isAlpha c || c `elem` "_-"
 
-processCSVRow :: [ValidationRule] -> [Transformation] -> [String] -> Either String [String]
-processCSVRow validators transformers row
-  | length row /= length validators = Left "Row length doesn't match validator count"
-  | any (== False) validationResults = Left $ "Validation failed: " ++ show validationResults
-  | otherwise = Right transformedRow
+validateEmail :: Email -> Maybe Email
+validateEmail emailStr
+  | '@' `notElem` emailStr = Nothing
+  | '.' `notElem` localPart = Nothing
+  | any isSpace emailStr = Nothing
+  | length emailStr > 254 = Nothing
+  | otherwise = Just emailStr
   where
-    validationResults = zipWith ($) validators row
-    transformedRow = zipWith ($) transformers row
+    localPart = takeWhile (/= '@') emailStr
 
-formatCSV :: [[String]] -> String
-formatCSV rows = intercalate "\n" $ map (intercalate ",") rows
+validateAge :: Int -> Maybe Age
+validateAge a
+  | a < 0 = Nothing
+  | a > 150 = Nothing
+  | otherwise = Just a
 
-safeReadInt :: String -> Maybe Int
-safeReadInt s
-  | validateNumeric s = Just (read s)
-  | otherwise = Nothing
+createUserProfile :: Username -> Email -> Int -> Maybe UserProfile
+createUserProfile un em ag = do
+  normalizedUsername <- normalizeUsername un
+  validEmail <- validateEmail em
+  validAge <- validateAge ag
+  return $ UserProfile normalizedUsername validEmail validAge
 
-data ProcessingResult = Success [String] | Failure String
+formatProfileReport :: UserProfile -> String
+formatProfileReport profile =
+  intercalate "\n"
+    [ "User Profile Summary:"
+    , "  Username: " ++ username profile
+    , "  Email: " ++ email profile
+    , "  Age: " ++ show (age profile)
+    ]
 
-processData :: [ValidationRule] -> [Transformation] -> [String] -> ProcessingResult
-processData validators transformers row =
-  case processCSVRow validators transformers row of
-    Left err -> Failure err
-    Right result -> Success result
-module DataProcessor where
+processUserInputs :: [(Username, Email, Int)] -> [UserProfile]
+processUserInputs inputs =
+  catMaybes $ map (\(u, e, a) -> createUserProfile u e a) inputs
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (>= 0) xs
-
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothing
+sampleData :: [(Username, Email, Int)]
+sampleData =
+  [ ("John_Doe", "john@example.com", 30)
+  , ("Alice-123", "alice@test.org", 25)
+  , ("Invalid User", "bad-email", 200)
+  , ("Bob", "bob@domain.co.uk", 42)
+  ]
 
 main :: IO ()
 main = do
-    let sampleData = [5, 12, 8, 20, 3, 15]
-    case safeProcess sampleData of
-        Just result -> putStrLn $ "Processed result: " ++ show result
-        Nothing -> putStrLn "Invalid input data"
+  let profiles = processUserInputs sampleData
+  putStrLn "Valid user profiles:"
+  mapM_ (putStrLn . formatProfileReport) profiles
+  putStrLn $ "Total valid profiles: " ++ show (length profiles)
