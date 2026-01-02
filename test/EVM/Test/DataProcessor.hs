@@ -118,3 +118,67 @@ sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
 validateInput xs = if all (> -100) xs then Just xs else Nothing
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, fromMaybe)
+import Text.Read (readMaybe)
+
+-- | Safely parse an integer from a string
+safeParseInt :: String -> Maybe Int
+safeParseInt str = readMaybe (filter (not . isSpace) str)
+
+-- | Validate email format (basic check)
+isValidEmail :: String -> Bool
+isValidEmail email =
+    let parts = split '@' email
+    in length parts == 2 &&
+       not (null (head parts)) &&
+       '.' `elem` (last parts)
+  where
+    split delimiter = foldr (\c acc -> if c == delimiter then [] : acc else (c : head acc) : tail acc) [[]]
+
+-- | Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- | Process a list of raw strings into validated integers
+processNumbers :: [String] -> [Int]
+processNumbers = catMaybes . map safeParseInt
+
+-- | Format a list of items as a comma-separated string
+formatList :: [String] -> String
+formatList items = intercalate ", " (filter (not . null) items)
+
+-- | Calculate statistics from a list of numbers
+data Stats = Stats
+    { count :: Int
+    , sumTotal :: Int
+    , average :: Double
+    , minVal :: Maybe Int
+    , maxVal :: Maybe Int
+    } deriving (Show, Eq)
+
+calculateStats :: [Int] -> Stats
+calculateStats [] = Stats 0 0 0.0 Nothing Nothing
+calculateStats xs =
+    let cnt = length xs
+        total = sum xs
+        avg = fromIntegral total / fromIntegral cnt
+        mn = if null xs then Nothing else Just (minimum xs)
+        mx = if null xs then Nothing else Just (maximum xs)
+    in Stats cnt total avg mn mx
+
+-- | Safe division with error handling
+safeDivide :: Int -> Int -> Maybe Double
+safeDivide _ 0 = Nothing
+safeDivide x y = Just (fromIntegral x / fromIntegral y)
+
+-- | Main processing pipeline example
+processDataPipeline :: [String] -> (Stats, String)
+processDataPipeline rawNumbers =
+    let numbers = processNumbers rawNumbers
+        stats = calculateStats numbers
+        formatted = formatList (map show numbers)
+    in (stats, "Processed numbers: " ++ formatted)
