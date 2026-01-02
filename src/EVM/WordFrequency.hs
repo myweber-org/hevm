@@ -1,28 +1,30 @@
-
 module WordFrequency where
 
 import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
+import Data.List (sortOn)
 import Data.Ord (Down(..))
 
-type Histogram = [(String, Int)]
+type WordCount = (String, Int)
 
-wordFrequency :: String -> Histogram
-wordFrequency text = 
-    let wordsList = filter (not . null) $ map clean $ words text
-        cleaned = map (map toLower) wordsList
-        grouped = group $ sort cleaned
-        counted = map (\ws -> (head ws, length ws)) grouped
-    in take 10 $ sortOn (Down . snd) counted
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        wordMap = foldr (\word -> insertWith (+) word 1) [] cleanedWords
+    in take 10 $ sortOn (Down . snd) wordMap
   where
-    clean = filter isAlpha
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    
+    insertWith :: (Int -> Int -> Int) -> String -> Int -> [WordCount] -> [WordCount]
+    insertWith f key value [] = [(key, value)]
+    insertWith f key value ((k,v):xs)
+        | key == k  = (k, f v value) : xs
+        | otherwise = (k,v) : insertWith f key value xs
 
-printHistogram :: Histogram -> IO ()
-printHistogram freq = 
-    mapM_ (\(word, count) -> 
-        putStrLn $ word ++ ": " ++ replicate count '*') freq
+displayResults :: [WordCount] -> String
+displayResults counts =
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(word, count) -> word ++ ": " ++ show count) counts)
 
-analyzeText :: String -> IO ()
-analyzeText text = do
-    putStrLn "Top 10 most frequent words:"
-    printHistogram $ wordFrequency text
+analyzeText :: String -> String
+analyzeText = displayResults . countWords
