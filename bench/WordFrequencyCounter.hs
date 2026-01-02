@@ -27,4 +27,42 @@ main = do
     freqMap <- processFile path
     putStrLn "Enter number of top words to display:"
     n <- readLn
-    displayTopN n freqMap
+    displayTopN n freqMapmodule WordFrequencyCounter where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFrequency = Map.Map String Int
+
+countWords :: String -> WordFrequency
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanWord = filter isAlpha . map toLower
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+
+getTopWords :: Int -> WordFrequency -> [(String, Int)]
+getTopWords n freqMap = 
+    take n $ sortOn (Down . snd) $ Map.toList freqMap
+
+filterByMinFrequency :: Int -> WordFrequency -> WordFrequency
+filterByMinFrequency minFreq = Map.filter (>= minFreq)
+
+wordFrequencyReport :: String -> Int -> Int -> IO ()
+wordFrequencyReport text topN minFreq = do
+    let frequencies = countWords text
+        filtered = filterByMinFrequency minFreq frequencies
+        topWords = getTopWords topN filtered
+    
+    putStrLn "Word Frequency Report:"
+    putStrLn "======================"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
+    putStrLn $ "Total unique words: " ++ show (Map.size filtered)
+
+-- Example usage
+sampleText :: String
+sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
+
+main :: IO ()
+main = wordFrequencyReport sampleText 5 1
