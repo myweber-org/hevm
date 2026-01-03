@@ -35,4 +35,16 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original numbers: " ++ show numbers
     putStrLn $ "Processed numbers: " ++ show (processEvenNumbers numbers)
-    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessedNumbers numbers)
+    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessedNumbers numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -100) xs then Just xs else Nothing
