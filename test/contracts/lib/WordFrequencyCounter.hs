@@ -1,39 +1,42 @@
 module WordFrequencyCounter where
 
-import qualified Data.Char as Char
-import qualified Data.List as List
-import qualified Data.Map.Strict as Map
-import qualified System.Environment as Env
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
 
-type WordCount = Map.Map String Int
+type WordCount = (String, Int)
 
-countWords :: String -> WordCount
-countWords = foldr incrementWord Map.empty . extractWords
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
   where
-    extractWords = words . map normalizeChar
-    normalizeChar c
-      | Char.isAlpha c = Char.toLower c
-      | otherwise = ' '
-    
-    incrementWord word = Map.insertWith (+) word 1
+    cleanWord = filter isAlpha
 
-formatResults :: WordCount -> String
-formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
-  where
-    formatEntry (word, count) = word ++ ": " ++ show count
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
 
-processText :: String -> String
-processText = formatResults . countWords
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
 
 main :: IO ()
 main = do
-  args <- Env.getArgs
-  case args of
-    [] -> do
-      putStrLn "Reading from stdin..."
-      content <- getContents
-      putStrLn $ processText content
-    [filename] -> do
-      content <- readFile filename
-      putStrLn $ processText content
-    _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no filename)"
+    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello back."
+    putStrLn "Word frequencies:"
+    let frequencies = countWords sampleText
+    printWordCounts frequencies
+    
+    putStrLn "\nWords with frequency >= 2:"
+    let filtered = filterByMinFrequency 2 frequencies
+    printWordCounts filtered
+    
+    putStrLn "\nTop 3 words:"
+    let top3 = getTopNWords 3 frequencies
+    printWordCounts top3
