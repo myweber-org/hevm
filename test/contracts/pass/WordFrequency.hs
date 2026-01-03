@@ -68,4 +68,36 @@ topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
 displayTopWords :: Int -> String -> IO ()
 displayTopWords n text = do
   putStrLn $ "Top " ++ show n ++ " words:"
-  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) (topNWords n text)
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) (topNWords n text)module WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        freqMap = foldr (\word acc -> insertWord word acc) [] wordsList
+    in sortOn (Down . snd) freqMap
+  where
+    cleanWord = map toLower . filter isAlphaNum
+    
+    insertWord :: String -> [WordCount] -> [WordCount]
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequencies:"
+    input <- getContents
+    let frequencies = countWords input
+    putStrLn "\nWord frequencies (sorted by count):"
+    putStrLn $ formatResults frequencies
