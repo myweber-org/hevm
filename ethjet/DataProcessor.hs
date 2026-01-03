@@ -71,4 +71,10 @@ processCSVFile filePath columnIndex = do
                     putStrLn $ "  Minimum: " ++ show minVal
                     putStrLn $ "  Maximum: " ++ show maxVal
                     putStrLn $ "  Average: " ++ show avgVal
-                    putStrLn $ "  Valid rows processed: " ++ show (length numericValues)
+                    putStrLn $ "  Valid rows processed: " ++ show (length numericValues)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (* 2)
