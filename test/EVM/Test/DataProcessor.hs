@@ -182,3 +182,55 @@ processDataPipeline rawNumbers =
         stats = calculateStats numbers
         formatted = formatList (map show numbers)
     in (stats, "Processed numbers: " ++ formatted)
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, fromMaybe)
+
+-- Safe integer parsing with error handling
+safeReadInt :: String -> Maybe Int
+safeReadInt s
+  | all isDigit s = Just (read s)
+  | otherwise = Nothing
+
+-- Trim whitespace from both ends of a string
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
+
+-- Validate and clean a list of numeric strings
+cleanNumericData :: [String] -> [Int]
+cleanNumericData = catMaybes . map (safeReadInt . trim)
+
+-- Calculate statistics from numeric data
+data Stats = Stats
+  { count :: Int
+  , sumTotal :: Int
+  , average :: Double
+  , validEntries :: [Int]
+  } deriving (Show, Eq)
+
+computeStats :: [String] -> Stats
+computeStats rawData =
+  let cleaned = cleanNumericData rawData
+      cnt = length cleaned
+      total = sum cleaned
+      avg = if cnt > 0 then fromIntegral total / fromIntegral cnt else 0.0
+   in Stats cnt total avg cleaned
+
+-- Format statistics as a readable report
+formatReport :: Stats -> String
+formatReport stats =
+  intercalate "\n"
+    [ "Data Analysis Report"
+    , "===================="
+    , "Valid entries: " ++ show (count stats)
+    , "Total sum: " ++ show (sumTotal stats)
+    , "Average: " ++ show (average stats)
+    , "Values: " ++ show (validEntries stats)
+    ]
+
+-- Example transformation pipeline
+processData :: [String] -> String
+processData = formatReport . computeStats
