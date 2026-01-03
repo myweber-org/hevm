@@ -1,19 +1,15 @@
 module FibonacciSequence where
 
-import Data.Function (fix)
+import Data.Function.Memoize
 
-fibonacci :: Int -> Integer
-fibonacci = (map fib [0..] !!)
+fib :: Integer -> Integer
+fib = memoize fib'
   where
-    fib 0 = 0
-    fib 1 = 1
-    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+    fib' 0 = 0
+    fib' 1 = 1
+    fib' n = fib (n - 1) + fib (n - 2)
 
-memoizedFibonacci :: Int -> Integer
-memoizedFibonacci = fix (memoize . fib)
-  where
-    fib f 0 = 0
-    fib f 1 = 1
-    fib f n = f (n - 1) + f (n - 2)
-    
-    memoize g = (map g [0..] !!)
+main :: IO ()
+main = do
+    putStrLn "Fibonacci numbers from 0 to 10:"
+    mapM_ (print . fib) [0..10]
