@@ -21,4 +21,9 @@ fibMemo n memo =
 printFibonacciSequence :: Int -> IO ()
 printFibonacciSequence n = do
     putStrLn $ "Fibonacci sequence up to " ++ show n ++ ":"
-    mapM_ (putStrLn . show . fib) [0..n]
+    mapM_ (putStrLn . show . fib) [0..n]module FibonacciSequence where
+
+fibonacci :: Int -> Integer
+fibonacci n = fibs !! n
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
