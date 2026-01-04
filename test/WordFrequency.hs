@@ -52,4 +52,24 @@ displayResults counts =
     unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
 
 analyzeText :: String -> String
-analyzeText = displayResults . countWords
+analyzeText = displayResults . countWordsmodule WordFrequency where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type FrequencyMap = Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = map normalize $ filter (not . null) $ splitText text
+    normalize = map toLower . filter isAlpha
+    splitText = words
+
+incrementWord :: String -> FrequencyMap -> FrequencyMap
+incrementWord word = Map.insertWith (+) word 1
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (\(_, count) -> negate count) $ Map.toList $ countWords text
