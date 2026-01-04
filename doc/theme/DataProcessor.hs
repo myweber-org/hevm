@@ -91,4 +91,11 @@ main = do
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Even squares: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of even squares: " ++ 
-        show (sumProcessedData even (\x -> x * x) sampleData)
+        show (sumProcessedData even (\x -> x * x) sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
