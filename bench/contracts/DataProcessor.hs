@@ -60,4 +60,54 @@ averageNameLength names =
   where
     filterNames = foldr (\name acc -> case validateName name of
         Just validName -> validName : acc
-        Nothing -> acc) []
+        Nothing -> acc) []module DataProcessor where
+
+import Data.List (intercalate)
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> Either String CSVData
+parseCSV content = 
+    let rows = lines content
+        parsedRows = map (splitOn ',') rows
+    in if allValid parsedRows
+        then Right parsedRows
+        else Left "Invalid CSV format: empty rows or inconsistent columns"
+
+splitOn :: Char -> String -> Row
+splitOn delimiter = foldr splitter [[]]
+  where
+    splitter char (current:rest)
+        | char == delimiter = []:current:rest
+        | otherwise = (char:current):rest
+
+allValid :: CSVData -> Bool
+allValid [] = True
+allValid (first:rest) = 
+    let colCount = length first
+    in colCount > 0 && all (\row -> length row == colCount && not (null row)) rest
+
+validateNumericColumns :: CSVData -> [Int] -> Either String CSVData
+validateNumericColumns data columns = 
+    case invalidRows of
+        [] -> Right data
+        _ -> Left $ "Non-numeric values in columns " ++ show columns ++ " at rows " ++ show invalidRows
+  where
+    invalidRows = [i | (i, row) <- zip [1..] data, any (not . isNumericAt row) columns]
+    isNumericAt row idx = 
+        if idx >= 1 && idx <= length row
+        then isNumeric (row !! (idx - 1))
+        else False
+    isNumeric str = case readMaybe str :: Maybe Double of
+        Just _ -> True
+        Nothing -> False
+
+processCSV :: String -> [Int] -> Either String CSVData
+processCSV content numericCols = do
+    parsed <- parseCSV content
+    validateNumericColumns parsed numericCols
+
+formatOutput :: CSVData -> String
+formatOutput = intercalate "\n" . map (intercalate "|")
