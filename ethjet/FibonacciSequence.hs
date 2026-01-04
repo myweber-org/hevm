@@ -1,15 +1,11 @@
 module FibonacciSequence where
 
-import Data.Function.Memoize
+import Data.Function (fix)
 
-fib :: Integer -> Integer
-fib = memoize fib'
+fibonacci :: Int -> Integer
+fibonacci n = fibs !! n
   where
-    fib' 0 = 0
-    fib' 1 = 1
-    fib' n = fib (n - 1) + fib (n - 2)
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
 
-main :: IO ()
-main = do
-    putStrLn "Fibonacci numbers from 0 to 10:"
-    mapM_ (print . fib) [0..10]
+fibonacciMemoized :: Int -> Integer
+fibonacciMemoized = fix (\rec n -> if n < 2 then fromIntegral n else rec (n - 1) + rec (n - 2))
