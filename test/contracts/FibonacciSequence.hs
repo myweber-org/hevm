@@ -24,4 +24,23 @@ fib = memoize fib'
 main :: IO ()
 main = do
     putStrLn "Fibonacci numbers from 0 to 10:"
-    mapM_ (print . fib) [0..10]
+    mapM_ (print . fib) [0..10]module FibonacciSequence where
+
+import Data.Function (fix)
+
+fibonacci :: Int -> Integer
+fibonacci n = fibList !! n
+  where
+    fibList = 0 : 1 : zipWith (+) fibList (tail fibList)
+
+-- Alternative implementation using fix for demonstration
+fibonacciFix :: Int -> Integer
+fibonacciFix = fix (\rec n ->
+    if n <= 1
+        then fromIntegral n
+        else rec (n - 1) + rec (n - 2))
+
+main :: IO ()
+main = do
+    putStrLn "Fibonacci sequence:"
+    mapM_ (print . fibonacci) [0..10]
