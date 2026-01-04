@@ -1,30 +1,41 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Text.CSV
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+filterByDateRange :: Day -> Day -> [Record] -> [Record]
+filterByDateRange startDate endDate records = 
+    filter (\record -> 
+        case parseDate (head record) of
+            Just date -> date >= startDate && date <= endDate
+            Nothing -> False
+    ) records
+  where
+    parseDate :: String -> Maybe Day
+    parseDate str = 
+        case parseTimeM True defaultTimeLocale "%Y-%m-%d" str of
+            Just day -> Just day
+            Nothing -> Nothing
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> if even x then x*x else 0) numbers)
+calculateDailyAverage :: [Record] -> [(Day, Double)]
+calculateDailyAverage records =
+    let grouped = groupByDate records
+    in map (\(date, values) -> (date, average values)) grouped
+  where
+    groupByDate :: [Record] -> [(Day, [Double])]
+    groupByDate = foldr (\record acc ->
+        case (parseDate (head record), parseDouble (record !! 1)) of
+            (Just date, Just value) -> 
+                let (same, rest) = partition (\(d, _) -> d == date) acc
+                in case same of
+                    [] -> (date, [value]) : rest
+                    ((_, vals):_) -> (date, value:vals) : rest
+            _ -> acc
+    ) []
+    
+    parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+    parseDouble str = readMaybe str
+    
+    average :: [Double] -> Double
+    average xs = sum xs / fromIntegral (length xs)
