@@ -19,4 +19,45 @@ main = do
     putStrLn "Original data:"
     print sampleData
     putStrLn "\nSmoothed data (3-point moving average):"
-    print $ smoothData sampleData
+    print $ smoothData sampleDatamodule DataProcessor where
+
+import Data.Char (toUpper)
+
+-- Validate that a string is non-empty and contains only alphabetic characters
+validateName :: String -> Maybe String
+validateName "" = Nothing
+validateName name
+    | all isAlpha name = Just name
+    | otherwise = Nothing
+  where
+    isAlpha c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+
+-- Convert a string to title case
+toTitleCase :: String -> String
+toTitleCase = unwords . map capitalize . words
+  where
+    capitalize [] = []
+    capitalize (x:xs) = toUpper x : map toLower xs
+    toLower c = if c >= 'A' && c <= 'Z' then toEnum (fromEnum c + 32) else c
+
+-- Process a list of names: validate, transform to title case, and filter valid ones
+processNames :: [String] -> [String]
+processNames = map toTitleCase . filterNames
+  where
+    filterNames = foldr (\name acc -> case validateName name of
+        Just validName -> validName : acc
+        Nothing -> acc) []
+
+-- Calculate average length of valid names
+averageNameLength :: [String] -> Maybe Double
+averageNameLength names =
+    let validNames = map toTitleCase $ filterNames names
+        totalLength = sum $ map length validNames
+        count = length validNames
+    in if count > 0
+        then Just (fromIntegral totalLength / fromIntegral count)
+        else Nothing
+  where
+    filterNames = foldr (\name acc -> case validateName name of
+        Just validName -> validName : acc
+        Nothing -> acc) []
