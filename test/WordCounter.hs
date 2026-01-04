@@ -27,4 +27,23 @@ testCountWords = do
         ) testCases
 
 main :: IO ()
-main = testCountWords
+main = testCountWordsmodule WordCounter (countWords, cleanText) where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (words)
+
+cleanText :: String -> String
+cleanText = map normalize . filter isAllowed
+  where
+    isAllowed c = isAlpha c || c == ' ' || c == '\''
+    normalize c = if isAlpha c then toLower c else c
+
+countWords :: String -> [(String, Int)]
+countWords text = 
+  let cleaned = cleanText text
+      wordList = words cleaned
+  in foldr countWord [] wordList
+  where
+    countWord w acc = case lookup w acc of
+      Just n -> (w, n + 1) : filter ((/= w) . fst) acc
+      Nothing -> (w, 1) : acc
