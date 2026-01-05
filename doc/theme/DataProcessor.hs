@@ -13,3 +13,40 @@ sumProcessed = sum . processNumbers
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = 
+    if null input
+    then Left "Empty input"
+    else Right $ map (splitOn ',') (lines input)
+
+validateRow :: Row -> Either String Row
+validateRow [] = Left "Empty row"
+validateRow row
+    | length row < 2 = Left "Row must have at least 2 columns"
+    | not (all validField row) = Left "Invalid characters in field"
+    | otherwise = Right row
+  where
+    validField field = not (null field) && all (\c -> isDigit c || c == '.' || c == '-') field
+
+processCSV :: String -> Either String CSVData
+processCSV input = do
+    parsed <- parseCSV input
+    traverse validateRow parsed
+
+splitOn :: Char -> String -> [String]
+splitOn delimiter = foldr splitHelper [""]
+  where
+    splitHelper char acc
+        | char == delimiter = "":acc
+        | otherwise = (char:head acc):tail acc
+
+formatOutput :: CSVData -> String
+formatOutput rows = intercalate "\n" $ map (intercalate " | ") rows
