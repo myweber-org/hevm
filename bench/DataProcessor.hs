@@ -27,3 +27,19 @@ safeMovingAverage n xs
 
 testData :: [Double]
 testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
+
+validateAndProcess :: [Int] -> Maybe [Int]
+validateAndProcess xs
+    | null xs = Nothing
+    | otherwise = Just (processNumbers xs)
+
+main :: IO ()
+main = do
+    let input = [1, -5, 3, -2, 4]
+    case validateAndProcess input of
+        Nothing -> putStrLn "Empty list provided"
+        Just result -> print result
