@@ -19,4 +19,16 @@ main = do
         Just data' -> do
             let result = processData data'
             putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
+            putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (\x -> x * x + 1)
+
+main :: IO ()
+main = do
+    let input = [1..10]
+    let result = processData input
+    print result
