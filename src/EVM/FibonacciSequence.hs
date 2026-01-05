@@ -1,12 +1,7 @@
 module FibonacciSequence where
 
-import Data.Function (fix)
-
 fibonacci :: Int -> Integer
-fibonacci n = fibs !! n
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
--- Alternative implementation using fix for memoization
-fibonacciMemoized :: Int -> Integer
-fibonacciMemoized = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))
+fibonacci n
+    | n <= 0    = 0
+    | n == 1    = 1
+    | otherwise = fibonacci (n - 1) + fibonacci (n - 2)
