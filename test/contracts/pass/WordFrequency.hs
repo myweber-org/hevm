@@ -100,4 +100,49 @@ main = do
     input <- getContents
     let frequencies = countWords input
     putStrLn "\nWord frequencies (sorted by count):"
-    putStrLn $ formatResults frequencies
+    putStrLn $ formatResults frequenciesmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+import qualified Data.Set as Set
+
+type Word = String
+
+stem :: Word -> Word
+stem w = case reverse w of
+    ('s':xs) -> reverse xs
+    ('g':'n':xs) -> reverse ('g':xs)
+    _ -> w
+
+stopWords :: Set.Set Word
+stopWords = Set.fromList ["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"]
+
+cleanWord :: Word -> Maybe Word
+cleanWord w = 
+    let lower = map toLower w
+        filtered = filter isAlpha lower
+    in if null filtered || Set.member filtered stopWords
+       then Nothing
+       else Just (stem filtered)
+
+countWords :: [Word] -> [(Word, Int)]
+countWords = map (\ws -> (head ws, length ws)) 
+           . group 
+           . sort 
+           . map (\(Just w) -> w) 
+           . filter (/= Nothing) 
+           . map cleanWord
+
+topNWords :: Int -> [Word] -> [(Word, Int)]
+topNWords n = take n 
+            . sortOn (Down . snd) 
+            . countWords
+
+processText :: String -> [(Word, Int)]
+processText = topNWords 10 . words
+
+main :: IO ()
+main = do
+    let sample = "The quick brown fox jumps over the lazy dog. The dog barks at the fox, but the fox runs away quickly."
+    print $ processText sample
