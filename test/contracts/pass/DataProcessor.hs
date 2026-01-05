@@ -1,42 +1,18 @@
+
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processDatamodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just xmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * 2 + 1)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+validateData :: [Int] -> Bool
+validateData = all (> 0) . processData
 
 main :: IO ()
 main = do
-    let numbers = [1..20]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    let sampleData = [-3, 2, 0, 5, -1, 8]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)
