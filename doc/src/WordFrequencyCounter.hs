@@ -60,4 +60,34 @@ processText text = do
 main :: IO ()
 main = do
     let sampleText = "Hello world hello haskell world programming haskell functional programming"
-    processText sampleText
+    processText sampleTextmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanWord = filter isAlpha . map toLower
+        frequencyMap = foldl updateCount [] wordsList
+        updateCount [] word = [(word, 1)]
+        updateCount ((w, c):rest) word
+            | w == word = (w, c + 1) : rest
+            | otherwise = (w, c) : updateCount rest word
+    in sortOn (Down . snd) frequencyMap
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map formatLine counts
+  where
+    formatLine (word, count) = word ++ ": " ++ show count
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    let frequencies = countWords input
+    putStrLn "\nWord frequencies (sorted by count):"
+    putStrLn $ formatOutput frequencies
