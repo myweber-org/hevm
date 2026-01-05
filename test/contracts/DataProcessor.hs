@@ -79,4 +79,13 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | windowSize > length xs = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    windows n = takeWhile ((== n) . length) . map (take n) . tails
+    average vals = sum vals / fromIntegral (length vals)
