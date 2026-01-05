@@ -61,4 +61,10 @@ processData :: String -> (Double, Double)
 processData = calculateAverages . parseCSV
 
 filterByThreshold :: Double -> [Record] -> [Record]
-filterByThreshold threshold = filter (\(_, v1, v2) -> v1 > threshold && v2 > threshold)
+filterByThreshold threshold = filter (\(_, v1, v2) -> v1 > threshold && v2 > threshold)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
