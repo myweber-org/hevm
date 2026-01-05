@@ -1,83 +1,54 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (foldl')
+import Text.Read (readMaybe)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+type Row = [String]
+type CSV = [Row]
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+parseCSV :: String -> CSV
+parseCSV = map (splitOn ',') . lines
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [[]]
+      where
+        splitHelper char (current:rest)
+          | char == delimiter = []:current:rest
+          | otherwise = (char:current):rest
 
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 4, -1, 5, 9, -2, 6]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)module DataProcessor where
+safeReadDouble :: String -> Maybe Double
+safeReadDouble = readMaybe
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+computeColumnStats :: CSV -> [(Double, Double, Double)]
+computeColumnStats [] = []
+computeColumnStats (header:rows) = 
+  map processColumn $ transpose rows
+  where
+    processColumn :: [String] -> (Double, Double, Double)
+    processColumn col = 
+      let values = mapMaybe safeReadDouble col
+          count = fromIntegral $ length values
+          sumVal = foldl' (+) 0 values
+          avg = if count > 0 then sumVal / count else 0
+          minVal = if null values then 0 else minimum values
+          maxVal = if null values then 0 else maximum values
+      in (avg, minVal, maxVal)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+    transpose :: [[a]] -> [[a]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs
-    | null xs = Nothing
-    | otherwise = Just xs
+    mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+    mapMaybe _ [] = []
+    mapMaybe f (x:xs) = case f x of
+      Just y -> y : mapMaybe f xs
+      Nothing -> mapMaybe f xs
 
-main :: IO ()
-main = do
-    let sampleData = [-3, 0, 5, 2, -1, 8]
-    case validateInput sampleData of
-        Nothing -> putStrLn "Empty input list"
-        Just data' -> do
-            let result = processData data'
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (\x -> x >= -100 && x <= 100) xs
-
-main :: IO ()
-main = do
-    let sampleData = [-5, 2, 0, 8, -3, 10]
-    if validateInput sampleData
-        then print $ processData sampleData
-        else putStrLn "Invalid input data"
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let numbers = [-5, 3, 0, 8, -2, 10]
-    let result = processNumbers numbers
-    print result
+printStats :: [(Double, Double, Double)] -> IO ()
+printStats stats = do
+  putStrLn "Column Statistics (avg, min, max):"
+  mapM_ (\(i, (avg, minV, maxV)) -> 
+    putStrLn $ "Column " ++ show i ++ ": " ++ 
+               show avg ++ ", " ++ show minV ++ ", " ++ show maxV)
+    (zip [1..] stats)
