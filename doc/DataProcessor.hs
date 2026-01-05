@@ -11,4 +11,7 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
