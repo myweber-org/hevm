@@ -1,14 +1,22 @@
+
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+validateInput :: [Int] -> Maybe [Int]
+validateInput [] = Nothing
+validateInput xs = Just xs
 
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+main :: IO ()
+main = do
+    let sampleData = [5, 12, 8, 20, 3, 15]
+    case validateInput sampleData of
+        Nothing -> putStrLn "Empty input list"
+        Just data' -> do
+            let result = processData data'
+            putStrLn $ "Original: " ++ show sampleData
+            putStrLn $ "Processed: " ++ show result
