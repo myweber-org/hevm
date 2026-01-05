@@ -89,3 +89,13 @@ movingAverage windowSize xs
   where
     windows n = takeWhile ((== n) . length) . map (take n) . tails
     average vals = sum vals / fromIntegral (length vals)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubled :: [Int] -> Int
+sumPositiveDoubled = sum . processNumbers
