@@ -1,16 +1,33 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+-- Validate that a string contains only alphanumeric characters
+validateAlphanumeric :: String -> Bool
+validateAlphanumeric = all (\c -> isAlpha c || isDigit c)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+-- Transform a string to uppercase and reverse it
+transformString :: String -> String
+transformString = reverse . map toUpper
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (\x -> x >= -100 && x <= 100) xs 
-                   then Just xs 
-                   else Nothing
+-- Process a list of strings, validating and transforming each
+processData :: [String] -> [Maybe String]
+processData = map processSingle
+  where
+    processSingle str
+      | validateAlphanumeric str = Just (transformString str)
+      | otherwise = Nothing
+
+-- Filter out failed validations and join successful results
+formatResults :: [Maybe String] -> String
+formatResults results = 
+  let successes = [s | Just s <- results]
+  in intercalate ", " successes
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let inputData = ["hello123", "test456", "invalid!"]
+  let processed = processData inputData
+  putStrLn $ "Processed results: " ++ formatResults processed
