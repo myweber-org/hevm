@@ -51,4 +51,21 @@ printStats stats = do
   mapM_ (\(i, (avg, minV, maxV)) -> 
     putStrLn $ "Column " ++ show i ++ ": " ++ 
                show avg ++ ", " ++ show minV ++ ", " ++ show maxV)
-    (zip [1..] stats)
+    (zip [1..] stats)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (\x -> x >= -100 && x <= 100) xs
+
+safeProcess :: [Int] -> Maybe Int
+safeProcess xs
+    | validateInput xs = Just (sumProcessedData xs)
+    | otherwise = Nothing
