@@ -145,4 +145,29 @@ processText = topNWords 10 . words
 main :: IO ()
 main = do
     let sample = "The quick brown fox jumps over the lazy dog. The dog barks at the fox, but the fox runs away quickly."
-    print $ processText sample
+    print $ processText samplemodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countHelper [] wordsList
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+analyzeText :: String -> String
+analyzeText = formatResults . countWords
