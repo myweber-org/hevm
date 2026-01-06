@@ -1,26 +1,36 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processNumbers input
-    print result
-module DataProcessor where
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+-- Normalize string by converting to uppercase and trimming spaces
+normalizeString :: String -> String
+normalizeString = map toUpper . trim
+  where
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+-- Process a list of strings: validate and normalize
+processData :: [String] -> [String]
+processData = map normalizeString . filter validateAlpha
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    print result
+-- Generate a report from processed data
+generateReport :: [String] -> String
+generateReport items =
+  "Processed " ++ show (length items) ++ " items:\n" ++
+  intercalate "\n" (zipWith (\i s -> show i ++ ". " ++ s) [1..] items)
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let rawData = ["hello", "world123", "  haskell  ", "123", "functional"]
+      processed = processData rawData
+  putStrLn $ generateReport processed
