@@ -56,3 +56,18 @@ main = do
     print $ processEvenSquares numbers
     putStrLn "\nOdd numbers cubed:"
     print $ processOddCubes numbers
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformFunction xs =
+    map transformFunction (filter predicate xs)
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let inputData = [-3, 1, 0, 5, -2, 8]
+    let result = processData inputData
+    putStrLn $ "Input: " ++ show inputData
+    putStrLn $ "Result: " ++ show result
