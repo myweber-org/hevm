@@ -17,4 +17,21 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ws = sum ws / fromIntegral n
+
+smoothData :: [Double] -> [Double]
+smoothData = movingAverage 3
+
+processData :: [Double] -> (Double, Double, Double)
+processData xs = (minimum xs, maximum xs, sum xs / fromIntegral (length xs))
