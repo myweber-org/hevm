@@ -32,4 +32,21 @@ main = do
     putStrLn "Enter limit:"
     input <- getLine
     let limit = read input :: Int
-    print $ primesUpTo limit
+    print $ primesUpTo limitmodule PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = sieve' [2..limit] []
+    where
+        sieve' [] primes = reverse primes
+        sieve' (x:xs) primes = sieve' (filter (\n -> n `mod` x /= 0) xs) (x:primes)
+
+main :: IO ()
+main = do
+    putStrLn "Enter limit for prime numbers:"
+    input <- getLine
+    let limit = read input :: Int
+    let primes = sieve limit
+    putStrLn $ "Prime numbers up to " ++ show limit ++ ":"
+    print primes
