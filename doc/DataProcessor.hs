@@ -14,4 +14,21 @@ main = do
     print resultmodule DataProcessor where
 
 processNumbers :: [Int] -> [Int]
-processNumbers = map (^2) . filter (>0)
+processNumbers = map (^2) . filter (>0)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
