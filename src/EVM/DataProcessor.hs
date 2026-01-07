@@ -56,4 +56,21 @@ movingAverage windowSize xs
     | otherwise = map average $ windows windowSize xs
   where
     windows n = takeWhile (\w -> length w == n) . map (take n) . iterate tail
-    average = (/ fromIntegral windowSize) . sum
+    average = (/ fromIntegral windowSize) . summodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows size = takeWhile ((== size) . length) . map (take size) . tails
+    
+    average :: Fractional a => [a] -> a
+    average lst = sum lst / fromIntegral (length lst)
+
+-- Helper function from Data.List
+tails :: [a] -> [[a]]
+tails [] = [[]]
+tails xs@(_:ys) = xs : tails ys
