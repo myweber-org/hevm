@@ -1,24 +1,16 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m ys = take (length ys - m + 1) $ zipWith (const . take m) (tails ys) ys
+    
+    average :: Fractional a => [a] -> a
+    average zs = sum zs / fromIntegral (length zs)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * 2 + 1)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+-- Example usage:
+-- movingAverage 3 [1,2,3,4,5] == [2.0,3.0,4.0]
