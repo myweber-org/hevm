@@ -1,22 +1,50 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+type CSVRow = [String]
+type CSVData = [CSVRow]
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+numericColumns :: CSVData -> [[Double]]
+numericColumns [] = []
+numericColumns rows = 
+    let transposed = transpose rows
+        numericRows = map (filter (not . null) . map maybeRead) transposed
+    in map (map read) numericRows
+  where
+    transpose :: [[a]] -> [[a]]
+    transpose [] = repeat []
+    transpose ([]:xss) = transpose xss
+    transpose ((x:xs):xss) = 
+        (x : [h | (h:_) <- xss]) : transpose (xs : [t | (_:t) <- xss])
+    
+    maybeRead :: String -> String
+    maybeRead s = case reads s :: [(Double, String)] of
+        [(_, "")] -> s
+        _ -> ""
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+calculateAverages :: CSVData -> [Double]
+calculateAverages csvData = 
+    let numericData = numericColumns csvData
+        sums = map sum numericData
+        counts = map fromIntegral (map length numericData)
+    in zipWith (/) sums counts
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print result
+processCSVFile :: FilePath -> IO [Double]
+processCSVFile filePath = do
+    content <- readFile filePath
+    let parsedData = parseCSV content
+    return $ calculateAverages parsedData
+
+safeHead :: CSVData -> CSVRow
+safeHead [] = []
+safeHead (x:_) = x
+
+validateCSV :: CSVData -> Bool
+validateCSV [] = True
+validateCSV (row:rows) = 
+    let rowLength = length row
+    in all (\r -> length r == rowLength) rows
