@@ -7,22 +7,11 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+sumProcessed = sum . processNumbers
 
 main :: IO ()
 main = do
-    let inputData = [1, -2, 3, 0, 5, -10]
-    if validateInput inputData
-        then do
-            let result = processData inputData
-            putStrLn $ "Processed data: " ++ show result
-        else putStrLn "Invalid input data detected"
+    let numbers = [1, -2, 3, -4, 5]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)
