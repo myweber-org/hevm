@@ -1,28 +1,28 @@
+
 module WordFrequency where
 
-import Data.Char (toLower, isAlphaNum)
-import Data.List (sortOn)
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
 
 type WordCount = (String, Int)
 
 countWords :: String -> [WordCount]
 countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        freqMap = foldr (\word acc -> 
-            case lookup word acc of
-                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
-                Nothing -> (word, 1) : acc) [] wordsList
-    in sortOn (Down . snd) freqMap
-  where
-    cleanWord = map toLower . filter isAlphaNum
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
 
-printWordFrequencies :: [WordCount] -> IO ()
-printWordFrequencies counts = 
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+printHistogram :: [WordCount] -> IO ()
+printHistogram counts = do
+    putStrLn "Word Frequency Histogram:"
+    putStrLn "=========================="
+    mapM_ (\(word, count) -> 
+        putStrLn $ word ++ ": " ++ replicate count '*') counts
+    putStrLn $ "Total unique words: " ++ show (length counts)
 
 main :: IO ()
 main = do
-    let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello."
+    let sampleText = "Hello world hello Haskell world of functional programming"
     let frequencies = countWords sampleText
-    printWordFrequencies frequencies
+    printHistogram frequencies
