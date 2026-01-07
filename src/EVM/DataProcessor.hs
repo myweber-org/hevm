@@ -47,4 +47,13 @@ validateCSV :: CSVData -> Bool
 validateCSV [] = True
 validateCSV (row:rows) = 
     let rowLength = length row
-    in all (\r -> length r == rowLength) rows
+    in all (\r -> length r == rowLength) rowsmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    windows n = takeWhile (\w -> length w == n) . map (take n) . iterate tail
+    average = (/ fromIntegral windowSize) . sum
