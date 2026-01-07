@@ -90,4 +90,46 @@ main = do
     input <- getContents
     let frequencies = countWords input
     putStrLn "\nWord frequencies (sorted by count):"
-    putStrLn $ formatOutput frequencies
+    putStrLn $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import System.Environment (getArgs)
+
+type WordCount = Map.Map T.Text Int
+
+stemWord :: T.Text -> T.Text
+stemWord word = T.takeWhile isAlphaNum $ T.toLower word
+
+countWords :: T.Text -> WordCount
+countWords text = Map.fromListWith (+) wordPairs
+  where
+    tokens = T.words $ T.map (\c -> if isAlphaNum c then toLower c else ' ') text
+    wordPairs = [(stemWord w, 1) | w <- tokens, not (T.null w)]
+
+getTopWords :: Int -> WordCount -> [(T.Text, Int)]
+getTopWords n = take n . sortOn (Down . snd) . Map.toList
+
+formatOutput :: [(T.Text, Int)] -> T.Text
+formatOutput = T.unlines . map (\(w, c) -> T.pack (show c) <> " " <> w)
+
+processFile :: FilePath -> Int -> IO ()
+processFile filePath topN = do
+    content <- TIO.readFile filePath
+    let counts = countWords content
+        topWords = getTopWords topN counts
+    TIO.putStrLn $ formatOutput topWords
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [filePath, nStr] -> 
+            case reads nStr of
+                [(n, "")] | n > 0 -> processFile filePath n
+                _ -> putStrLn "Second argument must be positive integer"
+        _ -> putStrLn "Usage: WordFrequencyCounter <file> <top-n>"
