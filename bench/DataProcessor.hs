@@ -1,7 +1,15 @@
 module DataProcessor where
 
-filterAndSquareEvens :: [Int] -> [Int]
-filterAndSquareEvens = map (^2) . filter even
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndSquareEvens
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -100) xs then Just xs else Nothing
+
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs = do
+    validated <- validateInput xs
+    return $ processData validated
