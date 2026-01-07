@@ -16,4 +16,17 @@ main = do
     let sampleData = [1..10]
     putStrLn $ "Original: " ++ show sampleData
     putStrLn $ "Processed: " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum: " ++ show (sumProcessed sampleData)
+    putStrLn $ "Sum: " ++ show (sumProcessed sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processNumbers input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
