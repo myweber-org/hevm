@@ -1,36 +1,22 @@
 
 module DataProcessor where
 
-import Data.Char (isDigit, isAlpha, toUpper)
-import Data.List (intercalate)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
 
--- Validate if a string contains only digits
-validateNumeric :: String -> Bool
-validateNumeric = all isDigit
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
--- Validate if a string contains only alphabetic characters
-validateAlpha :: String -> Bool
-validateAlpha = all isAlpha
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
 
--- Normalize string by converting to uppercase and trimming spaces
-normalizeString :: String -> String
-normalizeString = map toUpper . trim
-  where
-    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
-
--- Process a list of strings: validate and normalize
-processData :: [String] -> [String]
-processData = map normalizeString . filter validateAlpha
-
--- Generate a report from processed data
-generateReport :: [String] -> String
-generateReport items =
-  "Processed " ++ show (length items) ++ " items:\n" ++
-  intercalate "\n" (zipWith (\i s -> show i ++ ". " ++ s) [1..] items)
-
--- Example usage function
-exampleUsage :: IO ()
-exampleUsage = do
-  let rawData = ["hello", "world123", "  haskell  ", "123", "functional"]
-      processed = processData rawData
-  putStrLn $ generateReport processed
+main :: IO ()
+main = do
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    if validateInput sampleData
+        then do
+            putStrLn "Original data:"
+            print sampleData
+            putStrLn "Processed data (positive numbers doubled):"
+            print $ processData sampleData
+        else putStrLn "Input validation failed: values must be between -100 and 100"
