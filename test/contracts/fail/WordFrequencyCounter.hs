@@ -1,36 +1,27 @@
 module WordFrequencyCounter where
 
-import Data.Char (toLower, isAlphaNum)
-import Data.List (sortOn)
+import Data.Char (toLower)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
 
-type WordCount = (String, Int)
+countWordFrequency :: String -> [(String, Int)]
+countWordFrequency text =
+    let wordsList = words text
+        lowerWords = map (map toLower) wordsList
+        sortedWords = sort lowerWords
+        grouped = group sortedWords
+        frequencies = map (\ws -> (head ws, length ws)) grouped
+        sortedFreq = sortOn (Down . snd) frequencies
+    in sortedFreq
 
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleanedWords = map (map toLower) wordsList
-        grouped = foldr (\word acc -> 
-            case lookup word acc of
-                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
-                Nothing -> (word, 1) : acc
-            ) [] cleanedWords
-    in sortOn (Down . snd) grouped
-  where
-    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
+formatOutput :: [(String, Int)] -> String
+formatOutput frequencies =
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) frequencies
 
-readFileAndCount :: FilePath -> IO [WordCount]
-readFileAndCount path = do
-    content <- readFile path
-    return $ countWords content
-
-printWordCounts :: [WordCount] -> IO ()
-printWordCounts counts = 
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+processText :: String -> String
+processText = formatOutput . countWordFrequency
 
 main :: IO ()
 main = do
-    putStrLn "Enter file path:"
-    path <- getLine
-    counts <- readFileAndCount path
-    printWordCounts $ take 10 counts
+    input <- getContents
+    putStr $ processText input
