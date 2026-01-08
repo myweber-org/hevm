@@ -40,4 +40,36 @@ displayStats text = do
 processFile :: FilePath -> IO ()
 processFile path = do
   content <- readFile path
-  displayStats content
+  displayStats contentmodule WordCounter where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let words' = filter (not . null) $ map clean $ words text
+        freqMap = foldr (\w m -> insertWord w m) [] words'
+    in take 10 $ sortOn (Down . snd) freqMap
+  where
+    clean = map toLower . filter isAlpha
+    
+    insertWord :: String -> [WordFreq] -> [WordFreq]
+    insertWord w [] = [(w, 1)]
+    insertWord w ((word, count):rest)
+        | w == word = (word, count + 1) : rest
+        | otherwise = (word, count) : insertWord w rest
+
+displayResults :: [WordFreq] -> IO ()
+displayResults freqList = do
+    putStrLn "Top 10 most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqList
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when done):"
+    content <- getContents
+    let results = countWords content
+    displayResults results
