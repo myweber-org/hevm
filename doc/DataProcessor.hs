@@ -95,3 +95,10 @@ extractEmails = map email
 averageAge :: [UserProfile] -> Double
 averageAge profiles = fromIntegral (sum ages) / fromIntegral (length ages)
     where ages = map age profiles
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
