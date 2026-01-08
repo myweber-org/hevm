@@ -42,4 +42,21 @@ main :: IO ()
 main = do
     input <- getContents
     let frequencies = countWords input
-    printHistogram frequencies
+    printHistogram frequenciesmodule WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
+
+countWords :: String -> Map.Map String Int
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+    in Map.fromListWith (+) [(w, 1) | w <- wordsList]
+  where
+    cleanWord = map toLower . filter isAlpha
+
+displayFrequencies :: Map.Map String Int -> String
+displayFrequencies freqMap =
+    unlines [word ++ ": " ++ show count | (word, count) <- Map.toList freqMap]
+
+processText :: String -> String
+processText = displayFrequencies . countWords
