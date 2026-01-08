@@ -120,3 +120,24 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "First element: " ++ show (safeHead numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: (Int -> Int) -> [Int] -> Int
+sumProcessedData processor = sum . map processor
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>0) xs then Just xs else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Even squares: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of squares: " ++ show (sumProcessedData (^2) sampleData)
+    putStrLn $ "Validation result: " ++ show (validateInput sampleData)
