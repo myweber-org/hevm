@@ -73,4 +73,27 @@ displayResults counts = unlines $
     map (\(word, count) -> word ++ ": " ++ show count) counts
 
 analyzeText :: String -> String
-analyzeText = displayResults . countWords
+analyzeText = displayResults . countWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words . map normalize
+  where
+    normalize c = if isAlpha c then toLower c else ' '
+    incrementWord word = Map.insertWith (+) word 1
+
+topWords :: Int -> String -> [(String, Int)]
+topWords n = take n . sortOn (negate . snd) . Map.toList . countWords
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+  putStrLn "Top 10 most frequent words:"
+  mapM_ printWord (topWords 10 text)
+  where
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
