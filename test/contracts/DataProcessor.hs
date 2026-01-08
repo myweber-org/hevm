@@ -52,4 +52,10 @@ processCSVFile filename colIndex = do
         Left err -> putStrLn $ "Error: " ++ err
         Right csvData -> case computeColumnAverage csvData colIndex of
             Left err -> putStrLn $ "Error: " ++ err
-            Right avg -> putStrLn $ "Average of column " ++ show colIndex ++ ": " ++ show avg
+            Right avg -> putStrLn $ "Average of column " ++ show colIndex ++ ": " ++ show avgmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
