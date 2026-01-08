@@ -3,53 +3,15 @@ module DataProcessor where
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processEvenNumbers :: [Int] -> [Int]
-processEvenNumbers = filterAndTransform even (* 2)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
 
-processOddNumbers :: [Int] -> [Int]
-processOddNumbers = filterAndTransform odd (+ 1)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenNumbers
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
 
 main :: IO ()
 main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Even numbers doubled: " ++ show (processEvenNumbers sampleData)
-    putStrLn $ "Odd numbers incremented: " ++ show (processOddNumbers sampleData)
-    putStrLn $ "Sum of processed even numbers: " ++ show (sumProcessedData sampleData)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
-module DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let inputData = [1, -2, 3, -4, 5, 0]
-    let result = processData inputData
-    print result
+    let numbers = [1, -2, 3, -4, 5]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)
