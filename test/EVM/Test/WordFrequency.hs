@@ -24,4 +24,39 @@ displayFrequency text = do
     putStrLn "------------------------"
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) $
         topWords 10 text
-    putStrLn ""
+    putStrLn ""module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map clean $ words text
+        clean = filter isAlpha . map toLower
+        counts = foldl incrementCount [] wordsList
+        incrementCount acc word = 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+    in sortOn (Down . snd) counts
+
+mostFrequentWords :: Int -> String -> [WordCount]
+mostFrequentWords n = take n . countWords
+
+displayFrequency :: [WordCount] -> String
+displayFrequency counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+analyzeText :: String -> String
+analyzeText text = 
+    let totalWords = length $ words text
+        uniqueWords = length $ countWords text
+        topWords = take 5 $ countWords text
+    in unlines $
+        [ "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , "Top 5 most frequent words:"
+        ] ++ map (\(w,c) -> "  " ++ w ++ " (" ++ show c ++ ")") topWords
