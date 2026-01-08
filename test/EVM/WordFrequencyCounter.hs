@@ -24,4 +24,36 @@ processText :: String -> Int -> String
 processText text minFrequency = 
     let counts = countWords text
         filtered = filterByFrequency minFrequency counts
-    in displayWordCounts filtered
+    in displayWordCounts filteredmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+
+formatHistogram :: [WordCount] -> String
+formatHistogram counts = 
+    let maxWordLength = maximum $ map (length . fst) counts
+        maxCount = maximum $ map snd counts
+        scale = 50
+    in unlines $ map (\(word, count) -> 
+        padRight maxWordLength word ++ " | " ++ 
+        replicate (count * scale `div` maxCount) '█' ++ 
+        " (" ++ show count ++ ")") counts
+  where
+    padRight n s = s ++ replicate (n - length s) ' '
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    let frequencies = countWords input
+    putStrLn "\nWord Frequency Histogram:"
+    putStrLn $ formatHistogram $ take 20 frequencies
