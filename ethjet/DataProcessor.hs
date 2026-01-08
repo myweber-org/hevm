@@ -36,3 +36,7 @@ main = do
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
     putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter (>0)
