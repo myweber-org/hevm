@@ -50,4 +50,18 @@ safeReadDouble s = case reads s of
 
 filterValidRows :: CSVData -> CSVData
 filterValidRows rows = 
-    filter (all (\cell -> not (null cell) && not (any (==',') cell))) rows
+    filter (all (\cell -> not (null cell) && not (any (==',') cell))) rowsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
