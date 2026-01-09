@@ -73,3 +73,21 @@ main = do
     content <- getContents
     let results = countWords content
     displayResults results
+module WordCounter (countWords, countUniqueWords) where
+
+import Data.Char (isSpace)
+import Data.List (sort, group)
+
+-- | Count total words in a string
+countWords :: String -> Int
+countWords = length . words
+
+-- | Count unique words (case-insensitive)
+countUniqueWords :: String -> Int
+countUniqueWords = length . group . sort . map normalize . words
+  where
+    normalize = map toLower . filter (not . isPunctuation)
+    toLower c
+        | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
+        | otherwise = c
+    isPunctuation c = c `elem` ".,!?;:\"'"
