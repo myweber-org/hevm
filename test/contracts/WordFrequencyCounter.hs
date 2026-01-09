@@ -1,43 +1,35 @@
-module WordFrequencyCounter where
-
-import Data.Char (toLower, isAlphaNum)
+import Data.Char (toLower, isAlpha)
 import Data.List (sortOn)
 import Data.Ord (Down(..))
-
-type WordCount = [(String, Int)]
-
-countWords :: String -> WordCount
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleanedWords = map (map toLower) wordsList
-        grouped = foldr countHelper [] cleanedWords
-    in sortOn (Down . snd) grouped
-  where
-    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
-    countHelper word [] = [(word, 1)]
-    countHelper word ((w, c):rest)
-        | word == w = (w, c + 1) : rest
-        | otherwise = (w, c) : countHelper word rest
-
-displayTopWords :: Int -> WordCount -> IO ()
-displayTopWords n counts = 
-    let topN = take n counts
-    in mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topN
-
-analyzeText :: String -> IO ()
-analyzeText text = do
-    putStrLn "Word frequency analysis:"
-    let frequencies = countWords text
-    displayTopWords 10 frequencies
-    putStrLn $ "\nTotal unique words: " ++ show (length frequencies)
-
-sampleText :: String
-sampleText = 
-    "This is a sample text for word frequency analysis. " ++
-    "This text contains repeated words like 'sample' and 'text'. " ++
-    "Word frequency analysis helps understand common terms in documents."
+import System.Environment (getArgs)
 
 main :: IO ()
 main = do
-    putStrLn "Analyzing sample text..."
-    analyzeText sampleText
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: WordFrequencyCounter <text>"
+        (text:_) -> do
+            let frequencies = countWordFrequencies text
+            mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
+
+countWordFrequencies :: String -> [(String, Int)]
+countWordFrequencies text =
+    let wordsList = extractWords text
+        grouped = groupWords wordsList
+        sorted = sortOn (Down . snd) grouped
+    in take 10 sorted
+
+extractWords :: String -> [String]
+extractWords = words . map normalizeChar
+  where
+    normalizeChar c
+        | isAlpha c = toLower c
+        | otherwise = ' '
+
+groupWords :: [String] -> [(String, Int)]
+groupWords = foldr incrementCount []
+  where
+    incrementCount word [] = [(word, 1)]
+    incrementCount word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : incrementCount word rest
