@@ -1,19 +1,25 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+    where
+        window = take n xs
+        avg = sum window / fromIntegral n
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    let prefix = replicate (windowSize `div` 2) (head dataPoints)
+        suffix = replicate (windowSize `div` 2) (last dataPoints)
+        extendedData = prefix ++ dataPoints ++ suffix
+    in movingAverage windowSize extendedData
 
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+calculateTrend :: (Fractional a, Ord a) => [a] -> String
+calculateTrend values
+    | allIncreasing values = "Increasing trend"
+    | allDecreasing values = "Decreasing trend"
+    | otherwise = "No clear trend"
+    where
+        allIncreasing xs = and $ zipWith (<) xs (tail xs)
+        allDecreasing xs = and $ zipWith (>) xs (tail xs)
