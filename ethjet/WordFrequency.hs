@@ -59,4 +59,31 @@ displayFrequencies freqMap =
     unlines [word ++ ": " ++ show count | (word, count) <- Map.toList freqMap]
 
 processText :: String -> String
-processText = displayFrequencies . countWords
+processText = displayFrequencies . countWordsmodule WordFrequency where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countHelper [] wordsList
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : word `countHelper` rest
+
+displayCounts :: [WordCount] -> String
+displayCounts counts = unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again world. Test test test."
+    putStrLn "Top 10 word frequencies:"
+    putStrLn $ displayCounts $ countWords sampleText
