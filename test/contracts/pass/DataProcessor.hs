@@ -29,4 +29,7 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
+    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
