@@ -56,4 +56,52 @@ sampleText :: String
 sampleText = "This is a sample text. This text contains some words. Some words are repeated. Repeated words help demonstrate frequency counting."
 
 main :: IO ()
-main = printWordFrequencies sampleText
+main = printWordFrequencies sampleTextmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+cleanWord :: String -> String
+cleanWord = filter isAlpha
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+sortAlphabetically :: [WordCount] -> [WordCount]
+sortAlphabetically = sortOn fst
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n . sortByFrequency
+
+analyzeText :: String -> Int -> Int -> [WordCount]
+analyzeText text minFreq topN =
+    let counted = countWords text
+        filtered = filterByMinFrequency minFreq counted
+    in getTopNWords topN filtered
+
+displayResults :: [WordCount] -> IO ()
+displayResults counts = do
+    putStrLn "Word Frequency Analysis:"
+    putStrLn "------------------------"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+    putStrLn $ "Total unique words: " ++ show (length counts)
+    putStrLn $ "Total occurrences: " ++ show (sum $ map snd counts)
+
+sampleAnalysis :: IO ()
+sampleAnalysis = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
+    let results = analyzeText sampleText 1 5
+    displayResults results
