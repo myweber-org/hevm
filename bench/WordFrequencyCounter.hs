@@ -65,4 +65,42 @@ sampleText :: String
 sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
 
 main :: IO ()
-main = wordFrequencyReport sampleText 5 1
+main = wordFrequencyReport sampleText 5 1module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = foldr countHelper [] cleanedWords
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map formatPair counts
+  where
+    formatPair (word, count) = word ++ ": " ++ show count
+
+processFile :: FilePath -> IO ()
+processFile filename = do
+    content <- readFile filename
+    let counts = countWords content
+    putStrLn $ formatOutput counts
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [filename] -> processFile filename
+        _ -> putStrLn "Usage: wordfreq <filename>"
