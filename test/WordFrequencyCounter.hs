@@ -86,4 +86,36 @@ main :: IO ()
 main = do
     putStrLn "Enter text to analyze (press Ctrl+D when finished):"
     text <- TIO.getContents
-    processText text
+    processText textmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = map normalize (words text)
+    words = filter (not . null) words'
+    
+    normalize = map toLower . filter isAlpha
+    
+    incrementWord word freqMap = Map.insertWith (+) word 1 freqMap
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n sortedFreq
+  where
+    freqMap = countWords text
+    sortedFreq = sortOn (\(_, count) -> negate count) (Map.toList freqMap)
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn "Top 10 most frequent words:"
+    mapM_ printWord (getTopWords 10 text)
+    putStrLn ""
+    putStrLn $ "Total unique words: " ++ show (Map.size (countWords text))
+  where
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
