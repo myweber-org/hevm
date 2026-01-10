@@ -70,4 +70,13 @@ processCSVFile filePath colIndex = do
         Left err -> putStrLn $ "Error: " ++ err
         Right csvData -> case computeStats csvData colIndex of
             Left err -> putStrLn $ "Error: " ++ err
-            Right stats -> printStats stats
+            Right stats -> printStats statsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
