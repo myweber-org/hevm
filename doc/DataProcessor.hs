@@ -17,3 +17,16 @@ main = do
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of doubled odds: " ++ 
         show (sumProcessed (\x -> x * 2) (filter odd numbers))
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-5, 3, 0, 8, -2, 10]
+    let result = processNumbers numbers
+    print result
