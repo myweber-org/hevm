@@ -1,11 +1,18 @@
+
 module DataProcessor where
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = map (^2) . filter even
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-exampleUsage :: IO ()
-exampleUsage = do
-    let input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    let result = processEvenSquares input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (\x -> x >= -100 && x <= 100) xs
+
+main :: IO ()
+main = do
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    if validateInput sampleData
+        then print $ processData sampleData
+        else putStrLn "Invalid input data"
