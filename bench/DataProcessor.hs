@@ -17,4 +17,23 @@ main = do
     let processed = processData sampleData
     putStrLn $ "Processed data: " ++ show processed
     
-    putStrLn $ "Data validation: " ++ show (validateData processed)
+    putStrLn $ "Data validation: " ++ show (validateData processed)module DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+    where
+        window = take n xs
+        avg = sum window / fromIntegral n
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    let padded = replicate (windowSize `div` 2) (head dataPoints) ++ dataPoints ++ replicate (windowSize `div` 2) (last dataPoints)
+    in movingAverage windowSize padded
+
+processNumericStream :: (Fractional a, Ord a) => Int -> [a] -> [(a, Bool)]
+processNumericStream threshold values =
+    let averages = smoothData 5 values
+        isAboveThreshold x = x > fromIntegral threshold
+    in zip averages (map isAboveThreshold averages)
