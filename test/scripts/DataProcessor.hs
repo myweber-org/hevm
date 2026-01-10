@@ -22,3 +22,23 @@ main = do
             putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
         Nothing -> putStrLn "Invalid input: all numbers must be positive"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+processOddCubes :: [Int] -> [Int]
+processOddCubes = filterAndTransform odd (\x -> x * x * x)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn "Original list:"
+    print numbers
+    putStrLn "Even numbers squared:"
+    print $ processEvenSquares numbers
+    putStrLn "Odd numbers cubed:"
+    print $ processOddCubes numbers
