@@ -22,3 +22,17 @@ main = do
             putStrLn $ "Processed list: " ++ show (processEvenSquares validData)
             putStrLn $ "Sum of processed list: " ++ show (sumProcessedList validData)
         Nothing -> putStrLn "Invalid input: all numbers must be positive"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositive :: [Int] -> Int
+sumPositive = sum . filter (>0)
