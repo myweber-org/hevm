@@ -121,4 +121,36 @@ displayFrequencies counts =
     unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
 
 processText :: String -> String
-processText = displayFrequencies . countWords
+processText = displayFrequencies . countWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        grouped = foldr (\w acc -> case lookup w acc of
+                                    Just count -> (w, count + 1) : filter ((/= w) . fst) acc
+                                    Nothing -> (w, 1) : acc) [] cleaned
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+processFile :: FilePath -> IO ()
+processFile path = do
+    content <- readFile path
+    let frequencies = countWords content
+    putStrLn $ formatOutput frequencies
+
+main :: IO ()
+main = do
+    putStrLn "Enter file path:"
+    filePath <- getLine
+    processFile filePath
