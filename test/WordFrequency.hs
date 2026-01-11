@@ -54,4 +54,30 @@ analyzeText text = do
   putStrLn "Top 10 most frequent words:"
   mapM_ printWord (topWords 10 text)
   where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = words $ map toLower text
+        grouped = foldr countWord [] wordsList
+    in sortOn (Down . snd) grouped
+  where
+    countWord w [] = [(w, 1)]
+    countWord w ((x, c):xs)
+        | w == x = (x, c + 1) : xs
+        | otherwise = (x, c) : countWord w xs
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn "Word frequencies:"
+    printWordFrequencies $ countWords text
