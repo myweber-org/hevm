@@ -30,4 +30,18 @@ main = do
         Just validData -> do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processData validData)
-        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"
+        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
