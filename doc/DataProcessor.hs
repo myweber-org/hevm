@@ -16,3 +16,16 @@ main = do
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transform = map transform . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Bool
+validateInput = all (\x -> x >= -100 && x <= 100)
