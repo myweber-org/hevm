@@ -131,4 +131,13 @@ filterRowsByColumn :: Int -> (String -> Bool) -> CSVData -> CSVData
 filterRowsByColumn colIndex predicate rows =
     filter (\row -> case safeHead (drop colIndex row) of
                       Just cell -> predicate cell
-                      Nothing   -> False) rows
+                      Nothing   -> False) rowsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
