@@ -81,3 +81,54 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
     print result
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+numericColumns :: CSVData -> [[Double]]
+numericColumns [] = []
+numericColumns rows = 
+    let transposed = transpose rows
+        numericRows = filter (all isNumeric) transposed
+    in map (map read) numericRows
+  where
+    transpose :: [[a]] -> [[a]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose x = map head x : transpose (map tail x)
+    
+    isNumeric :: String -> Bool
+    isNumeric str = case reads str :: [(Double, String)] of
+        [(_, "")] -> True
+        _         -> False
+
+calculateAverages :: CSVData -> [Double]
+calculateAverages csvData = 
+    let numbers = numericColumns csvData
+    in map average numbers
+  where
+    average :: [Double] -> Double
+    average [] = 0.0
+    average xs = sum xs / fromIntegral (length xs)
+
+processCSVFile :: String -> IO [Double]
+processCSVFile filename = do
+    content <- readFile filename
+    let parsed = parseCSV content
+    return $ calculateAverages parsed
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+filterRowsByColumn :: Int -> (String -> Bool) -> CSVData -> CSVData
+filterRowsByColumn colIndex predicate rows =
+    filter (\row -> case safeHead (drop colIndex row) of
+                      Just cell -> predicate cell
+                      Nothing   -> False) rows
