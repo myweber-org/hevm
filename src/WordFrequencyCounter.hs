@@ -100,4 +100,43 @@ analyzeText text minFreq topN = do
 sampleAnalysis :: IO ()
 sampleAnalysis = do
     let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello to Haskell."
-    analyzeText sampleText 2 5
+    analyzeText sampleText 2 5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+cleanWord :: String -> String
+cleanWord = map toLower . filter isAlpha
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = words text
+        cleanedWords = map cleanWord wordsList
+        nonEmptyWords = filter (not . null) cleanedWords
+        grouped = foldr (\word acc -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] nonEmptyWords
+    in sortOn (Down . snd) grouped
+
+topNWords :: Int -> String -> [WordCount]
+topNWords n text = take n $ countWords text
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+    in unlines $
+        [ "Word Frequency Analysis Report"
+        , "============================="
+        , "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , ""
+        , "Top 10 most frequent words:"
+        , "---------------------------"
+        ] ++ map (\(w, c) -> w ++ ": " ++ show c) (topNWords 10 text)
