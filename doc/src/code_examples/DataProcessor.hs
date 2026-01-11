@@ -1,21 +1,17 @@
 
 module DataProcessor where
 
-import Data.Time
-import Text.CSV
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
 
-filterCSVByDate :: Day -> Day -> CSV -> CSV
-filterCSVByDate startDate endDate csv =
-    let header = head csv
-        records = tail csv
-        filteredRecords = filter (isWithinDateRange startDate endDate) records
-    in header : filteredRecords
+validateAndProcess :: [Int] -> Maybe [Int]
+validateAndProcess xs
+    | null xs = Nothing
+    | otherwise = Just (processNumbers xs)
 
-isWithinDateRange :: Day -> Day -> Record -> Bool
-isWithinDateRange start end record =
-    case parseDate (record !! 0) of
-        Just date -> date >= start && date <= end
-        Nothing   -> False
-
-parseDate :: String -> Maybe Day
-parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    case validateAndProcess input of
+        Nothing -> putStrLn "Empty list provided"
+        Just result -> print result
