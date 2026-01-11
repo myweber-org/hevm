@@ -1,32 +1,23 @@
 
 module DataProcessor where
 
-import Data.Char (isDigit, toUpper)
-import Data.List (intercalate)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
 
--- Validate if a string contains only digits
-validateDigits :: String -> Bool
-validateDigits = all isDigit
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
--- Transform a string to uppercase
-toUppercase :: String -> String
-toUppercase = map toUpper
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (\x -> x >= -100 && x <= 100) xs
+                   then Just xs
+                   else Nothing
 
--- Process a list of strings: validate digits and transform to uppercase
-processData :: [String] -> [String]
-processData = map toUppercase . filter validateDigits
-
--- Format processed data as a comma-separated string
-formatOutput :: [String] -> String
-formatOutput = intercalate ", "
-
--- Main processing pipeline
-processPipeline :: [String] -> String
-processPipeline = formatOutput . processData
-
--- Example usage function
-exampleUsage :: IO ()
-exampleUsage = do
-    let input = ["123", "abc", "456", "def", "789"]
-    let result = processPipeline input
-    putStrLn $ "Processed result: " ++ result
+main :: IO ()
+main = do
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    case validateInput sampleData of
+        Just validData -> do
+            let result = processData validData
+            putStrLn $ "Original: " ++ show validData
+            putStrLn $ "Processed: " ++ show result
+        Nothing -> putStrLn "Input validation failed: values out of range"
