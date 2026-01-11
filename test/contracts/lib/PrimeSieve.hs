@@ -1,16 +1,19 @@
 module PrimeSieve where
 
-primes :: [Int]
-primes = sieve [2..]
-  where
-    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = go [2..limit] []
+    where
+        go []     acc = reverse acc
+        go (x:xs) acc = go (filter (\n -> n `mod` x /= 0) xs) (x:acc)
 
-nthPrime :: Int -> Int
-nthPrime n = primes !! (n - 1)
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
 
 main :: IO ()
 main = do
-    putStrLn "First 20 prime numbers:"
-    print $ take 20 primes
-    putStrLn "\nThe 100th prime number is:"
-    print $ nthPrime 100
+    putStrLn "Enter limit:"
+    input <- getLine
+    let limit = read input :: Int
+    print $ primesUpTo limit
