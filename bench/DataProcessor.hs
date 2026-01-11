@@ -37,3 +37,13 @@ processNumericStream threshold values =
     let averages = smoothData 5 values
         isAboveThreshold x = x > fromIntegral threshold
     in zip averages (map isAboveThreshold averages)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
