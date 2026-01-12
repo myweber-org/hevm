@@ -1,28 +1,42 @@
+
 module WordFrequency where
 
 import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
 
-type WordCount = [(String, Int)]
+type WordCount = (String, Int)
 
-countWords :: String -> WordCount
-countWords text = 
+histogramBar :: Int -> Int -> String
+histogramBar count maxWidth = replicate barLength '█' ++ padding
+  where
+    barLength = round ((fromIntegral count / fromIntegral maxWidth) * 50)
+    padding = replicate (50 - barLength) ' '
+
+analyzeText :: String -> [WordCount]
+analyzeText text = 
     let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleaned = map toLower <$> wordsList
-        frequencies = foldr countWord [] cleaned
-    in take 10 $ sortOn (Down . snd) frequencies
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in take 10 $ sortOn (Down . snd) counts
   where
     cleanWord = filter isAlpha
-    countWord word [] = [(word, 1)]
-    countWord word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : countWord word rest
 
-displayFrequency :: WordCount -> String
-displayFrequency freq = unlines $ map (\(w, c) -> w ++ ": " ++ show c) freq
+displayHistogram :: [WordCount] -> IO ()
+displayHistogram counts = 
+    let maxCount = maximum $ map snd counts
+    in mapM_ (\(word, count) -> 
+        putStrLn $ word ++ " " ++ histogramBar count maxCount ++ " " ++ show count) counts
 
-analyzeText :: String -> String
-analyzeText text = 
-    let freq = countWords text
-    in "Top 10 most frequent words:\n" ++ displayFrequency freq
+processText :: String -> IO ()
+processText input = do
+    let topWords = analyzeText input
+    putStrLn "\nTop 10 most frequent words:"
+    displayHistogram topWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when done):"
+    content <- getContents
+    processText content
