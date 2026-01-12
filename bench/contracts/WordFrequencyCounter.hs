@@ -43,4 +43,36 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
     putStrLn "Word frequency analysis:"
-    displayResults $ analyzeText sampleText 1 5
+    displayResults $ analyzeText sampleText 1 5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map (map toLower) wordsList
+        grouped = foldr countHelper [] cleaned
+        sorted = sortOn (Down . snd) grouped
+    in sorted
+  where
+    cleanWord = filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ processText input
