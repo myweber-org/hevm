@@ -15,4 +15,54 @@ calculateAverages rows
     transpose = foldr (zipWith (:)) (repeat [])
 
 processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
+processCSVData = calculateAverages . parseCSVmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+data ValidationError = InvalidFormat String | MissingField String | InvalidValue String
+    deriving (Show, Eq)
+
+type CSVRow = [String]
+type Header = [String]
+
+validateCSVRow :: Header -> CSVRow -> Either ValidationError CSVRow
+validateCSVRow header row
+    | length header /= length row = Left $ InvalidFormat "Column count mismatch"
+    | any null row = Left $ MissingField "Empty field detected"
+    | not (validateRowData row) = Left $ InvalidValue "Invalid data in row"
+    | otherwise = Right row
+
+validateRowData :: CSVRow -> Bool
+validateRowData = all validateField
+    where
+        validateField field
+            | all isDigit field = True
+            | all isAlpha field = True
+            | ' ' `elem` field = True
+            | otherwise = False
+
+parseCSV :: String -> Either ValidationError [CSVRow]
+parseCSV content = 
+    case lines content of
+        [] -> Left $ InvalidFormat "Empty CSV content"
+        (headerLine:rows) -> 
+            let header = splitByComma headerLine
+                parsedRows = map (splitByComma) rows
+            in case mapM (validateCSVRow header) parsedRows of
+                Left err -> Left err
+                Right validRows -> Right validRows
+
+splitByComma :: String -> [String]
+splitByComma = foldr splitHelper [""]
+    where
+        splitHelper ',' acc = "":acc
+        splitHelper char (x:xs) = (char:x):xs
+
+formatCSV :: [CSVRow] -> String
+formatCSV rows = intercalate "\n" $ map (intercalate ",") rows
+
+processCSVData :: String -> Either ValidationError String
+processCSVData input = do
+    parsed <- parseCSV input
+    return $ formatCSV parsed
