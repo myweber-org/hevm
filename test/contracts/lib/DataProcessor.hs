@@ -44,3 +44,10 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
