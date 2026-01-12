@@ -30,4 +30,22 @@ main = do
     let input = [1, -2, 3, 0, 5, -8]
     let result = processData input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = 
+    filterAndTransform (\x -> x > 0 && x `mod` 2 == 0) (\x -> x * 2 + 1)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+main :: IO ()
+main = do
+    let sampleData = [-5, 2, 3, 8, 10, -1, 7]
+    putStrLn $ "Original list: " ++ show sampleData
+    putStrLn $ "Processed list: " ++ show (processNumbers sampleData)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed sampleData)
