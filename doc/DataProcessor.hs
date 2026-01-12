@@ -41,4 +41,7 @@ safeHead [] = Nothing
 safeHead (x:_) = Just x
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
