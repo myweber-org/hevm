@@ -47,4 +47,40 @@ mostFrequent text
     freqMap = countWords text
     maxEntry word count (maxWord, maxCount)
       | count > maxCount = (word, count)
-      | otherwise = (maxWord, maxCount)
+      | otherwise = (maxWord, maxCount)module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map (map toLower) wordsList
+        grouped = groupCount cleaned
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+    groupCount [] = []
+    groupCount (x:xs) = 
+        let (matches, rest) = partition (== x) xs
+            count = 1 + length matches
+        in (x, count) : groupCount rest
+
+    partition _ [] = ([], [])
+    partition p (y:ys)
+        | p y       = let (as, bs) = partition p ys in (y:as, bs)
+        | otherwise = let (as, bs) = partition p ys in (as, y:bs)
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = do
+    putStrLn "Top 10 most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again world. Testing testing one two three."
+    let frequencies = countWords sampleText
+    printWordCounts frequencies
