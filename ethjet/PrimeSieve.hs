@@ -1,31 +1,14 @@
-
 module PrimeSieve where
 
-sieve :: Int -> [Int]
-sieve limit
-    | limit < 2 = []
-    | otherwise = sieve' [2..limit] []
-    where
-        sieve' [] primes = reverse primes
-        sieve' (x:xs) primes = sieve' (filter (\n -> n `mod` x /= 0) xs) (x:primes)
+primes :: [Int]
+primes = sieve [2..]
+  where
+    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
 
-primesUpTo :: Int -> [Int]
-primesUpTo = sievemodule PrimeSieve where
+nthPrime :: Int -> Int
+nthPrime n = primes !! (n - 1)
 
-sieve :: Int -> [Int]
-sieve limit
-    | limit < 2 = []
-    | otherwise = go [2..limit] []
-    where
-        go []     acc = reverse acc
-        go (x:xs) acc = go (filter (\n -> n `mod` x /= 0) xs) (x:acc)
-
-primesUpTo :: Int -> [Int]
-primesUpTo = sieve
-
-main :: IO ()
-main = do
-    putStrLn "Enter limit:"
-    input <- getLine
-    let limit = read input :: Int
-    print $ primesUpTo limit
+isPrime :: Int -> Bool
+isPrime n
+    | n < 2     = False
+    | otherwise = all (\p -> n `mod` p /= 0) (takeWhile (\p -> p * p <= n) primes)
