@@ -1,29 +1,24 @@
+
 module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (*2)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+processOddNumbers :: [Int] -> [Int]
+processOddNumbers = filterAndTransform odd (+1)
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs
-    | null xs = Nothing
-    | any (< -100) xs = Nothing
-    | any (> 100) xs = Nothing
-    | otherwise = Just xs
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = 
+    sum . filterAndTransform predicate transformer
 
-safeDataProcessing :: [Int] -> Maybe Int
-safeDataProcessing xs = do
-    validInput <- validateInput xs
-    return $ sumProcessedData validInput
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Even numbers doubled: " ++ show (processEvenNumbers sampleData)
+    putStrLn $ "Odd numbers incremented: " ++ show (processOddNumbers sampleData)
+    putStrLn $ "Sum of processed evens: " ++ show (sumProcessedData even (*2) sampleData)
