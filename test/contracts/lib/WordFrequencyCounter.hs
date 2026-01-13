@@ -1,42 +1,34 @@
 module WordFrequencyCounter where
 
+import qualified Data.Map.Strict as Map
 import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
+import Data.List (sortOn)
 import Data.Ord (Down(..))
 
-type WordCount = (String, Int)
+type WordCount = Map.Map String Int
 
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleanedWords = map (map toLower) wordsList
-        grouped = group $ sort cleanedWords
-        counts = map (\ws -> (head ws, length ws)) grouped
-    in sortOn (Down . snd) counts
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
   where
-    cleanWord = filter isAlpha
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
 
-filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
-filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+topNWords :: Int -> WordCount -> [(String, Int)]
+topNWords n = take n . sortOn (Down . snd) . Map.toList
 
-getTopNWords :: Int -> [WordCount] -> [WordCount]
-getTopNWords n = take n
+printWordFrequencies :: [(String, Int)] -> IO ()
+printWordFrequencies = mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c)
 
-printWordCounts :: [WordCount] -> IO ()
-printWordCounts counts = 
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+processText :: String -> IO ()
+processText text = do
+  let counts = countWords text
+      topWords = topNWords 10 counts
+  putStrLn "Top 10 most frequent words:"
+  printWordFrequencies topWords
+  putStrLn $ "\nTotal unique words: " ++ show (Map.size counts)
 
 main :: IO ()
 main = do
-    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello back."
-    putStrLn "Word frequencies:"
-    let frequencies = countWords sampleText
-    printWordCounts frequencies
-    
-    putStrLn "\nWords with frequency >= 2:"
-    let filtered = filterByMinFrequency 2 frequencies
-    printWordCounts filtered
-    
-    putStrLn "\nTop 3 words:"
-    let top3 = getTopNWords 3 frequencies
-    printWordCounts top3
+  putStrLn "Enter text (press Ctrl+D on empty line to finish):"
+  input <- getContents
+  processText input
