@@ -2,29 +2,6 @@
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processEvenNumbers :: [Int] -> [Int]
-processEvenNumbers = filterAndTransform even (*2)
-
-processOddNumbers :: [Int] -> [Int]
-processOddNumbers = filterAndTransform odd (+1)
-
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = 
-    sum . filterAndTransform predicate transformer
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Even numbers doubled: " ++ show (processEvenNumbers sampleData)
-    putStrLn $ "Odd numbers incremented: " ++ show (processOddNumbers sampleData)
-    putStrLn $ "Sum of processed evens: " ++ show (sumProcessedData even (*2) sampleData)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processEvenSquares :: [Int] -> [Int]
@@ -37,16 +14,5 @@ main :: IO ()
 main = do
     let sampleData = [1..10]
     putStrLn $ "Original list: " ++ show sampleData
-    putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of processed list: " ++ show (sumProcessedList sampleData)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
