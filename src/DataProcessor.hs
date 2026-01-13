@@ -18,3 +18,14 @@ main = do
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of doubled evens: " ++ 
         show (sumProcessed (*2) (filter even numbers))
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
