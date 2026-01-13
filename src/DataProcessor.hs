@@ -1,25 +1,20 @@
+
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-import Data.List.Split (splitOn)
+sumProcessed :: (Int -> Int) -> [Int] -> Int
+sumProcessed processor = sum . map processor
 
-parseCSV :: String -> [[Double]]
-parseCSV content = map (map read . splitOn ",") (lines content)
-
-calculateAverages :: [[Double]] -> [Double]
-calculateAverages rows = 
-    if null rows then []
-    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
-  where
-    transpose :: [[Double]] -> [[Double]]
-    transpose [] = []
-    transpose ([]:_) = []
-    transpose x = map head x : transpose (map tail x)
-
-processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of doubled evens: " ++ 
+        show (sumProcessed (*2) (filter even numbers))
