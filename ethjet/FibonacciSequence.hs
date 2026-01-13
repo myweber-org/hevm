@@ -1,27 +1,27 @@
 module FibonacciSequence where
 
-fibonacci :: Int -> Integer
-fibonacci n = fibs !! n
-  where fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-main :: IO ()
-main = do
-  putStrLn "First 20 Fibonacci numbers:"
-  mapM_ (print . fibonacci) [0..19]module FibonacciSequence where
-
 import Data.Function (fix)
 
 fibonacci :: Int -> Integer
-fibonacci = (map fib [0..] !!)
+fibonacci n = fibList !! n
   where
-    fib 0 = 0
-    fib 1 = 1
-    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+    fibList = 0 : 1 : zipWith (+) fibList (tail fibList)
 
 -- Alternative implementation using fix for memoization
-fibonacciMemoized :: Int -> Integer
-fibonacciMemoized = fix memoFib
+fibonacci' :: Int -> Integer
+fibonacci' = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))
+
+-- Fast doubling algorithm for O(log n) computation
+fibFastDoubling :: Int -> Integer
+fibFastDoubling n
+    | n < 0     = error "Negative input not supported"
+    | otherwise = fst (fibPair n)
   where
-    memoFib _ 0 = 0
-    memoFib _ 1 = 1
-    memoFib f n = f (n - 1) + f (n - 2)
+    fibPair 0 = (0, 1)
+    fibPair k =
+        let (a, b) = fibPair (k `div` 2)
+            c = a * (b * 2 - a)
+            d = a * a + b * b
+        in if even k
+            then (c, d)
+            else (d, c + d)
