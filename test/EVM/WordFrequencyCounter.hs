@@ -88,4 +88,39 @@ displayResults counts =
     unlines (map (\(word, count) -> word ++ ": " ++ show count) counts)
 
 processText :: String -> String
-processText = displayResults . countWords
+processText = displayResults . countWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        normalized = map toLower . filter isAlpha
+        freqMap = map (\ws -> (head ws, length ws)) . group . sort $ wordsList
+    in sortOn (Down . snd) freqMap
+
+filterByFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n
+
+displayFrequencies :: [WordFreq] -> String
+displayFrequencies freqs = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+processText :: String -> Int -> Int -> String
+processText text minFreq topN = 
+    let freqs = countWords text
+        filtered = filterByFrequency minFreq freqs
+        topWords = getTopNWords topN filtered
+    in displayFrequencies topWords
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world hello haskell world programming haskell functional programming"
+    putStrLn $ processText sampleText 1 5
