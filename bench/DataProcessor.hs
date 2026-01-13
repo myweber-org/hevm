@@ -98,4 +98,17 @@ validateInput xs = not (null xs) && all (>= -1000) xs && all (<= 1000) xs
 safeProcess :: [Int] -> Maybe Int
 safeProcess xs
     | validateInput xs = Just (sumProcessedData xs)
-    | otherwise = Nothing
+    | otherwise = Nothingmodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage _ [] = []
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m ys = take (length ys - m + 1) $ zipWith (const . take m) (tails ys) ys
+    
+    average :: Fractional a => [a] -> a
+    average vals = sum vals / fromIntegral (length vals)
