@@ -1,13 +1,15 @@
-
 module DataProcessor where
 
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
 processData :: [Int] -> [Int]
-processData = map (^2) . filter even
+processData = filterAndTransform (> 0) (* 2)
 
-sampleData :: [Int]
-sampleData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
 
-main :: IO ()
-main = do
-    let result = processData sampleData
-    putStrLn $ "Processed data: " ++ show result
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs
+  | validateInput xs = Just (processData xs)
+  | otherwise = Nothing
