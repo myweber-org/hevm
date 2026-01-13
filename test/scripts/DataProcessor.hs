@@ -4,38 +4,20 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processNumbers = filterAndTransform even (\x -> x * 2 + 1)
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
 
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>0) xs then Just xs else Nothing
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ 
-        show (sumProcessed (\x -> x * x) (filter even numbers))
+    let sampleData = [1..10]
+    case validateInput sampleData of
+        Just validData -> do
+            putStrLn $ "Original: " ++ show validData
+            putStrLn $ "Processed: " ++ show (processNumbers validData)
+            putStrLn $ "Sum: " ++ show (sumProcessed validData)
+        Nothing -> putStrLn "Invalid input: all numbers must be positive"
