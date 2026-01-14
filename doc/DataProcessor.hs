@@ -33,3 +33,21 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
+
+validateAndProcess :: [Int] -> Maybe [Int]
+validateAndProcess xs
+    | null xs   = Nothing
+    | otherwise = Just (processNumbers xs)
+
+main :: IO ()
+main = do
+    let sampleData = [1, -5, 3, -2, 4]
+    case validateAndProcess sampleData of
+        Nothing -> putStrLn "No valid data to process"
+        Just result -> do
+            putStrLn "Processed numbers:"
+            print result
