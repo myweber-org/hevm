@@ -1,37 +1,18 @@
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -7]
-    let result = processNumbers input
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) (processData xs)
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    putStrLn "Original list:"
-    print numbers
-    
-    putStrLn "\nSquares of even numbers:"
-    let squares = processEvenSquares numbers
-    print squares
-    
-    putStrLn "\nSum of squares:"
-    print $ sumProcessed (\x -> x * x) squares
+    let sampleData = [-3, 5, 0, 8, -1, 12]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Validation result: " ++ show (validateData sampleData)
