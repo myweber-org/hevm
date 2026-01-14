@@ -24,4 +24,15 @@ fibFastDoubling n
             d = a * a + b * b
         in if even k
             then (c, d)
-            else (d, c + d)
+            else (d, c + d)module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+printFibonacci :: Int -> IO ()
+printFibonacci n = do
+  putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
+  mapM_ (putStr . (++ " ") . show) (fibonacci n)
+  putStrLn ""
