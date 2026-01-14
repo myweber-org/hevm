@@ -72,4 +72,37 @@ main = do
     let input = [1..10]
     let result = processData input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\w -> length w == n) $ tails xs
+  where
+    avg ws = sum ws / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
+
+calculateTrend :: [Double] -> Maybe Double
+calculateTrend [] = Nothing
+calculateTrend [_] = Nothing
+calculateTrend values =
+    let n = fromIntegral $ length values
+        xSum = sum [0..n-1]
+        ySum = sum values
+        xySum = sum $ zipWith (*) values [0..]
+        xSqSum = sum $ map (^2) [0..n-1]
+        slope = (n * xySum - xSum * ySum) / (n * xSqSum - xSum * xSum)
+    in Just slope
+
+processDataset :: Int -> [Double] -> (Double, Double, [Double])
+processDataset window dataset =
+    let smoothed = smoothData window dataset
+        avgValue = if null smoothed then 0 else sum smoothed / fromIntegral (length smoothed)
+        trend = maybe 0 id (calculateTrend smoothed)
+    in (avgValue, trend, smoothed)
