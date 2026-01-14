@@ -105,4 +105,16 @@ processDataset window dataset =
     let smoothed = smoothData window dataset
         avgValue = if null smoothed then 0 else sum smoothed / fromIntegral (length smoothed)
         trend = maybe 0 id (calculateTrend smoothed)
-    in (avgValue, trend, smoothed)
+    in (avgValue, trend, smoothed)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
+
+combineResults :: [Int] -> [Int] -> [Int]
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)
