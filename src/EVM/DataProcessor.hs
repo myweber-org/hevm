@@ -27,4 +27,20 @@ main = do
     let input = [1..10]
     let result = processData input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles xs = 
+    let processed = processNumbers xs
+    in sum processed
