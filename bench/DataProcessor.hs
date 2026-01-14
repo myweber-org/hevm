@@ -52,3 +52,39 @@ main = do
             let result = processData validData
             putStrLn $ "Processed data: " ++ show result
         Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Process a list of strings: validate and transform
+processData :: [String] -> [String]
+processData = map processItem
+  where
+    processItem str
+      | validateNumeric str = "NUMERIC: " ++ str
+      | validateAlpha str = "ALPHA: " ++ toUppercase str
+      | otherwise = "MIXED: " ++ str
+
+-- Format processed data as a single string
+formatOutput :: [String] -> String
+formatOutput items = intercalate "\n" items
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let testData = ["123", "abc", "a1b2c3", "HELLO", "456def"]
+  let processed = processData testData
+  putStrLn $ formatOutput processed
