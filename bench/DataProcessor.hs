@@ -87,4 +87,17 @@ exampleUsage :: IO ()
 exampleUsage = do
   let testData = ["123", "abc", "a1b2c3", "HELLO", "456def"]
   let processed = processData testData
-  putStrLn $ formatOutput processed
+  putStrLn $ formatOutput processedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (\x -> x * x + 1)
+
+main :: IO ()
+main = do
+    let input = [1..10]
+    let result = processData input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
