@@ -9,4 +9,9 @@ fibonacci n
                   in take (fromIntegral n) fibs
 
 fibonacciUpTo :: Integer -> [Integer]
-fibonacciUpTo limit = takeWhile (<= limit) (fibonacci (limit + 1))
+fibonacciUpTo limit = takeWhile (<= limit) (fibonacci (limit + 1))module FibonacciSequence where
+
+fibonacci :: Int -> [Int]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
