@@ -57,4 +57,22 @@ main = do
     input <- getContents
     let frequencies = countWords input
     putStrLn "\nWord frequencies (sorted by most common):"
-    putStr $ formatOutput frequencies
+    putStr $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords = Map.fromListWith (+) . map (\w -> (w, 1)) . words . map toLower
+
+sortByFrequency :: Map String Int -> [(String, Int)]
+sortByFrequency = sortOn (\(_, count) -> negate count) . Map.toList
+
+main :: IO ()
+main = do
+    input <- getContents
+    let frequencies = countWords input
+    let sorted = sortByFrequency frequencies
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) sorted
