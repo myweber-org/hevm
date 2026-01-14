@@ -123,4 +123,34 @@ wordFrequencyReport text = unlines $
   map formatEntry (topNWords 10 text)
   where
     counts = countWords text
-    formatEntry (word, count) = "  " ++ word ++ ": " ++ show count
+    formatEntry (word, count) = "  " ++ word ++ ": " ++ show countmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower wordsList
+        grouped = groupCount cleaned
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+    groupCount [] = []
+    groupCount (w:ws) = 
+        let (matches, rest) = span (== w) (w:ws)
+        in (w, length matches) : groupCount rest
+
+displayCounts :: [WordCount] -> String
+displayCounts counts = unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    let counts = countWords input
+    putStrLn "\nTop 10 most frequent words:"
+    putStrLn $ displayCounts counts
