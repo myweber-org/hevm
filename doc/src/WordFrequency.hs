@@ -83,4 +83,30 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! This is a test. Hello again world. Testing testing one two three."
     let frequencies = countWords sampleText
-    printWordCounts frequencies
+    printWordCounts frequenciesmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countHelper [] wordsList
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+displayResults :: [WordCount] -> String
+displayResults counts = 
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
+
+analyzeText :: String -> String
+analyzeText = displayResults . countWords
