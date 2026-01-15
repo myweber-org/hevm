@@ -1,36 +1,48 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
 
-main :: IO ()
-main = do
-    let numbers = [-5, 3, 0, 8, -2, 10]
-    let result = processNumbers numbers
-    print resultmodule DataProcessor where
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+-- Process a list of strings with validation and transformation
+processData :: [String] -> [String]
+processData = map processItem
+  where
+    processItem str
+      | validateNumeric str = "NUMERIC: " ++ normalizePhone str
+      | validateAlpha str   = "ALPHA: " ++ toUppercase str
+      | otherwise          = "MIXED: " ++ str
 
-main :: IO ()
-main = do
-    let sampleData = [1, -5, 3, 0, 8, -2]
-    case validateInput sampleData of
-        Just validData -> do
-            putStrLn $ "Original: " ++ show validData
-            putStrLn $ "Processed: " ++ show (processNumbers validData)
-            putStrLn $ "Sum: " ++ show (sumProcessed validData)
-        Nothing -> putStrLn "Input contains invalid numbers"
+-- Combine multiple strings with a separator
+combineWithSeparator :: String -> [String] -> String
+combineWithSeparator sep = intercalate sep . filter (not . null)
+
+-- Safe head function with default value
+safeHead :: a -> [a] -> a
+safeHead def [] = def
+safeHead _ (x:_) = x
+
+-- Calculate average of a list of numbers
+average :: [Double] -> Double
+average [] = 0
+average xs = sum xs / fromIntegral (length xs)
