@@ -1,18 +1,43 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isAlpha, isDigit, toLower)
+import Data.List (intercalate)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+type Username = String
+type Email = String
+type UserData = (Username, Email)
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+validateUsername :: Username -> Bool
+validateUsername name = 
+    let len = length name
+        validChars = all (\c -> isAlpha c || isDigit c || c `elem` "_-") name
+    in len >= 3 && len <= 20 && validChars
 
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
+validateEmail :: Email -> Bool
+validateEmail email =
+    let parts = splitOn '@' email
+        hasAt = length parts == 2
+        [local, domain] = if hasAt then parts else ["", ""]
+        validLocal = not (null local) && all (\c -> isAlpha c || isDigit c || c `elem` "._%+-") local
+        validDomain = '.' `elem` domain && all (\c -> isAlpha c || isDigit c || c `elem` ".-") domain
+    in hasAt && validLocal && validDomain
+
+normalizeUsername :: Username -> Username
+normalizeUsername = map toLower . filter (/= ' ')
+
+formatUserDisplay :: UserData -> String
+formatUserDisplay (name, email) =
+    intercalate " | " ["User: " ++ name, "Email: " ++ email]
+
+processUserInput :: Username -> Email -> Maybe String
+processUserInput rawName rawEmail
+    | not (validateUsername rawName) = Nothing
+    | not (validateEmail rawEmail) = Nothing
+    | otherwise = Just $ formatUserDisplay (normalizedName, rawEmail)
+    where normalizedName = normalizeUsername rawName
+
+splitOn :: Char -> String -> [String]
+splitOn delimiter = foldr (\c acc -> 
+    if c == delimiter 
+    then []:acc 
+    else (c:head acc):tail acc) [[]]
