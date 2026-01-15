@@ -5,21 +5,10 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-module DataProcessor where
+processNumbers = filterAndTransform even (* 2)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = 
-    if all (\x -> x >= -100 && x <= 100) xs
-    then Just xs
-    else Nothing
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
