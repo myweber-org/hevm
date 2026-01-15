@@ -90,4 +90,13 @@ countUniqueWords = length . group . sort . map normalize . words
     toLower c
         | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
         | otherwise = c
-    isPunctuation c = c `elem` ".,!?;:\"'"
+    isPunctuation c = c `elem` ".,!?;:\"'"module WordCounter (countWords) where
+
+import Data.Char (isSpace)
+
+countWords :: String -> Int
+countWords str = length $ filter (not . null) $ splitWords str
+  where
+    splitWords :: String -> [String]
+    splitWords = words . map normalizeSpace
+    normalizeSpace c = if isSpace c then ' ' else c
