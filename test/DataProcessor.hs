@@ -1,48 +1,46 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Maybe
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+type CSVRow = [String]
+type CSVData = [CSVRow]
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show result
-module DataProcessor where
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+filterByDateRange :: CSVData -> String -> String -> CSVData
+filterByDateRange rows startStr endStr = 
+    let maybeStart = parseDate startStr
+        maybeEnd = parseDate endStr
+        header = take 1 rows
+        dataRows = drop 1 rows
+    in case (maybeStart, maybeEnd) of
+        (Just startDay, Just endDay) -> 
+            header ++ filter (isWithinRange startDay endDay) dataRows
+        _ -> rows
+    where
+        isWithinRange startDay endDay row =
+            case parseDate (head row) of
+                Just day -> day >= startDay && day <= endDay
+                Nothing -> False
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+calculateAverage :: CSVData -> String -> Maybe Double
+calculateAverage rows columnName =
+    case findIndex (== columnName) (head rows) of
+        Just idx -> 
+            let values = mapMaybe (safeRead . (!! idx)) (drop 1 rows)
+            in if null values 
+                then Nothing 
+                else Just (sum values / fromIntegral (length values))
+        Nothing -> Nothing
+    where
+        safeRead s = case reads s of
+            [(x, "")] -> Just x
+            _ -> Nothing
 
-validateData :: [Int] -> Bool
-validateData = all (> 0) . processData
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedList :: [Int] -> Int
-sumProcessedList = sum . processEvenSquares
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
+formatOutput :: CSVData -> String
+formatOutput = unlines . map (intercalate ",")
