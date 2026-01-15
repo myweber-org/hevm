@@ -13,4 +13,10 @@ main :: IO ()
 main = do
     let numbers = [1..10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = map (^2) . filter even
+
+-- Example usage:
+-- processEvenSquares [1,2,3,4,5,6] -> [4,16,36]
