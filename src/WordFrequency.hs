@@ -1,20 +1,31 @@
 module WordFrequency where
 
-import qualified Data.Map.Strict as Map
-import Data.Char (isAlpha, toLower)
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
 
-countWords :: String -> Map.Map String Int
-countWords text = Map.fromListWith (+) wordCounts
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        grouped = foldr countWord [] cleaned
+    in sortOn (Down . snd) grouped
   where
-    words' = filter (not . null) $ map cleanWord $ words text
-    cleanWord = map toLower . filter isAlpha
-    wordCounts = zip words' (repeat 1)
+    cleanWord = filter isAlpha
+    countWord w [] = [(w, 1)]
+    countWord w ((x, n):xs)
+        | w == x = (x, n+1) : xs
+        | otherwise = (x, n) : countWord w xs
 
-displayFrequency :: Map.Map String Int -> String
-displayFrequency freqMap = unlines formatted
-  where
-    sorted = Map.toDescList freqMap
-    formatted = map (\(word, count) -> word ++ ": " ++ show count) sorted
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
 
-analyzeText :: String -> String
-analyzeText text = displayFrequency $ countWords text
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when finished):"
+    input <- getContents
+    let frequencies = countWords input
+    putStrLn "\nWord frequencies (sorted by count):"
+    putStrLn $ formatOutput frequencies
