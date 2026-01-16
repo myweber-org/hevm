@@ -72,4 +72,16 @@ main = do
         Just validData -> do
             let result = sumProcessedData validData
             putStrLn $ "Sum of processed data: " ++ show result
-        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"
+        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>0) xs then Just xs else Nothing
