@@ -2,21 +2,13 @@
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transform = map transform . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
-
-main :: IO ()
-main = do
-    let sampleData = [-5, 2, 0, 8, -3, 10]
-    if validateInput sampleData
-        then do
-            putStrLn "Original data:"
-            print sampleData
-            putStrLn "Processed data (positive numbers doubled):"
-            print $ processData sampleData
-        else putStrLn "Input validation failed"
+sumProcessedList :: [Int] -> Int
+sumProcessedList = foldl' (+) 0 . processEvenSquares
+  where
+    foldl' f acc [] = acc
+    foldl' f acc (x:xs) = foldl' f (f acc x) xs
