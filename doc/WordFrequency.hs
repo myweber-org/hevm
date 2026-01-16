@@ -178,3 +178,43 @@ displayTopWords n text = do
 
 sampleText :: String
 sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello back."
+module TextUtils.WordFrequency where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Ord (Down(..))
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+topNWords :: Int -> WordCount -> [(String, Int)]
+topNWords n = take n . sortOn (Down . snd) . Map.toList
+
+wordFrequencyReport :: Int -> String -> String
+wordFrequencyReport n text =
+  let counts = countWords text
+      topWords = topNWords n counts
+      totalWords = sum (Map.elems counts)
+      uniqueWords = Map.size counts
+  in unlines $
+       [ "Text Analysis Report"
+       , "==================="
+       , "Total words: " ++ show totalWords
+       , "Unique words: " ++ show uniqueWords
+       , ""
+       , "Top " ++ show n ++ " most frequent words:"
+       ] ++
+       map (\(word, count) -> word ++ ": " ++ show count) topWords
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+  putStrLn $ wordFrequencyReport 10 text
+  let counts = countWords text
+  putStrLn $ "Word density: " ++ show (fromIntegral (Map.size counts) / fromIntegral (sum (Map.elems counts)) :: Double)
