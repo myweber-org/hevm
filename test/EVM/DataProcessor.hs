@@ -22,4 +22,11 @@ main = do
     let sampleData = [1, -2, 3, 0, 5, -8]
     if validateInput sampleData
         then print $ processData sampleData
-        else putStrLn "Invalid input data"
+        else putStrLn "Invalid input data"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
