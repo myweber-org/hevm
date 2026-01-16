@@ -21,4 +21,30 @@ analyzeText text = do
   putStrLn "Top 10 most frequent words:"
   mapM_ printWord (topNWords 10 text)
   where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
+
+import qualified Data.Map as Map
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: [String] -> FrequencyMap
+countWords = foldr (\word -> Map.insertWith (+) word 1) Map.empty
+
+getTopFrequencies :: Int -> FrequencyMap -> [(String, Int)]
+getTopFrequencies n freqMap = 
+    take n $ sortOn (Down . snd) $ Map.toList freqMap
+
+analyzeText :: String -> Int -> [(String, Int)]
+analyzeText text n = 
+    let wordsList = words text
+        freqMap = countWords wordsList
+    in getTopFrequencies n freqMap
+
+displayAnalysis :: String -> Int -> IO ()
+displayAnalysis text n = do
+    putStrLn $ "Top " ++ show n ++ " most frequent words:"
+    mapM_ (\(word, count) -> 
+        putStrLn $ "  " ++ word ++ ": " ++ show count) 
+        (analyzeText text n)
