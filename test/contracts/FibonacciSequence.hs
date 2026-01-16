@@ -1,6 +1,13 @@
 module FibonacciSequence where
 
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
+fibonacci :: Int -> Integer
+fibonacci = (map fib [0..] !!)
   where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+
+main :: IO ()
+main = do
+  putStrLn "First 20 Fibonacci numbers:"
+  mapM_ (print . fibonacci) [0..19]
