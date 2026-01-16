@@ -9,20 +9,29 @@ type WordCount = (String, Int)
 countWords :: String -> [WordCount]
 countWords text = 
     let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleaned = map toLower wordsList
-        grouped = foldr countHelper [] cleaned
-    in take 10 $ sortOn (Down . snd) grouped
+        cleanedWords = filter (all isAlpha) wordsList
+        wordMap = foldl countWord emptyMap cleanedWords
+    in take 10 $ sortOn (Down . snd) $ toList wordMap
   where
-    cleanWord = filter isAlpha
-    countHelper word [] = [(word, 1)]
-    countHelper word ((w, c):rest)
-        | word == w = (w, c + 1) : rest
-        | otherwise = (w, c) : countHelper word rest
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    
+    emptyMap = []
+    
+    countWord :: [WordCount] -> String -> [WordCount]
+    countWord [] word = [(word, 1)]
+    countWord ((w, c):rest) word
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord rest word
+    
+    toList = id
 
-displayResults :: [WordCount] -> String
-displayResults counts = 
-    "Top 10 most frequent words:\n" ++
-    unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
+printWordFrequencies :: String -> IO ()
+printWordFrequencies text = do
+    let frequencies = countWords text
+    putStrLn "Top 10 most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
 
-analyzeText :: String -> String
-analyzeText = displayResults . countWords
+processTextFile :: FilePath -> IO ()
+processTextFile filePath = do
+    content <- readFile filePath
+    printWordFrequencies content
