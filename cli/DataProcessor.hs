@@ -74,4 +74,16 @@ processCSVData :: String -> Int -> Either String (String, Double)
 processCSVData input colIndex = do
     parsed <- parseCSV input
     avg <- calculateColumnAverage parsed colIndex
-    return (formatCSVOutput parsed, avg)
+    return (formatCSVOutput parsed, avg)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-3, 1, 0, 5, -2, 8]
+    let result = processNumbers numbers
+    print result
