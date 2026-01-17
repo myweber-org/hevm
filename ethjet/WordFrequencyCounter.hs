@@ -57,4 +57,41 @@ processText text minFreq topN =
     let counts = countWords text
         filtered = filterByMinFrequency minFreq counts
         topWords = getTopNWords topN filtered
-    in formatOutput topWords
+    in formatOutput topWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFrequency = Map String Int
+
+countWords :: String -> WordFrequency
+countWords text = foldr incrementWord Map.empty (words processedText)
+  where
+    processedText = map normalizeChar text
+    normalizeChar c
+        | isAlpha c = toLower c
+        | otherwise = ' '
+    
+    incrementWord word freqMap = Map.insertWith (+) word 1 freqMap
+
+getTopWords :: Int -> WordFrequency -> [(String, Int)]
+getTopWords n freqMap = take n $ sortOn (\(_, count) -> negate count) $ Map.toList freqMap
+
+analyzeText :: String -> Int -> [(String, Int)]
+analyzeText text n = getTopWords n $ countWords text
+
+displayAnalysis :: String -> Int -> IO ()
+displayAnalysis text n = do
+    putStrLn "Top words by frequency:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
+  where
+    topWords = analyzeText text n
+
+-- Example usage
+sampleText :: String
+sampleText = "Hello world! Hello Haskell. Haskell is functional. World of Haskell."
+
+main :: IO ()
+main = displayAnalysis sampleText 3
