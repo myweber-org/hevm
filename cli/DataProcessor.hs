@@ -1,15 +1,19 @@
 
 module DataProcessor where
 
-processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
 
-validateData :: [Int] -> Bool
-validateData xs = all (>0) xs && length xs <= 100
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
 
 main :: IO ()
 main = do
-    let sample = [1, -2, 3, -4, 5]
-    putStrLn $ "Original: " ++ show sample
-    putStrLn $ "Processed: " ++ show (processData sample)
-    putStrLn $ "Validation: " ++ show (validateData (processData sample))
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of even squares: " ++ show (sumProcessed numbers)
