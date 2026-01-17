@@ -20,3 +20,10 @@ main = do
             putStrLn "Processed data (positive numbers doubled):"
             print $ processData validData
         Nothing -> putStrLn "Input contains values less than -100"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
