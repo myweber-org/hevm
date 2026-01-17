@@ -96,3 +96,37 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Record = (String, Double)
+
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case splitOn "," line of
+    [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+    _ -> Nothing
+
+parseCSV :: String -> [Record]
+parseCSV = mapMaybe parseCSVLine . lines
+
+calculateAverage :: [Record] -> Double
+calculateAverage records
+    | null records = 0.0
+    | otherwise = total / count
+  where
+    total = sum $ map snd records
+    count = fromIntegral $ length records
+
+filterByThreshold :: Double -> [Record] -> [Record]
+filterByThreshold threshold = filter (\(_, value) -> value >= threshold)
+
+processCSVData :: String -> Double -> (Double, [Record])
+processCSVData csvContent threshold =
+    let records = parseCSV csvContent
+        average = calculateAverage records
+        filtered = filterByThreshold threshold records
+    in (average, filtered)
