@@ -46,4 +46,17 @@ main = do
     let testData = [["123", "abc"], ["456", "def"]]
     case processDataFile testData of
         Left err -> putStrLn $ "Error: " ++ err
-        Right result -> putStrLn result
+        Right result -> putStrLn resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
