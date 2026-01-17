@@ -46,4 +46,16 @@ exampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     (Node 6 Empty Empty)
-                    Empty)
+                    Empty)module BinaryTreeTraversal where
+
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
+
+inOrderIterative :: BinaryTree a -> [a]
+inOrderIterative tree = go [] tree []
+  where
+    go stack Empty result =
+        case stack of
+            [] -> reverse result
+            (Node val left right):rest -> go rest right (val:result)
+    go stack (Node val left right) result =
+        go (Node val left right:stack) left result
