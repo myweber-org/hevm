@@ -1,11 +1,5 @@
 module FibonacciSequence where
 
-fibonacci :: Integer -> Integer
-fibonacci n
-    | n <= 0    = 0
-    | n == 1    = 1
-    | otherwise = fibonacci (n - 1) + fibonacci (n - 2)module FibonacciSequence where
-
 import Data.Function (fix)
 
 fibonacci :: Int -> Integer
