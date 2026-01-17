@@ -1,39 +1,25 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.Char (isDigit, toUpper)
+import Data.List (intercalate)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+-- Validate if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
+-- Transform a string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>0) xs then Just xs else Nothing
+-- Process a list of strings: validate and transform valid entries
+processData :: [String] -> [String]
+processData = map toUppercase . filter validateDigits
 
-main :: IO ()
-main = do
-    let sampleData = [1, 2, 3, 4, 5, 6]
-    case validateInput sampleData of
-        Just validData -> do
-            putStrLn $ "Original data: " ++ show validData
-            putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
-            putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
-module DataProcessor where
+-- Format processed data as a comma-separated string
+formatOutput :: [String] -> String
+formatOutput = intercalate ", "
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+-- Main processing pipeline
+pipeline :: [String] -> String
+pipeline = formatOutput . processData
