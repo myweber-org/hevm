@@ -43,3 +43,10 @@ safeProcessData :: [Int] -> Maybe [Int]
 safeProcessData xs
     | validateInput xs = Just (processData xs)
     | otherwise = Nothing
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (* 2)
