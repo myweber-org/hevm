@@ -57,4 +57,16 @@ exampleUsage = do
     let sampleData = ["123", "abc", "456 def", "789", "  "]
     let processed = processData sampleData
     putStrLn $ "Original: " ++ formatList sampleData
-    putStrLn $ "Processed: " ++ formatList processed
+    putStrLn $ "Processed: " ++ formatList processedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processNumbers input
+    print result
