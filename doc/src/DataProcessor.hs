@@ -1,29 +1,10 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = foldl' (+) 0 . map processor
-  where foldl' f acc []     = acc
-        foldl' f acc (x:xs) = foldl' f (f acc x) xs
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>0) xs then Just xs else Nothingmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
 processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
+processData = map (^2) . filter (>0)
 
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+validateData :: [Int] -> Bool
+validateData xs = all (>=0) (processData xs)
+
+sampleData :: [Int]
+sampleData = [1, -5, 3, 0, 8, -2]
