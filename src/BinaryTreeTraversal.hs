@@ -33,4 +33,16 @@ exampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     (Node 6 Empty Empty)
-                    Empty)
+                    Empty)data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
+
+inorder :: BinaryTree a -> [a]
+inorder Leaf = []
+inorder (Node left val right) = inorder left ++ [val] ++ inorder right
+
+preorder :: BinaryTree a -> [a]
+preorder Leaf = []
+preorder (Node left val right) = [val] ++ preorder left ++ preorder right
+
+postorder :: BinaryTree a -> [a]
+postorder Leaf = []
+postorder (Node left val right) = postorder left ++ postorder right ++ [val]
