@@ -1,34 +1,29 @@
 module WordFrequencyCounter where
 
+import qualified Data.Char as Char
+import qualified Data.List as List
 import qualified Data.Map.Strict as Map
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
+import qualified System.Environment as Env
 
 type WordCount = Map.Map String Int
 
 countWords :: String -> WordCount
-countWords = foldr incrementWord Map.empty . words
+countWords = foldr incrementWord Map.empty . words . normalize
   where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
+    normalize = map Char.toLower . filter (\c -> Char.isAlpha c || Char.isSpace c)
+    incrementWord word = Map.insertWith (+) word 1
 
-topNWords :: Int -> WordCount -> [(String, Int)]
-topNWords n = take n . sortOn (Down . snd) . Map.toList
-
-printWordFrequencies :: [(String, Int)] -> IO ()
-printWordFrequencies = mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c)
-
-processText :: String -> IO ()
-processText text = do
-  let counts = countWords text
-      topWords = topNWords 10 counts
-  putStrLn "Top 10 most frequent words:"
-  printWordFrequencies topWords
-  putStrLn $ "\nTotal unique words: " ++ show (Map.size counts)
+formatResults :: WordCount -> String
+formatResults = unlines . map formatItem . List.sortOn (negate . snd) . Map.toList
+  where
+    formatItem (word, count) = word ++ ": " ++ show count
 
 main :: IO ()
 main = do
-  putStrLn "Enter text (press Ctrl+D on empty line to finish):"
-  input <- getContents
-  processText input
+    args <- Env.getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <text>"
+        textPieces -> do
+            let text = unwords textPieces
+            putStrLn "Word frequencies:"
+            putStrLn $ formatResults $ countWords text
