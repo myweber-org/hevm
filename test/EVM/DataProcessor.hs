@@ -1,13 +1,14 @@
+
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
+processData = filterAndTransform (> 0) (* 2)
 
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    print result
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -1000) xs then Just xs else Nothing
