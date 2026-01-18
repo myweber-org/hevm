@@ -68,4 +68,50 @@ main = do
         (filename:_) -> do
             content <- readFile filename
             let frequencies = countWords content
-            putStrLn $ formatOutput frequencies
+            putStrLn $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+cleanWord :: String -> String
+cleanWord = map toLower . takeWhile isAlpha . dropWhile (not . isAlpha)
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+sortAlphabetically :: [WordCount] -> [WordCount]
+sortAlphabetically = sortOn fst
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n . sortByFrequency
+
+analyzeText :: String -> Int -> Int -> [WordCount]
+analyzeText text minFreq topN =
+    let counted = countWords text
+        filtered = filterByMinFrequency minFreq counted
+    in getTopNWords topN filtered
+
+formatResults :: [WordCount] -> String
+formatResults counts =
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> Int -> Int -> IO ()
+processText text minFreq topN = do
+    let results = analyzeText text minFreq topN
+    putStrLn "Word Frequency Analysis:"
+    putStrLn "========================"
+    putStrLn $ formatResults results
+    putStrLn $ "Total unique words: " ++ show (length results)
