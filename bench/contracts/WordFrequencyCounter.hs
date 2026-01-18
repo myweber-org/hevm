@@ -75,4 +75,43 @@ processText = formatOutput . countWords
 main :: IO ()
 main = do
     input <- getContents
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type WordCount = Map.Map T.Text Int
+
+countWords :: T.Text -> WordCount
+countWords text =
+    let wordsList = T.words $ T.toLower $ T.filter (\c -> Char.isAlpha c || Char.isSpace c) text
+    in Map.fromListWith (+) [(w, 1) | w <- wordsList]
+
+readAndCount :: FilePath -> IO WordCount
+readAndCount filePath = do
+    content <- TIO.readFile filePath
+    return $ countWords content
+
+printTopWords :: Int -> WordCount -> IO ()
+printTopWords n wordMap = do
+    let sorted = List.sortOn (\(_, count) -> negate count) $ Map.toList wordMap
+        topN = take n sorted
+    mapM_ (\(word, count) -> TIO.putStrLn $ T.pack (show count) <> " " <> word) topN
+
+processFile :: FilePath -> Int -> IO ()
+processFile filePath n = do
+    counts <- readAndCount filePath
+    putStrLn $ "Top " ++ show n ++ " words in " ++ filePath ++ ":"
+    printTopWords n counts
+
+main :: IO ()
+main = do
+    putStrLn "Enter file path:"
+    filePath <- getLine
+    putStrLn "Enter number of top words to display:"
+    nStr <- getLine
+    let n = read nStr :: Int
+    processFile filePath n
