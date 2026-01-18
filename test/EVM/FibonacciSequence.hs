@@ -14,4 +14,9 @@ fibonacciUpTo limit = takeWhile (<= limit) (fibonacci (limit + 1))module Fibonac
 fibonacci :: Int -> [Int]
 fibonacci n = take n fibs
   where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
+
+fibonacci :: Int -> [Int]
+fibonacci n = take n fibs
+  where
     fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
