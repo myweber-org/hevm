@@ -1,5 +1,5 @@
 
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show)
 
 treeDepth :: BinaryTree a -> Int
 treeDepth Empty = 0
