@@ -4,11 +4,13 @@ module DataProcessor where
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+sumProcessed :: (Int -> Int) -> [Int] -> Int
+sumProcessed processor = foldl' (+) 0 . map processor
+  where foldl' f acc []     = acc
+        foldl' f acc (x:xs) = foldl' f (f acc x) xs
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>0) xs then Just xs else Nothing
