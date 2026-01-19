@@ -104,4 +104,40 @@ sampleAnalysis :: IO ()
 sampleAnalysis = do
     let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
     let results = analyzeText sampleText 1 5
-    displayResults results
+    displayResults resultsmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified System.Environment as Env
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = filter Char.isAlpha . map Char.toLower
+
+formatResults :: WordCount -> String
+formatResults = unlines . map formatEntry . List.sortOn (negate . snd) . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+processFile :: FilePath -> IO ()
+processFile path = do
+    content <- readFile path
+    putStrLn $ formatResults $ countWords content
+
+processStdin :: IO ()
+processStdin = do
+    content <- getContents
+    putStrLn $ formatResults $ countWords content
+
+main :: IO ()
+main = do
+    args <- Env.getArgs
+    case args of
+        [] -> processStdin
+        [file] -> processFile file
+        _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no file given)"
