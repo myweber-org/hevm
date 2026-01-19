@@ -7,4 +7,23 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+    
+    avg :: [Double] -> Double
+    avg ys = sum ys / fromIntegral (length ys)
+
+smoothData :: [Double] -> [Double]
+smoothData = movingAverage 3
+
+calculateTrend :: [Double] -> Maybe Double
+calculateTrend [] = Nothing
+calculateTrend xs = Just (last xs - head xs)
