@@ -1,20 +1,23 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) $ transpose rows
+  where
+    transpose :: [[a]] -> [[a]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose x = map head x : transpose (map tail x)
 
-main :: IO ()
-main = do
-    let sampleData = [1, -5, 3, 0, 8, -2]
-    case validateInput sampleData of
-        Just validData -> do
-            let result = processData validData
-            putStrLn $ "Processed data: " ++ show result
-        Nothing -> putStrLn "Invalid input data"
+processCSVData :: String -> Maybe [Double]
+processCSVData csv = 
+    let parsed = parseCSV csv
+    in if all (\row -> length row == length (head parsed)) parsed
+       then Just $ calculateAverages parsed
+       else Nothing
