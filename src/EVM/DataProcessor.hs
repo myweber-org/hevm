@@ -38,4 +38,28 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform even (\x -> x * 2 + 1)
 
 sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (\x -> x >= -100 && x <= 100) xs
+                   then Just xs
+                   else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 4, -5, 6]
+    case validateInput sampleData of
+        Just validData -> do
+            putStrLn $ "Original: " ++ show validData
+            putStrLn $ "Processed: " ++ show (processNumbers validData)
+            putStrLn $ "Sum: " ++ show (sumProcessed validData)
+        Nothing -> putStrLn "Input validation failed"
