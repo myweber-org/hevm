@@ -8,43 +8,16 @@ import Data.Ord (Down(..))
 type FrequencyMap = Map.Map String Int
 
 countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
+countWords = foldr insertWord Map.empty . words
   where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
+    insertWord w = Map.insertWith (+) (normalize w) 1
     normalize = map toLower . filter isAlpha
 
-topWords :: Int -> String -> [(String, Int)]
-topWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
 
 displayFrequencies :: [(String, Int)] -> String
-displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)module WordFrequency where
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
-import Data.Ord (Down(..))
-
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map clean $ words text
-        cleaned = map (map toLower) wordsList
-        grouped = group $ sort cleaned
-        counts = map (\ws -> (head ws, length ws)) grouped
-    in sortOn (Down . snd) counts
-  where
-    clean = filter isAlpha
-
-formatOutput :: [WordCount] -> String
-formatOutput counts = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
-
-processText :: String -> String
-processText = formatOutput . countWords
-
-main :: IO ()
-main = do
-    putStrLn "Enter text to analyze word frequency:"
-    input <- getContents
-    putStrLn "\nWord frequencies:"
-    putStrLn $ processText input
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequencies . topNWords n
