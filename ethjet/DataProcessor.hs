@@ -30,4 +30,17 @@ sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -1000) xs then Just xs else Nothing
+validateInput xs = if all (> -1000) xs then Just xs else Nothingmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (>0) (*2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, 0, 5, -7]
+    let result = processNumbers input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
