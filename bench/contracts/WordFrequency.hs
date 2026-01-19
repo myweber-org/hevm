@@ -49,4 +49,35 @@ main = do
     input <- getContents
     let frequencies = countWords input
     putStrLn "\nWord frequencies:"
-    putStrLn $ formatOutput frequencies
+    putStrLn $ formatOutput frequenciesmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type Histogram = [(String, Int)]
+
+wordFrequency :: String -> Histogram
+wordFrequency text =
+  let words' = filter (not . null) $ map clean $ words text
+      cleaned = map (map toLower) words'
+      grouped = group $ sort cleaned
+      counts = map (\ws -> (head ws, length ws)) grouped
+  in sortOn (Down . snd) counts
+  where
+    clean = filter isAlpha
+
+printHistogram :: Histogram -> IO ()
+printHistogram freq = do
+  putStrLn "Word Frequency Histogram:"
+  putStrLn "=========================="
+  mapM_ (\(word, count) -> 
+    putStrLn $ word ++ ": " ++ replicate count '*') freq
+  putStrLn "=========================="
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+  let freq = wordFrequency text
+  putStrLn $ "Total unique words: " ++ show (length freq)
+  putStrLn $ "Most frequent word: " ++ fst (head freq)
+  printHistogram $ take 10 freq
