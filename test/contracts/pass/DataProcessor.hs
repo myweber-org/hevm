@@ -61,3 +61,24 @@ sumProcessed = sum . processNumbers
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats [] = (0, 0, 0.0)
+calculateStats xs = (minimum xs, maximum xs, average)
+  where
+    total = sum xs
+    count = length xs
+    average = fromIntegral total / fromIntegral count
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+  | null xs = Nothing
+  | any (< 0) xs = Nothing
+  | otherwise = Just xs
