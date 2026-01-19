@@ -1,5 +1,4 @@
-
-module PrimeFactors (primeFactors) where
+module PrimeFactors where
 
 primeFactors :: Integer -> [Integer]
 primeFactors n = factors n 2
