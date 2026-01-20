@@ -1,7 +1,6 @@
 module FibonacciSequence where
 
-fibonacci :: Int -> Integer
-fibonacci n
-    | n <= 0    = 0
-    | n == 1    = 1
-    | otherwise = fibonacci (n - 1) + fibonacci (n - 2)
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
