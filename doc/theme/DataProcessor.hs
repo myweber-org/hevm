@@ -1,14 +1,10 @@
-
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
 
-validateData :: [Int] -> Bool
-validateData xs = all (> 0) xs && length xs > 3
-
-combineData :: [Int] -> [Int] -> [Int]
-combineData xs ys = zipWith (+) (processData xs) (processData ys)
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
