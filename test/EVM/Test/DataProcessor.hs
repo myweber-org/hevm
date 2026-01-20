@@ -1,43 +1,24 @@
-
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * 2 + 1)
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs
-    | null xs = Nothing
-    | any (< 0) xs = Nothing
-    | otherwise = Just xs
+validateInput [] = Nothing
+validateInput xs = Just xs
 
 main :: IO ()
 main = do
     let sampleData = [1..10]
     case validateInput sampleData of
-        Just validData -> do
-            putStrLn "Original data:"
-            print validData
-            putStrLn "Processed data (even numbers doubled and incremented):"
-            print $ processData validData
-        Nothing -> putStrLn "Invalid input data"
+        Nothing -> putStrLn "No data to process"
+        Just data' -> do
+            putStrLn $ "Original data: " ++ show data'
+            putStrLn $ "Even squares: " ++ show (processEvenSquares data')
+            putStrLn $ "Sum of even squares: " ++ show (sumProcessedData even (\x -> x * x) data')
