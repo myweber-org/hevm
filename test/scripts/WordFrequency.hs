@@ -122,3 +122,45 @@ formatResults counts = unlines $
 
 processText :: String -> String
 processText = formatResults . countWords
+module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+import Control.Arrow ((&&&))
+
+type WordCount = (String, Int)
+
+histogramBar :: Int -> Int -> String
+histogramBar count maxCount = 
+    let width = 50
+        scaled = if maxCount > 0 then count * width `div` maxCount else 0
+    in replicate scaled '█' ++ replicate (width - scaled) ' '
+
+analyzeText :: String -> [WordCount]
+analyzeText text = 
+    let words' = filter (not . null) $ map normalize $ words text
+        normalized = map toLower . filter isAlpha
+        groups = group . sort $ words'
+        counts = map (head &&& length) groups
+    in take 10 $ sortOn (Down . snd) counts
+  where
+    normalize = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+displayHistogram :: [WordCount] -> IO ()
+displayHistogram counts = 
+    let maxCount = maximum (map snd counts)
+        padTo n str = str ++ replicate (n - length str) ' '
+        maxWordLength = maximum (map (length . fst) counts)
+    in mapM_ (\(word, count) -> 
+        putStrLn $ padTo maxWordLength word ++ " | " ++ 
+                  histogramBar count maxCount ++ " " ++ show count) counts
+
+processText :: String -> IO ()
+processText text = do
+    putStrLn "\nTop 10 most frequent words:"
+    putStrLn $ replicate 60 '-'
+    let results = analyzeText text
+    displayHistogram results
+    putStrLn $ replicate 60 '-'
+    putStrLn $ "Total unique words: " ++ show (length results)
