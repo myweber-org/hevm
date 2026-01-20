@@ -161,4 +161,17 @@ exampleUsage = do
     print $ filterNumeric dataList
     
     putStrLn "\nAlphabetic strings:"
-    print $ filterAlpha dataList
+    print $ filterAlpha dataListmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, 0, 5, -7]
+    let result = processData input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
