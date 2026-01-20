@@ -39,4 +39,34 @@ main :: IO ()
 main = do
     putStrLn "Enter text to analyze (press Ctrl+D when done):"
     content <- getContents
-    processText content
+    processText contentmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortBy)
+import Data.Ord (comparing)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = foldr countHelper [] cleanedWords
+    in sortBy (flip $ comparing snd) grouped
+  where
+    cleanWord = filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    let frequencies = countWords text
+    putStrLn "Word frequencies:"
+    printWordFrequencies frequencies
+    putStrLn $ "Total unique words: " ++ show (length frequencies)
