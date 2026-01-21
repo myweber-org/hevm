@@ -31,4 +31,31 @@ analyzeText text n =
     in "Total unique words: " ++ show totalWords ++ "\n" ++
        "Total word occurrences: " ++ show totalOccurrences ++ "\n" ++
        "Top " ++ show n ++ " words:\n" ++
-       displayFrequencies topWords
+       displayFrequencies topWordsmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordFreq = Map.Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr incrementWord Map.empty . extractWords
+  where
+    extractWords = words . map normalizeChar
+    normalizeChar c
+      | Char.isAlpha c = Char.toLower c
+      | otherwise = ' '
+    
+    incrementWord word = Map.insertWith (+) word 1
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n = take n . sortByFrequency . Map.toList . countWords
+  where
+    sortByFrequency = List.sortBy (\(_, c1) (_, c2) -> compare c2 c1)
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+processText :: Int -> String -> String
+processText n = displayFrequencies . topNWords n
