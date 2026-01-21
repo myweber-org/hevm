@@ -27,3 +27,23 @@ movingAverage n xs
 
 -- Example usage:
 -- movingAverage 3 [1,2,3,4,5,6] -> [2.0,3.0,4.0,5.0]
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = 
+    filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = 
+    sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let testData = [1..10]
+    putStrLn $ "Original data: " ++ show testData
+    putStrLn $ "Processed data: " ++ show (processEvenSquares testData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData testData)
