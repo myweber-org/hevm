@@ -1,58 +1,21 @@
 module DataProcessor where
 
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
-  where
-    windows :: Int -> [a] -> [[a]]
-    windows m = takeWhile ((== m) . length) . map (take m) . tails
-    
-    average :: [Double] -> Double
-    average ys = sum ys / fromIntegral (length ys)
-
-smoothData :: Int -> [Double] -> [Double]
-smoothData windowSize dataPoints = 
-    movingAverage windowSize dataPoints
-
-calculateTrend :: [Double] -> Double
-calculateTrend values =
-    let n = fromIntegral $ length values
-        indices = [0..n-1]
-        sumX = sum indices
-        sumY = sum values
-        sumXY = sum $ zipWith (*) indices values
-        sumX2 = sum $ map (^2) indices
-        slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
-    in slope
-module DataProcessor where
-
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-module DataProcessor where
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
 
 main :: IO ()
 main = do
-    let numbers = [-3, 1, 0, 5, -2, 8]
-    let result = processNumbers numbers
-    print result
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    if validateInput sampleData
+        then do
+            putStrLn "Processing valid data..."
+            let result = processData sampleData
+            putStrLn $ "Input: " ++ show sampleData
+            putStrLn $ "Result: " ++ show result
+        else putStrLn "Invalid input detected"
