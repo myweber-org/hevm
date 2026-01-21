@@ -1,15 +1,10 @@
 module FibonacciSequence where
 
-fibonacci :: Integer -> [Integer]
-fibonacci n = takeWhile (<= n) fibs
+import Data.Function.Memoize
+
+fib :: Integer -> Integer
+fib = memoize fib'
   where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module Fibonacci where
-
-fibonacci :: Int -> Integer
-fibonacci n = fibs !! n
-  where fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-main :: IO ()
-main = do
-  putStrLn "First 20 Fibonacci numbers:"
-  mapM_ (print . fibonacci) [0..19]
+    fib' 0 = 0
+    fib' 1 = 1
+    fib' n = fib (n - 1) + fib (n - 2)
