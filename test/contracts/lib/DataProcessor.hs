@@ -72,3 +72,14 @@ processData filename = do
     putStrLn "Frequency distribution:"
     mapM_ (\(val, freq) -> putStrLn $ "  " ++ show val ++ ": " ++ show freq) 
           (Map.toList $ frequencyDistribution dataset)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
