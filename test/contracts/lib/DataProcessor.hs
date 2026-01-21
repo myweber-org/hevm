@@ -1,177 +1,74 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.List (sort, group)
+import qualified Data.Map as Map
+import Data.Maybe (fromMaybe)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
+type Dataset = [(String, Double)]
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput [] = Nothing
-validateInput xs = Just xs
+parseCSVLine :: String -> Maybe (String, Double)
+parseCSVLine line = case words line of
+    [label, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (label, value)
+        _ -> Nothing
+    _ -> Nothing
 
-main :: IO ()
-main = do
-    let sampleData = [5, 12, 8, 20, 3, 15]
-    case validateInput sampleData of
-        Nothing -> putStrLn "Empty input list"
-        Just data' -> do
-            let result = processData data'
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = 
-    sum . filterAndTransform predicate transformer
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn "Original data:"
-    print sampleData
-    
-    putStrLn "\nEven numbers squared:"
-    print $ processEvenSquares sampleData
-    
-    putStrLn "\nSum of squared even numbers:"
-    print $ sumProcessedData even (\x -> x * x) sampleData
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter even
-
-sampleData :: [Int]
-sampleData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-main :: IO ()
-main = do
-    let result = processData sampleData
-    putStrLn $ "Original list: " ++ show sampleData
-    putStrLn $ "Processed list (even numbers squared): " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transform = map transform . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let numbers = [-5, 3, 0, 8, -2, 10]
-    let result = processNumbers numbers
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
-module DataProcessor where
-
-import Data.Char (isDigit, isAlpha, toUpper)
-
--- Validate if a string contains only digits
-validateNumeric :: String -> Bool
-validateNumeric = all isDigit
-
--- Validate if a string contains only alphabetic characters
-validateAlpha :: String -> Bool
-validateAlpha = all isAlpha
-
--- Transform string to uppercase
-transformToUpper :: String -> String
-transformToUpper = map toUpper
-
--- Process a list of strings with validation and transformation
-processData :: [String] -> [(String, Bool, String)]
-processData = map processSingle
+loadDataset :: String -> IO Dataset
+loadDataset filename = do
+    content <- readFile filename
+    let linesOfFile = lines content
+    return $ mapMaybe parseCSVLine linesOfFile
   where
-    processSingle str = (str, validateNumeric str, transformToUpper str)
+    mapMaybe f = foldr (\x acc -> case f x of
+        Just val -> val : acc
+        Nothing -> acc) []
 
--- Filter numeric strings from a list
-filterNumeric :: [String] -> [String]
-filterNumeric = filter validateNumeric
+calculateMean :: Dataset -> Double
+calculateMean dataset = 
+    let values = map snd dataset
+        total = sum values
+        count = fromIntegral (length values)
+    in total / count
 
--- Filter alphabetic strings from a list
-filterAlpha :: [String] -> [String]
-filterAlpha = filter validateAlpha
+calculateMedian :: Dataset -> Double
+calculateMedian dataset = 
+    let values = sort $ map snd dataset
+        len = length values
+        mid = len `div` 2
+    in if even len
+        then (values !! (mid - 1) + values !! mid) / 2
+        else values !! mid
 
--- Example usage function
-exampleUsage :: IO ()
-exampleUsage = do
-    let dataList = ["abc123", "456", "test", "789", "hello"]
-    putStrLn "Original data:"
-    print dataList
-    
-    putStrLn "\nProcessed data (original, isNumeric, uppercase):"
-    print $ processData dataList
-    
-    putStrLn "\nNumeric strings:"
-    print $ filterNumeric dataList
-    
-    putStrLn "\nAlphabetic strings:"
-    print $ filterAlpha dataListmodule DataProcessor where
+calculateMode :: Dataset -> [Double]
+calculateMode dataset = 
+    let valueGroups = group $ sort $ map snd dataset
+        maxFreq = maximum $ map length valueGroups
+    in map head $ filter (\g -> length g == maxFreq) valueGroups
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+frequencyDistribution :: Dataset -> Map.Map Double Int
+frequencyDistribution dataset = 
+    foldr (\val acc -> Map.insertWith (+) val 1 acc) Map.empty (map snd dataset)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+filterByThreshold :: Double -> Dataset -> Dataset
+filterByThreshold threshold = filter (\(_, val) -> val > threshold)
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -7]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+normalizeDataset :: Dataset -> Dataset
+normalizeDataset dataset = 
+    let values = map snd dataset
+        maxVal = maximum values
+        minVal = minimum values
+        range = maxVal - minVal
+    in if range == 0
+        then dataset
+        else map (\(label, val) -> (label, (val - minVal) / range)) dataset
+
+processData :: String -> IO ()
+processData filename = do
+    dataset <- loadDataset filename
+    putStrLn $ "Loaded " ++ show (length dataset) ++ " data points"
+    putStrLn $ "Mean: " ++ show (calculateMean dataset)
+    putStrLn $ "Median: " ++ show (calculateMedian dataset)
+    putStrLn $ "Mode(s): " ++ show (calculateMode dataset)
+    putStrLn "Frequency distribution:"
+    mapM_ (\(val, freq) -> putStrLn $ "  " ++ show val ++ ": " ++ show freq) 
+          (Map.toList $ frequencyDistribution dataset)
