@@ -1,62 +1,19 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let numbers = [-5, 3, 0, 8, -2, 10]
-    let result = processNumbers numbers
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-import Data.List.Split (splitOn)
-
-parseCSV :: String -> [[Double]]
-parseCSV content = map (map read . splitOn ",") $ lines content
-
-calculateAverages :: [[Double]] -> [Double]
-calculateAverages rows
-    | null rows = []
-    | otherwise = map avg $ transpose rows
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
   where
-    avg xs = sum xs / fromIntegral (length xs)
-    transpose = foldr (zipWith (:)) (repeat [])
+    avg window = sum window / fromIntegral n
 
-processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSVmodule DataProcessor where
+safeMovingAverage :: Fractional a => Int -> [a] -> Maybe [a]
+safeMovingAverage n xs
+    | n <= 0 = Nothing
+    | otherwise = Just $ movingAverage n xs
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -8]
-    let result = processNumbers input
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+testData :: [Double]
+testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
