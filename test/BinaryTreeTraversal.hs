@@ -30,4 +30,25 @@ inorderMorris root = go root []
         then Just (v, r)
         else case findPredecessor l target of
                Nothing -> findPredecessor r target
-               result -> result
+               result -> resultdata Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show)
+
+inOrder :: Tree a -> [a]
+inOrder Empty = []
+inOrder (Node val left right) = inOrder left ++ [val] ++ inOrder right
+
+preOrder :: Tree a -> [a]
+preOrder Empty = []
+preOrder (Node val left right) = [val] ++ preOrder left ++ preOrder right
+
+postOrder :: Tree a -> [a]
+postOrder Empty = []
+postOrder (Node val left right) = postOrder left ++ postOrder right ++ [val]
+
+exampleTree :: Tree Int
+exampleTree = Node 1
+                (Node 2
+                    (Node 4 Empty Empty)
+                    (Node 5 Empty Empty))
+                (Node 3
+                    (Node 6 Empty Empty)
+                    Empty)
