@@ -1,25 +1,19 @@
 module DataProcessor where
 
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | length xs < n = []
-    | otherwise = avg : movingAverage n (tail xs)
-  where
-    window = take n xs
-    avg = sum window / fromIntegral n
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
 
-smoothData :: Fractional a => Int -> [a] -> [a]
-smoothData windowSize dataPoints =
-    let prefix = replicate (windowSize `div` 2) (head dataPoints)
-        suffix = replicate (windowSize `div` 2) (last dataPoints)
-        extendedData = prefix ++ dataPoints ++ suffix
-    in movingAverage windowSize extendedData
+processNumbers :: [Int] -> [Int]
+processNumbers = 
+    filterAndTransform (\x -> x `mod` 2 == 0) (\x -> x * x + 1)
 
-calculateTrend :: (Fractional a, Ord a) => [a] -> String
-calculateTrend values
-    | allIncreasing values = "Increasing trend"
-    | allDecreasing values = "Decreasing trend"
-    | otherwise = "No clear trend"
-  where
-    allIncreasing xs = and $ zipWith (<=) xs (tail xs)
-    allDecreasing xs = and $ zipWith (>=) xs (tail xs)
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+main :: IO ()
+main = do
+    let numbers = [1..20]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
