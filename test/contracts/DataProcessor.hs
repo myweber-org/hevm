@@ -47,3 +47,26 @@ sumProcessed = sum . processNumbers
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (*2)
+
+processOddNumbers :: [Int] -> [Int]
+processOddNumbers = filterAndTransform odd (+1)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = 
+    sum . filterAndTransform predicate transformer
+
+main :: IO ()
+main = do
+    let testData = [1..10]
+    putStrLn $ "Original data: " ++ show testData
+    putStrLn $ "Even numbers doubled: " ++ show (processEvenNumbers testData)
+    putStrLn $ "Odd numbers incremented: " ++ show (processOddNumbers testData)
+    putStrLn $ "Sum of processed evens: " ++ show (sumProcessedData even (*2) testData)
