@@ -3,16 +3,10 @@ module FibonacciSequence where
 import Data.Function (fix)
 
 fibonacci :: Int -> Integer
-fibonacci = (map fib [0..] !!)
+fibonacci n = fibList !! n
   where
-    fib 0 = 0
-    fib 1 = 1
-    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+    fibList = 0 : 1 : zipWith (+) fibList (tail fibList)
 
--- More efficient version using memoization with fixpoint combinator
-fibonacciMemoized :: Int -> Integer
-fibonacciMemoized = fix memoFib
-  where
-    memoFib _ 0 = 0
-    memoFib _ 1 = 1
-    memoFib f n = f (n - 1) + f (n - 2)
+-- Alternative implementation using fix for demonstration
+fibonacciFix :: Int -> Integer
+fibonacciFix = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))
