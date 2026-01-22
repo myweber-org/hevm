@@ -1,47 +1,21 @@
+
 module DataProcessor where
-
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
-    where
-        windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-        average zs = sum zs / fromIntegral (length zs)
-
--- Helper function to get all tails of a list
-tails :: [a] -> [[a]]
-tails [] = [[]]
-tails (x:xs) = (x:xs) : tails xsmodule DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-validateData :: [Int] -> Bool
-validateData xs = all (> 0) xs && length xs > 3
+processOddCubes :: [Int] -> [Int]
+processOddCubes = filterAndTransform odd (\x -> x * x * x)
 
 main :: IO ()
 main = do
-    let sampleData = [1, -2, 3, 4, -5, 6]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+    let numbers = [1..10]
+    putStrLn "Original list:"
+    print numbers
+    putStrLn "\nEven numbers squared:"
+    print $ processEvenSquares numbers
+    putStrLn "\nOdd numbers cubed:"
+    print $ processOddCubes numbers
