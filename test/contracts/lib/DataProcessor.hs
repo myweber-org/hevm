@@ -1,21 +1,19 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+    
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+smoothData :: [Double] -> [Double]
+smoothData = movingAverage 3
 
-processOddCubes :: [Int] -> [Int]
-processOddCubes = filterAndTransform odd (\x -> x * x * x)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn "Original list:"
-    print numbers
-    putStrLn "\nEven numbers squared:"
-    print $ processEvenSquares numbers
-    putStrLn "\nOdd numbers cubed:"
-    print $ processOddCubes numbers
+testData :: [Double]
+testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
