@@ -25,3 +25,7 @@ main = do
     let result = processData input
     putStrLn $ "Input: " ++ show input
     putStrLn $ "Result: " ++ show result
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (* 2) . filter (> 0)
