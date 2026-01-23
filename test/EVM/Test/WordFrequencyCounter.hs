@@ -54,4 +54,38 @@ main :: IO ()
 main = do
     content <- TIO.readFile "input.txt"
     let results = processText content 3
-    printResults results
+    printResults resultsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word acc =
+      let cleaned = cleanWord word
+       in if null cleaned
+            then acc
+            else Map.insertWith (+) cleaned 1 acc
+
+cleanWord :: String -> String
+cleanWord = map toLower . filter isAlpha
+
+getTopWords :: Int -> WordCount -> [(String, Int)]
+getTopWords n = take n . sortOn (\(_, count) -> negate count) . Map.toList
+
+processText :: Int -> String -> [(String, Int)]
+processText n = getTopWords n . countWords
+
+prettyPrint :: [(String, Int)] -> String
+prettyPrint = unlines . map (\(word, count) -> word ++ ": " ++ show count)
+
+main :: IO ()
+main = do
+  let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
+  putStrLn "Top 3 most frequent words:"
+  putStrLn $ prettyPrint $ processText 3 sampleText
