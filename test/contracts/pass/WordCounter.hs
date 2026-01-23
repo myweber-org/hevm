@@ -1,32 +1,36 @@
-
 module WordCounter where
 
 import Data.Char (isSpace)
 import Data.List (words)
 
+-- | Count the number of words in a string.
+-- Words are defined as sequences of characters separated by whitespace.
 countWords :: String -> Int
 countWords = length . words
 
-countCharacters :: String -> Int
-countCharacters = length
+-- | A simple test suite for the word counter.
+testWordCounter :: IO ()
+testWordCounter = do
+    let testCases =
+            [ ("", 0)
+            , ("hello", 1)
+            , ("hello world", 2)
+            , ("  multiple   spaces   between   words  ", 4)
+            , ("line1\nline2\nline3", 3)
+            , ("punctuation, like this!", 3)
+            ]
 
-countLines :: String -> Int
-countLines = length . lines
+    putStrLn "Running word counter tests..."
+    mapM_ runTest testCases
+    putStrLn "All tests passed."
 
-trim :: String -> String
-trim = f . f
-  where f = reverse . dropWhile isSpace
-
-wordFrequency :: String -> [(String, Int)]
-wordFrequency text = map (\ws -> (head ws, length ws)) $ group $ sort $ words processed
   where
-    processed = map toLower $ filter (\c -> isAlpha c || isSpace c) text
-    group = foldr (\x acc -> case acc of
-                              [] -> [[x]]
-                              (y:ys):yss -> if x == y then (x:y:ys):yss else [x]:(y:ys):yss) []
-    sort = foldr insert []
-    insert x [] = [x]
-    insert x (y:ys) = if x <= y then x:y:ys else y:insert x ys
+    runTest (input, expected) =
+        let result = countWords input
+        in if result == expected
+            then putStrLn $ "PASS: \"" ++ input ++ "\" -> " ++ show result
+            else error $ "FAIL: \"" ++ input ++ "\" expected " ++ show expected ++ " got " ++ show result
 
-processText :: String -> (Int, Int, Int, [(String, Int)])
-processText text = (countWords text, countCharacters text, countLines text, wordFrequency text)
+-- Example usage in GHCi:
+-- countWords "Hello Haskell world"
+-- testWordCounter
