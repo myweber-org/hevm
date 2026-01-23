@@ -1,15 +1,38 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (intercalate)
+import Data.Char (isDigit)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+data ValidationError = InvalidFormat String | MissingField String | InvalidValue String
+    deriving (Show, Eq)
 
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+type CSVRow = [String]
+type ValidatedRow = Either ValidationError CSVRow
 
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-  | validateInput xs = Just (processData xs)
-  | otherwise = Nothing
+validateRow :: CSVRow -> ValidatedRow
+validateRow [] = Left (MissingField "Empty row")
+validateRow [idStr, name, ageStr] =
+    if all isDigit idStr && all isDigit ageStr
+        then if read ageStr > 0 && read ageStr < 150
+            then Right [idStr, name, ageStr]
+            else Left (InvalidValue $ "Invalid age: " ++ ageStr)
+        else Left (InvalidFormat "ID and age must be numeric")
+validateRow _ = Left (InvalidFormat "Row must have exactly 3 columns")
+
+parseCSV :: String -> [ValidatedRow]
+parseCSV = map (validateRow . splitByComma) . lines
+    where
+        splitByComma = foldr splitter [[]]
+        splitter ',' (x:xs) = []:x:xs
+        splitter '"' (x:xs) = reverse x:xs
+        splitter c (x:xs) = (c:x):xs
+
+formatResults :: [ValidatedRow] -> String
+formatResults rows = intercalate "\n" $ map formatRow (zip [1..] rows)
+    where
+        formatRow (n, Left err) = "Row " ++ show n ++ ": ERROR - " ++ show err
+        formatRow (n, Right vals) = "Row " ++ show n ++ ": OK - " ++ intercalate ", " vals
+
+processCSVData :: String -> String
+processCSVData = formatResults . parseCSV
