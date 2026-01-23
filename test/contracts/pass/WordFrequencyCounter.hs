@@ -32,4 +32,37 @@ analyzeText n text =
 main :: IO ()
 main = do
     let sampleText = "This is a test. This test is only a test. Testing testing one two three."
-    putStrLn $ analyzeText 5 sampleText
+    putStrLn $ analyzeText 5 sampleTextmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordFreq = Map.Map String Int
+
+countWordFrequencies :: String -> WordFreq
+countWordFrequencies text =
+    let wordsList = filter (not . null) $ map normalize $ splitWords text
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+
+splitWords :: String -> [String]
+splitWords = words . map (\c -> if Char.isAlpha c then c else ' ')
+
+normalize :: String -> String
+normalize = map Char.toLower . filter Char.isAlpha
+
+getTopNWords :: Int -> WordFreq -> [(String, Int)]
+getTopNWords n freqMap =
+    take n $ List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) $ Map.toList freqMap
+
+printWordFrequencies :: [(String, Int)] -> IO ()
+printWordFrequencies freqList =
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqList
+
+processText :: String -> IO ()
+processText text = do
+    let frequencies = countWordFrequencies text
+    let topWords = getTopNWords 10 frequencies
+    putStrLn "Top 10 most frequent words:"
+    printWordFrequencies topWords
+    putStrLn $ "\nTotal unique words: " ++ show (Map.size frequencies)
