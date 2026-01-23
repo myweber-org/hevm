@@ -205,4 +205,33 @@ printAnalysis :: String -> Int -> IO ()
 printAnalysis text n = do
   putStrLn $ "Top " ++ show n ++ " most frequent words:"
   mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) 
-        (analyzeText text n)
+        (analyzeText text n)module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let words' = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort words'
+    in map (\ws -> (head ws, length ws)) grouped
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+analyzeText :: String -> String
+analyzeText = formatOutput . sortByFrequency . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when done):"
+    content <- getContents
+    putStrLn "\nWord frequencies:"
+    putStrLn $ analyzeText content
