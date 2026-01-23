@@ -5,27 +5,7 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+processNumbers = filterAndTransform (> 0) (* 2)
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (* 2)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
-module DataProcessor where
-
-processNumbers :: [Int] -> [Int]
-processNumbers = map (* 2) . filter (> 0)
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
