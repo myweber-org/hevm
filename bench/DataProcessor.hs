@@ -1,41 +1,39 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.List (transpose)
+import Text.Read (readMaybe)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+type Row = [String]
+type CSVData = [Row]
 
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
+parseCSV :: String -> Either String CSVData
+parseCSV content = mapM parseRow (lines content)
+  where
+    parseRow line = case splitOnComma line of
+        [] -> Left "Empty row found"
+        cells -> Right cells
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ 
-        show (sumProcessed (\x -> x * x) (filter even numbers))
-module DataProcessor where
+    splitOnComma = foldr splitHelper [""]
+    splitHelper ',' acc = "":acc
+    splitHelper chr (x:xs) = (chr:x):xs
+    splitHelper _ [] = error "Unexpected empty list in splitHelper"
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transform = map transform . filter predicate
+validateCSV :: CSVData -> Either String CSVData
+validateCSV [] = Right []
+validateCSV rows@(firstRow:_)
+    | all (\r -> length r == colCount) rows = Right rows
+    | otherwise = Left $ "Inconsistent column count. Expected " ++ show colCount
+  where
+    colCount = length firstRow
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+convertColumn :: (String -> Maybe a) -> Row -> Either String [a]
+convertColumn parser row = mapM (\cell -> maybeToEither ("Failed to parse: " ++ cell) (parser cell)) row
+  where
+    maybeToEither err Nothing = Left err
+    maybeToEither _ (Just val) = Right val
 
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
-
-main :: IO ()
-main = do
-    let sampleData = [-5, 2, 0, 8, -3, 10]
-    if validateInput sampleData
-        then do
-            putStrLn "Original data:"
-            print sampleData
-            putStrLn "Processed data (positive numbers doubled):"
-            print $ processData sampleData
-        else putStrLn "Input validation failed: values must be between -100 and 100"
+processNumericCSV :: String -> Either String [[Double]]
+processNumericCSV content = do
+    parsed <- parseCSV content
+    validated <- validateCSV parsed
+    mapM (convertColumn readMaybe) validated
