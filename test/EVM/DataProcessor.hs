@@ -138,4 +138,17 @@ processData input
 sanitizeAndFormat :: [String] -> Either String String
 sanitizeAndFormat input = do
     processed <- processData input
-    joinValidatedAlpha "-" processed
+    joinValidatedAlpha "-" processedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform isEven square
+    where
+        isEven n = n `mod` 2 == 0
+        square n = n * n
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
