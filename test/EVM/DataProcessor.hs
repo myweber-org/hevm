@@ -101,3 +101,41 @@ sumProcessedData predicate transformer = sum . filterAndTransform predicate tran
 
 validateInput :: [Int] -> Maybe [Int]
 validateInput xs = if all (>0) xs then Just xs else Nothing
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Transform a list of strings to uppercase
+transformToUpper :: [String] -> [String]
+transformToUpper = map (map toUpper)
+
+-- Filter out invalid numeric strings from a list
+filterValidNumbers :: [String] -> [String]
+filterValidNumbers = filter validateNumeric
+
+-- Join strings with a separator, validating each string is alphabetic
+joinValidatedAlpha :: String -> [String] -> Either String String
+joinValidatedAlpha sep strings
+    | all validateAlpha strings = Right $ intercalate sep strings
+    | otherwise = Left "Invalid input: non-alphabetic characters detected"
+
+-- Process a list by validating and transforming
+processData :: [String] -> Either String [String]
+processData input
+    | null input = Left "Empty input list"
+    | otherwise = Right $ transformToUpper $ filterValidNumbers input
+
+-- Example utility function to demonstrate composition
+sanitizeAndFormat :: [String] -> Either String String
+sanitizeAndFormat input = do
+    processed <- processData input
+    joinValidatedAlpha "-" processed
