@@ -1,27 +1,20 @@
-module FibonacciSequence where
+module Fibonacci where
 
-fibonacci :: Int -> [Integer]
-fibonacci n
-    | n <= 0    = []
-    | n == 1    = [0]
-    | n == 2    = [0, 1]
-    | otherwise = let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-                  in take n fibs
+import Data.Function (fix)
 
-main :: IO ()
-main = do
-    putStrLn "Fibonacci sequence of 10 terms:"
-    print $ fibonacci 10module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
+fibonacci :: Int -> Integer
+fibonacci = (map fib [0..] !!)
   where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacci (n - 1) + fibonacci (n - 2)
 
-fibonacci :: Int -> [Integer]
-fibonacci n
-    | n <= 0    = []
-    | n == 1    = [0]
-    | n == 2    = [0, 1]
-    | otherwise = let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-                  in take n fibs
+memoizedFibonacci :: Int -> Integer
+memoizedFibonacci = fix (memoize . fib)
+  where
+    fib _ 0 = 0
+    fib _ 1 = 1
+    fib f n = f (n - 1) + f (n - 2)
+    
+    memoize :: (Int -> Integer) -> (Int -> Integer)
+    memoize f = (map f [0..] !!)
