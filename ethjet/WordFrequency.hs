@@ -53,4 +53,35 @@ displayFrequency counts = unlines $ map showEntry counts
 analyzeText :: String -> String
 analyzeText text = 
     let frequencies = countWords text
-    in "Top 10 most frequent words:\n" ++ displayFrequency frequencies
+    in "Top 10 most frequent words:\n" ++ displayFrequency frequenciesmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        grouped = foldr (\w acc -> case lookup w acc of
+                                    Just count -> (w, count + 1) : filter ((/= w) . fst) acc
+                                    Nothing -> (w, 1) : acc) [] cleaned
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+analyzeText :: String -> String
+analyzeText = formatResults . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when finished):"
+    content <- getContents
+    putStrLn "\nWord frequencies:"
+    putStrLn $ analyzeText content
