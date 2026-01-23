@@ -20,3 +20,17 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
+
+sumOfProcessed :: [Int] -> Int
+sumOfProcessed = sum . processNumbers
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    putStrLn $ "Original list: " ++ show input
+    putStrLn $ "Processed list: " ++ show (processNumbers input)
+    putStrLn $ "Sum of processed: " ++ show (sumOfProcessed input)
