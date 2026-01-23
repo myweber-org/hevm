@@ -178,4 +178,31 @@ main = do
       let text = unwords textPieces
       let counts = countWords text
       putStrLn "Word frequencies:"
-      putStr $ formatResults counts
+      putStr $ formatResults countsmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Ord (Down(..))
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower
+
+getTopFrequentWords :: Int -> WordFreq -> [(String, Int)]
+getTopFrequentWords n freqMap = 
+  take n $ sortOn (Down . snd) $ Map.toList freqMap
+
+analyzeText :: String -> Int -> [(String, Int)]
+analyzeText text n = getTopFrequentWords n $ countWords text
+
+printAnalysis :: String -> Int -> IO ()
+printAnalysis text n = do
+  putStrLn $ "Top " ++ show n ++ " most frequent words:"
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) 
+        (analyzeText text n)
