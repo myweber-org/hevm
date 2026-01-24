@@ -27,4 +27,23 @@ main = do
             print sampleData
             putStrLn "Processed data (positive numbers doubled):"
             print $ processData sampleData
-        else putStrLn "Invalid input data"
+        else putStrLn "Invalid input data"module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") (lines content)
+
+computeAverages :: [[Double]] -> [Double]
+computeAverages rows = 
+    if null rows 
+    then []
+    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose x = map head x : transpose (map tail x)
+
+processCSVData :: String -> [Double]
+processCSVData = computeAverages . parseCSV
