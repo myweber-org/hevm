@@ -43,3 +43,19 @@ mapMaybe :: (a -> Maybe b) -> [a] -> [b]
 mapMaybe f = foldr (\x acc -> case f x of
     Just y -> y : acc
     Nothing -> acc) []
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
+
+validateAndProcess :: [Int] -> Maybe [Int]
+validateAndProcess xs
+    | null xs = Nothing
+    | otherwise = Just (processNumbers xs)
+
+main :: IO ()
+main = do
+    let sampleData = [1, -5, 3, -2, 4, 0, 6]
+    case validateAndProcess sampleData of
+        Nothing -> putStrLn "Input list is empty"
+        Just result -> print result
