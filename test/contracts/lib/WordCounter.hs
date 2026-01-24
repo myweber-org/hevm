@@ -23,3 +23,20 @@ displayWordCounts text = do
     putStrLn "Word frequencies:"
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
     putStrLn $ "Total unique words: " ++ show (length counts)
+module WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (group, sort)
+
+countWords :: String -> [(String, Int)]
+countWords text = 
+    let wordsList = filter (not . all isSpace) $ splitWords text
+        lowerWords = map (map toLower) wordsList
+    in map (\ws -> (head ws, length ws)) $ group $ sort lowerWords
+  where
+    splitWords :: String -> [String]
+    splitWords [] = []
+    splitWords str = 
+        let (word, rest) = break isSpace str
+            (_, after) = span isSpace rest
+        in word : splitWords after
