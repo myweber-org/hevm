@@ -63,3 +63,53 @@ main = do
   
   putStrLn "Valid user profiles:"
   mapM_ (putStrLn . formatProfile) (processUserList rawUsers)
+module DataProcessor where
+
+import Data.Char (isDigit)
+import Data.Maybe (mapMaybe)
+import Data.Text (Text)
+import qualified Data.Text as T
+
+-- Safe integer parsing with validation
+safeParseInt :: Text -> Maybe Int
+safeParseInt txt
+    | T.null txt = Nothing
+    | T.all isDigit txt = case reads (T.unpack txt) of
+        [(n, "")] -> Just n
+        _ -> Nothing
+    | T.head txt == '-' && T.all isDigit (T.tail txt) = 
+        case reads (T.unpack txt) of
+            [(n, "")] -> Just n
+            _ -> Nothing
+    | otherwise = Nothing
+
+-- Validate and transform a list of string inputs
+processNumbers :: [Text] -> [Int]
+processNumbers = mapMaybe safeParseInt
+
+-- Calculate statistics from validated numbers
+calculateStats :: [Int] -> (Double, Int, Int)
+calculateStats [] = (0.0, 0, 0)
+calculateStats nums = 
+    let total = sum nums
+        count = length nums
+        avg = fromIntegral total / fromIntegral count
+        minVal = minimum nums
+        maxVal = maximum nums
+    in (avg, minVal, maxVal)
+
+-- Pipeline: parse, validate, and analyze
+analyzeData :: [Text] -> Maybe (Double, Int, Int)
+analyzeData inputs = 
+    let validated = processNumbers inputs
+    in if null validated 
+        then Nothing 
+        else Just (calculateStats validated)
+
+-- Example data validation rule
+isValidAge :: Int -> Bool
+isValidAge age = age >= 0 && age <= 150
+
+-- Filter valid ages from parsed data
+filterValidAges :: [Int] -> [Int]
+filterValidAges = filter isValidAge
