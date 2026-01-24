@@ -14,4 +14,13 @@ fibonacciFix = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec 
 fib :: Int -> Integer
 fib n = fibs !! n
   where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
+
+import Data.Function.Memoize
+
+fib :: Integer -> Integer
+fib = memoize fib'
+  where
+    fib' 0 = 0
+    fib' 1 = 1
+    fib' n = fib (n - 1) + fib (n - 2)
