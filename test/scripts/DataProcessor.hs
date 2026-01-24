@@ -1,61 +1,29 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\w -> length w == n) $ tails xs
+  where
+    avg ws = sum ws / fromIntegral n
 
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData window dataList = movingAverage window dataList
 
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothingmodule DataProcessor where
+validateData :: (Ord a, Num a) => [a] -> Maybe String
+validateData [] = Just "Empty dataset"
+validateData xs
+    | any (< 0) xs = Just "Negative values detected"
+    | any isInfinite xs = Just "Infinite values detected"
+    | otherwise = Nothing
+  where
+    isInfinite x = x == 1/0 || x == -1/0
 
-import Data.List.Split (splitOn)
-import qualified Data.Map as Map
-
-type Record = Map.Map String String
-
-parseCSV :: String -> [Record]
-parseCSV content = 
-    let lines' = filter (not . null) $ lines content
-        headers = splitOn "," $ head lines'
-        rows = map (splitOn ",") $ tail lines'
-    in map (Map.fromList . zip headers) rows
-
-computeAverage :: String -> [Record] -> Maybe Double
-computeAverage field records = 
-    let values = mapMaybe (Map.lookup field) records
-        parsed = mapMaybe safeRead values
-    in if null parsed 
-        then Nothing 
-        else Just (sum parsed / fromIntegral (length parsed))
-    where
-        safeRead s = case reads s of
-            [(x, "")] -> Just x
-            _ -> Nothing
-
-mapMaybe :: (a -> Maybe b) -> [a] -> [b]
-mapMaybe f = foldr (\x acc -> case f x of
-    Just y -> y : acc
-    Nothing -> acc) []
-module DataProcessor where
-
-processNumbers :: [Int] -> [Int]
-processNumbers = map (^2) . filter (>0)
-
-validateAndProcess :: [Int] -> Maybe [Int]
-validateAndProcess xs
-    | null xs = Nothing
-    | otherwise = Just (processNumbers xs)
-
-main :: IO ()
-main = do
-    let sampleData = [1, -5, 3, -2, 4, 0, 6]
-    case validateAndProcess sampleData of
-        Nothing -> putStrLn "Input list is empty"
-        Just result -> print result
+processDataset :: Fractional a => Int -> [a] -> Either String [a]
+processDataset window dataset =
+    case validateData dataset of
+        Just err -> Left err
+        Nothing -> Right $ smoothData window dataset
