@@ -214,3 +214,45 @@ displayFrequency :: [(String, Int)] -> String
 displayFrequency freqList = unlines (map formatEntry freqList)
   where
     formatEntry (word, count) = word ++ ": " ++ show count
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+    in sortOn (Down . snd) $ countOccurrences cleanedWords
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+countOccurrences :: [String] -> [WordCount]
+countOccurrences = foldr incrementCount []
+  where
+    incrementCount word [] = [(word, 1)]
+    incrementCount word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : incrementCount word rest
+
+topNWords :: Int -> String -> [WordCount]
+topNWords n text = take n $ countWords text
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+    in unlines $
+        [ "Word Frequency Report"
+        , "====================="
+        , "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , ""
+        , "Top 10 words:"
+        ] ++ map formatWordCount (take 10 counts)
+  where
+    formatWordCount (word, count) = word ++ ": " ++ show count
