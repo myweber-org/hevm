@@ -150,4 +150,33 @@ main = do
     input <- getLine
     let frequencies = countWords input
     putStrLn "\nWord frequencies (sorted):"
-    putStrLn $ formatOutput frequencies
+    putStrLn $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortBy)
+import Data.Ord (comparing)
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        normalize = filter isAlpha . map toLower
+        frequencies = foldr countWord [] wordsList
+        countWord w [] = [(w, 1)]
+        countWord w ((word, count):rest)
+            | w == word = (word, count + 1) : rest
+            | otherwise = (word, count) : countWord w rest
+    in sortBy (flip $ comparing snd) frequencies
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map formatLine counts
+    where formatLine (word, count) = word ++ ": " ++ show count
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <text>"
+        text -> putStrLn $ formatOutput $ countWords $ unwords text
