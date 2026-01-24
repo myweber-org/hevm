@@ -84,4 +84,31 @@ main = do
     putStrLn "Enter text to analyze (press Ctrl+D when finished):"
     content <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ analyzeText content
+    putStrLn $ analyzeText contentmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type Histogram = [(String, Int)]
+
+countWords :: String -> Histogram
+countWords text = 
+    let wordsList = filter (not . null) $ map (map toLower . filter isAlpha) $ words text
+        grouped = group $ sort wordsList
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+
+printHistogram :: Histogram -> IO ()
+printHistogram hist = do
+    putStrLn "Word Frequency Histogram:"
+    putStrLn "========================="
+    mapM_ (\(word, count) -> 
+        putStrLn $ word ++ ": " ++ replicate count '*') hist
+    putStrLn "========================="
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world hello haskell world world functional programming"
+    let freq = countWords sampleText
+    printHistogram freq
