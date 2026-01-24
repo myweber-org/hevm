@@ -1,35 +1,65 @@
 
 module DataProcessor where
 
-import Data.List.Split (splitOn)
-import Data.Maybe (mapMaybe)
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes)
 
-type Record = (String, Double)
+type Username = String
+type Email = String
+type Age = Int
 
-parseCSVLine :: String -> Maybe Record
-parseCSVLine line = case splitOn "," line of
-    [name, valueStr] -> case reads valueStr of
-        [(value, "")] -> Just (name, value)
-        _ -> Nothing
-    _ -> Nothing
+data UserProfile = UserProfile
+  { username :: Username
+  , email :: Email
+  , age :: Age
+  } deriving (Show, Eq)
 
-parseCSV :: String -> [Record]
-parseCSV = mapMaybe parseCSVLine . lines
-
-calculateAverage :: [Record] -> Double
-calculateAverage records = 
-    if null records 
-        then 0.0 
-        else total / fromIntegral count
+normalizeUsername :: Username -> Maybe Username
+normalizeUsername name
+  | length trimmed < 3 = Nothing
+  | any (not . isValidChar) trimmed = Nothing
+  | otherwise = Just (map toLower trimmed)
   where
-    (total, count) = foldl (\(sum, cnt) (_, val) -> (sum + val, cnt + 1)) (0.0, 0) records
+    trimmed = trim name
+    isValidChar c = isAlpha c || c == '_' || c == '-'
 
-filterByThreshold :: Double -> [Record] -> [Record]
-filterByThreshold threshold = filter (\(_, value) -> value > threshold)
+validateEmail :: Email -> Maybe Email
+validateEmail emailStr
+  | '@' `elem` emailStr && '.' `elem` (dropWhile (/= '@') emailStr) = Just emailStr
+  | otherwise = Nothing
 
-processData :: String -> Double -> (Double, [Record])
-processData csvData threshold = 
-    let records = parseCSV csvData
-        average = calculateAverage records
-        filtered = filterByThreshold threshold records
-    in (average, filtered)
+validateAge :: Age -> Maybe Age
+validateAge a
+  | a >= 0 && a <= 150 = Just a
+  | otherwise = Nothing
+
+createUserProfile :: Username -> Email -> Age -> Maybe UserProfile
+createUserProfile name emailStr ageVal = do
+  normName <- normalizeUsername name
+  validEmail <- validateEmail emailStr
+  validAge <- validateAge ageVal
+  return $ UserProfile normName validEmail validAge
+
+processUserList :: [(Username, Email, Age)] -> [UserProfile]
+processUserList = catMaybes . map (\(n, e, a) -> createUserProfile n e a)
+
+formatProfile :: UserProfile -> String
+formatProfile (UserProfile name email age) =
+  intercalate " | " [name, email, show age]
+
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
+
+main :: IO ()
+main = do
+  let rawUsers = 
+        [ ("john_doe", "john@example.com", 25)
+        , ("alice-smith", "alice@test.org", 30)
+        , ("ab", "invalid", 200)
+        , ("bob123", "bob@domain.net", 45)
+        ]
+  
+  putStrLn "Valid user profiles:"
+  mapM_ (putStrLn . formatProfile) (processUserList rawUsers)
