@@ -190,4 +190,27 @@ displayWordCounts counts =
 processText :: String -> String
 processText text =
     let report = wordFrequencyReport text 2 10
-    in "Top 10 words appearing at least twice:\n" ++ displayWordCounts report
+    in "Top 10 words appearing at least twice:\n" ++ displayWordCounts reportmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords text = Map.fromListWith (+) wordCounts
+  where
+    wordsList = map normalize (words text)
+    wordCounts = map (\w -> (w, 1)) wordsList
+    normalize = map toLower . filter isAlphaNum
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n sortedWords
+  where
+    wordMap = countWords text
+    sortedWords = sortOn (\(_, count) -> negate count) (Map.toList wordMap)
+
+displayFrequency :: [(String, Int)] -> String
+displayFrequency freqList = unlines (map formatEntry freqList)
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
