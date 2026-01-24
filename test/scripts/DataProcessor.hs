@@ -26,4 +26,18 @@ processDataset :: Fractional a => Int -> [a] -> Either String [a]
 processDataset window dataset =
     case validateData dataset of
         Just err -> Left err
-        Nothing -> Right $ smoothData window dataset
+        Nothing -> Right $ smoothData window datasetmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
