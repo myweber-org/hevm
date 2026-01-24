@@ -9,4 +9,9 @@ fibonacci n = fibList !! n
 
 -- Alternative implementation using fix for demonstration
 fibonacciFix :: Int -> Integer
-fibonacciFix = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))
+fibonacciFix = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))module FibonacciSequence where
+
+fib :: Int -> Integer
+fib n = fibs !! n
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
