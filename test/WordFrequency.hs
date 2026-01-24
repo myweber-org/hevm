@@ -34,4 +34,32 @@ printWordFrequencies text = do
 processTextFile :: FilePath -> IO ()
 processTextFile filePath = do
     content <- readFile filePath
-    printWordFrequencies content
+    printWordFrequencies contentmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+    in sortOn (Down . snd) $ foldr countWord [] cleaned
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    countWord w [] = [(w, 1)]
+    countWord w ((x, n):xs)
+        | w == x = (x, n+1):xs
+        | otherwise = (x, n):countWord w xs
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn "Word frequencies:"
+    printWordFrequencies $ countWords text
+    putStrLn $ "\nTotal unique words: " ++ show (length $ countWords text)
