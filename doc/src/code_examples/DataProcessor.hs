@@ -21,4 +21,10 @@ main = do
             print validData
             putStrLn "Processed data (positive numbers doubled):"
             print $ processData validData
-        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"
+        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
