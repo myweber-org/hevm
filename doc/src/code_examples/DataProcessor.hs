@@ -28,3 +28,18 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformFunction numbers =
+    map transformFunction (filter predicate numbers)
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
+
+main :: IO ()
+main = do
+    let inputData = [5, 12, 8, 20, 3, 15]
+    let result = processData inputData
+    putStrLn $ "Input: " ++ show inputData
+    putStrLn $ "Result: " ++ show result
