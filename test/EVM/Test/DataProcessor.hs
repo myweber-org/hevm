@@ -1,46 +1,25 @@
-
 module DataProcessor where
 
-import Data.Time
-import Text.CSV
+import Data.List (tails)
 
-filterCSVByDate :: String -> Day -> Day -> Either String [Record]
-filterCSVByDate csvContent startDate endDate = do
-    csv <- parseCSV "input" csvContent
-    let filtered = filter (isWithinDateRange startDate endDate) csv
-    return filtered
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average window = sum window / fromIntegral n
 
-isWithinDateRange :: Day -> Day -> Record -> Bool
-isWithinDateRange start end record =
-    case record of
-        (dateStr:_) -> 
-            case parseDate dateStr of
-                Just date -> date >= start && date <= end
-                Nothing -> False
-        _ -> False
-
-parseDate :: String -> Maybe Day
-parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transform = map transform . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
+-- Helper function to demonstrate usage
+exampleData :: [Double]
+exampleData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    putStrLn "Original list:"
-    print numbers
-    
-    putStrLn "\nSquares of even numbers:"
-    let squares = processEvenSquares numbers
-    print squares
-    
-    putStrLn "\nSum of squares of even numbers:"
-    print $ sumProcessed (\x -> x * x) (filter even numbers)
+    putStrLn "Original data:"
+    print exampleData
+    putStrLn "\n3-period moving average:"
+    print $ movingAverage 3 exampleData
+    putStrLn "\n5-period moving average:"
+    print $ movingAverage 5 exampleData
