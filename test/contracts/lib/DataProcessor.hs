@@ -43,3 +43,22 @@ safeProcess :: [Int] -> Maybe [Int]
 safeProcess xs
     | validateInput xs = Just (processData xs)
     | otherwise = Nothing
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [Record]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (isWithinDateRange startDate endDate) csv
+    return filtered
+
+isWithinDateRange :: Day -> Day -> Record -> Bool
+isWithinDateRange start end record =
+    case parseDate (head record) of
+        Just date -> date >= start && date <= end
+        Nothing   -> False
+
+parseDate :: String -> Maybe Day
+parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
