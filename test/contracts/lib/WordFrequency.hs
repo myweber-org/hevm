@@ -80,4 +80,31 @@ processFile path = do
     content <- readFile path
     let topWords = countWords content
     putStrLn "Top 10 most frequent words:"
-    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWords
+    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+wordFrequency :: String -> [WordFreq]
+wordFrequency text =
+    let cleaned = map toLower text
+        words' = words cleaned
+        filtered = filter (all isAlpha) words'
+        freqMap = foldr (\w m -> insertWord w m) [] filtered
+        sorted = sortOn (Down . snd) freqMap
+    in sorted
+
+insertWord :: String -> [WordFreq] -> [WordFreq]
+insertWord word [] = [(word, 1)]
+insertWord word ((w, c):rest)
+    | w == word = (w, c + 1) : rest
+    | otherwise = (w, c) : insertWord word rest
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    let freqs = wordFrequency text
+    putStrLn "Word frequency analysis:"
+    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) freqs
