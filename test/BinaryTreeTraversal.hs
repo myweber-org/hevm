@@ -51,4 +51,30 @@ exampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     (Node 6 Empty Empty)
-                    Empty)
+                    Empty)module BinaryTreeTraversal where
+
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show, Eq)
+
+inorderCPS :: BinaryTree a -> ([a] -> r) -> r
+inorderCPS Leaf cont = cont []
+inorderCPS (Node left val right) cont =
+    inorderCPS left $ \leftList ->
+    inorderCPS right $ \rightList ->
+    cont (leftList ++ [val] ++ rightList)
+
+inorder :: BinaryTree a -> [a]
+inorder tree = inorderCPS tree id
+
+preorderCPS :: BinaryTree a -> ([a] -> r) -> r
+preorderCPS Leaf cont = cont []
+preorderCPS (Node left val right) cont =
+    cont ([val] ++) $ \prefix ->
+    preorderCPS left $ \leftList ->
+    preorderCPS right $ \rightList ->
+    prefix (leftList ++ rightList)
+
+preorder :: BinaryTree a -> [a]
+preorder tree = preorderCPS tree id
+
+sampleTree :: BinaryTree Int
+sampleTree = Node (Node Leaf 2 Leaf) 1 (Node (Node Leaf 4 Leaf) 3 Leaf)
