@@ -90,3 +90,7 @@ processEvenSquares = filterAndTransform even (\x -> x * x)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processEvenSquares
+module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (*2) . filter (>0)
