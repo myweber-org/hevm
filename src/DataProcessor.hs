@@ -31,4 +31,20 @@ main = do
   let csvData = "1.0,2.0,3.0\n4.0,5.0,6.0\n7.0,8.0,9.0"
   let averages = processCSVData csvData
   putStrLn "Averages per row:"
-  mapM_ (putStrLn . show) averages
+  mapM_ (putStrLn . show) averagesmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0)
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, -4, 5]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)
