@@ -1,23 +1,32 @@
-module WordFrequency where
 
-import qualified Data.Map.Strict as Map
 import Data.Char (toLower, isAlpha)
 import Data.List (sortOn)
 import Data.Ord (Down(..))
+import System.Environment (getArgs)
 
-type FrequencyMap = Map.Map String Int
+type WordCount = (String, Int)
 
-countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower wordsList
+        grouped = foldr (\w m -> insertWith (+) w 1 m) [] cleaned
+    in sortOn (Down . snd) grouped
   where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
+    cleanWord = filter isAlpha
+    insertWith f key value [] = [(key, value)]
+    insertWith f key value ((k,v):rest)
+        | key == k  = (k, f v value) : rest
+        | otherwise = (k,v) : insertWith f key value rest
 
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(w,c) -> w ++ ": " ++ show c) counts
 
-displayFrequencies :: [(String, Int)] -> String
-displayFrequencies = unlines . map (\(w,c) -> w ++ ": " ++ show c)
-
-analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <filename>"
+        (filename:_) -> do
+            content <- readFile filename
+            putStrLn $ formatOutput $ countWords content
