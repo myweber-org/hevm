@@ -1,19 +1,40 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transform = map transform . filter predicate
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+type Record = (String, Double)
 
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case splitOn "," line of
+    [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+    _ -> Nothing
+
+parseCSV :: String -> [Record]
+parseCSV = mapMaybe parseCSVLine . lines
+
+calculateAverage :: [Record] -> Double
+calculateAverage records
+    | null records = 0.0
+    | otherwise = total / count
+  where
+    (total, count) = foldl (\(sumAcc, cnt) (_, val) -> (sumAcc + val, cnt + 1)) (0.0, 0) records
+
+filterByThreshold :: Double -> [Record] -> [Record]
+filterByThreshold threshold = filter (\(_, val) -> val > threshold)
+
+processData :: String -> Double -> [Record]
+processData csvData threshold = 
+    filterByThreshold threshold $ parseCSV csvData
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+    let testData = "Alice,85.5\nBob,92.0\nCharlie,78.5\nDiana,88.0\n"
+    let threshold = 80.0
+    let filtered = processData testData threshold
+    putStrLn "Filtered records:"
+    mapM_ (\(name, val) -> putStrLn $ name ++ ": " ++ show val) filtered
+    putStrLn $ "Average: " ++ show (calculateAverage filtered)
