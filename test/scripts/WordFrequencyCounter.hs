@@ -141,3 +141,49 @@ main = do
         [] -> processStdin
         [file] -> processFile file
         _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no file given)"
+module WordFrequencyCounter where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Ord (Down(..))
+
+type WordFrequency = Map String Int
+
+-- | Count word frequencies in a text string
+countWordFrequencies :: String -> WordFrequency
+countWordFrequencies = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalizeWord word) 1
+    normalizeWord = map toLower . filter isAlpha
+
+-- | Get top N most frequent words
+topFrequentWords :: Int -> WordFrequency -> [(String, Int)]
+topFrequentWords n = take n . sortOn (Down . snd) . Map.toList
+
+-- | Process text and return formatted frequency report
+generateFrequencyReport :: Int -> String -> String
+generateFrequencyReport n text = unlines $
+    "Top " ++ show n ++ " most frequent words:" :
+    map formatEntry topWords
+  where
+    frequencies = countWordFrequencies text
+    topWords = topFrequentWords n frequencies
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+-- | Filter words by minimum frequency threshold
+filterByMinFrequency :: Int -> WordFrequency -> WordFrequency
+filterByMinFrequency threshold = Map.filter (>= threshold)
+
+-- | Calculate total word count
+totalWordCount :: WordFrequency -> Int
+totalWordCount = sum . Map.elems
+
+-- | Get unique word count
+uniqueWordCount :: WordFrequency -> Int
+uniqueWordCount = Map.size
+
+-- | Merge multiple frequency maps
+mergeFrequencies :: [WordFrequency] -> WordFrequency
+mergeFrequencies = Map.unionsWith (+)
