@@ -65,4 +65,31 @@ processText text = do
     let topWords = getTopNWords 10 frequencies
     putStrLn "Top 10 most frequent words:"
     printWordFrequencies topWords
-    putStrLn $ "\nTotal unique words: " ++ show (Map.size frequencies)
+    putStrLn $ "\nTotal unique words: " ++ show (Map.size frequencies)module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import qualified Data.Map.Strict as Map
+
+countWords :: String -> Map.Map String Int
+countWords text = Map.fromListWith (+) wordCounts
+  where
+    words' = filter (not . null) . map (map toLower . filter isAlphaNum) $ splitWords text
+    wordCounts = map (\w -> (w, 1)) words'
+
+splitWords :: String -> [String]
+splitWords [] = []
+splitWords str = word : splitWords rest
+  where
+    (word, rest') = break (not . isAlphaNum) str
+    rest = dropWhile (not . isAlphaNum) rest'
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (\(_, count) -> negate count) $ Map.toList (countWords text)
+
+displayTopWords :: Int -> String -> IO ()
+displayTopWords n text = do
+    putStrLn $ "Top " ++ show n ++ " words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
+  where
+    topWords = getTopWords n text
