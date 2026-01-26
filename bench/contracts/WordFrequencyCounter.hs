@@ -55,4 +55,37 @@ processText = formatOutput . sortByFrequency . countWords
 main :: IO ()
 main = do
     input <- TIO.getContents
-    TIO.putStr $ processText input
+    TIO.putStr $ processText inputmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords text =
+    let wordsList = filter (not . null) $ map normalize $ splitText text
+    in List.foldl' incrementWord Map.empty wordsList
+  where
+    splitText = words . map (\c -> if Char.isAlpha c then Char.toLower c else ' ')
+    normalize = filter Char.isAlpha
+    
+    incrementWord :: WordCount -> String -> WordCount
+    incrementWord counts word = Map.insertWith (+) word 1 counts
+
+getTopWords :: Int -> WordCount -> [(String, Int)]
+getTopWords n counts =
+    take n $ List.sortBy (\(_, a) (_, b) -> compare b a) $ Map.toList counts
+
+printWordFrequencies :: [(String, Int)] -> IO ()
+printWordFrequencies frequencies =
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    let counts = countWords text
+    let topWords = getTopWords 10 counts
+    putStrLn "Top 10 most frequent words:"
+    printWordFrequencies topWords
+    putStrLn $ "\nTotal unique words: " ++ show (Map.size counts)
