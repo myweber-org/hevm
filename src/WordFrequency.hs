@@ -63,4 +63,46 @@ main = do
         [filename] -> do
             content <- readFile filename
             printResults $ countWords content
-        _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no filename)"
+        _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no filename)"module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+-- | Count frequency of each word in a string
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        grouped = group $ sort wordsList
+    in map (\ws -> (head ws, length ws)) grouped
+
+-- | Normalize word: lowercase and keep only alphabetic characters
+normalize :: String -> String
+normalize = map toLower . filter isAlpha
+
+-- | Sort word counts by frequency (descending)
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+-- | Filter words with frequency above threshold
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+-- | Get top N most frequent words
+topNWords :: Int -> [WordCount] -> [WordCount]
+topNWords n = take n . sortByFrequency
+
+-- | Complete analysis pipeline
+analyzeText :: String -> Int -> Int -> [WordCount]
+analyzeText text minFreq topN = 
+    topNWords topN 
+    . filterByMinFrequency minFreq 
+    . sortByFrequency 
+    $ countWords text
+
+-- | Pretty print word frequencies
+printFrequencies :: [WordCount] -> IO ()
+printFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
