@@ -1,23 +1,25 @@
 module WordFrequency where
 
-import qualified Data.Map.Strict as Map
-import Data.Char (toLower, isAlpha)
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlphaNum)
 import Data.List (sortOn)
 import Data.Ord (Down(..))
 
 type FrequencyMap = Map.Map String Int
 
 countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
+countWords = foldr updateCount Map.empty . words
   where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = filter isAlpha . map toLower
+    updateCount word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlphaNum
 
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
 
-displayFrequencies :: [(String, Int)] -> String
-displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+readFileAndCount :: FilePath -> IO [(String, Int)]
+readFileAndCount path = do
+    content <- readFile path
+    return $ getTopWords 10 content
 
-analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+displayResults :: [(String, Int)] -> IO ()
+displayResults = mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count)
