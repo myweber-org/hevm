@@ -112,3 +112,32 @@ main = do
     let sampleText = "Hello world hello haskell world world functional programming"
     let freq = countWords sampleText
     printHistogram freq
+module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type Histogram = [(String, Int)]
+
+wordFrequency :: String -> Histogram
+wordFrequency text = 
+    let words' = filter (not . null) $ map (map toLower . filter isAlpha) $ words text
+        grouped = map (\ws -> (head ws, length ws)) $ group $ sort words'
+    in take 10 $ sortOn (Down . snd) grouped
+
+printHistogram :: Histogram -> IO ()
+printHistogram freq = do
+    putStrLn "Top 10 most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ replicate count '*') freq
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    let freq = wordFrequency text
+    printHistogram freq
+    putStrLn $ "Total unique words: " ++ show (length freq)
+
+sampleAnalysis :: IO ()
+sampleAnalysis = do
+    let sample = "Hello world hello haskell world programming haskell functional programming world"
+    analyzeText sample
