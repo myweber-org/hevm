@@ -18,3 +18,12 @@ main = do
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of doubled evens: " ++ 
         show (sumProcessed (*2) (filter even numbers))
+module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter (>0)
+
+validateAndProcess :: [Int] -> Maybe [Int]
+validateAndProcess xs
+    | null xs = Nothing
+    | otherwise = Just (processData xs)
