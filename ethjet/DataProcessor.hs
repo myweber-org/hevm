@@ -30,4 +30,10 @@ main = do
     print $ processEvenSquares sampleData
     
     putStrLn "\nSum of squares of even numbers:"
-    print $ sumProcessedData even (\x -> x * x) sampleData
+    print $ sumProcessedData even (\x -> x * x) sampleDatamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
