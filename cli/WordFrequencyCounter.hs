@@ -58,4 +58,39 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 processText :: Int -> String -> String
-processText n = displayFrequencies . topNWords n
+processText n = displayFrequencies . topNWords nmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = group $ sort cleaned
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+    where
+        cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+wordFrequencyReport :: String -> Int -> Int -> String
+wordFrequencyReport text minFreq topN =
+    let counts = countWords text
+        filtered = filterByMinFrequency minFreq counts
+        topWords = getTopNWords topN filtered
+    in unlines $ map (\(word, count) -> word ++ ": " ++ show count) topWords
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello back."
+    putStrLn "Word Frequency Report:"
+    putStrLn $ wordFrequencyReport sampleText 1 5
