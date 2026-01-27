@@ -42,4 +42,20 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processNumbers input
-    print result
+    print resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = 
+    if all (\x -> x >= -100 && x <= 100) xs
+        then Just xs
+        else Nothing
