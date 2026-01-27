@@ -177,4 +177,43 @@ calculateTrend values =
         sumXY = sum (zipWith (*) indices values)
         sumX2 = sum (map (^2) indices)
         slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
-    in slope
+    in slopemodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV content = 
+    if null content
+    then Left "Empty CSV content"
+    else Right $ map parseRow (lines content)
+  where
+    parseRow line = splitByComma line
+    splitByComma = foldr splitter [[]]
+    splitter ',' (x:xs) = []:x:xs
+    splitter c (x:xs) = (c:x):xs
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Left "Empty data"
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index cannot be negative"
+    | any (\row -> length row <= colIndex) rows = 
+        Left $ "Column index " ++ show colIndex ++ " out of bounds"
+    | not (all (all isDigit . concat) (map (!! colIndex) rows)) =
+        Left $ "Column " ++ show colIndex ++ " contains non-numeric values"
+    | otherwise = Right rows
+
+formatCSV :: CSVData -> String
+formatCSV = intercalate "\n" . map (intercalate ",")
+
+processCSVData :: String -> Int -> Either String String
+processCSVData rawData columnIndex = do
+    parsed <- parseCSV rawData
+    validated <- validateNumericColumn parsed columnIndex
+    return $ formatCSV validated
+
+sampleData :: String
+sampleData = "id,name,age\n1,John,25\n2,Jane,30\n3,Bob,35"
