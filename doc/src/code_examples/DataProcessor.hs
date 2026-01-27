@@ -1,21 +1,24 @@
+
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumOfProcessed :: [Int] -> Int
+sumOfProcessed = sum . processEvenSquares
 
 main :: IO ()
 main = do
-    let sampleData = [1, -2, 3, 0, 5, -8]
-    if validateInput sampleData
-        then do
-            putStrLn "Processing data..."
-            let result = processData sampleData
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Result: " ++ show result
-        else putStrLn "Invalid input data"
+    let sampleData = [1..10]
+    putStrLn $ "Original list: " ++ show sampleData
+    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed: " ++ show (sumOfProcessed sampleData)
+    putStrLn $ "Head of empty list: " ++ show (safeHead [])
+    putStrLn $ "Head of sample: " ++ show (safeHead sampleData)
