@@ -1,29 +1,16 @@
 module FibonacciMemo where
 
-import Control.Monad.State
+import qualified Data.Map as Map
 
-type FibCache = [(Int, Integer)]
+fibMemo :: Int -> Integer
+fibMemo n = fst (fibMemo' n Map.empty)
 
-fibMemo :: Int -> State FibCache Integer
-fibMemo n = do
-    cache <- get
-    case lookup n cache of
-        Just result -> return result
-        Nothing -> do
-            result <- case n of
-                0 -> return 0
-                1 -> return 1
-                _ -> do
-                    a <- fibMemo (n - 1)
-                    b <- fibMemo (n - 2)
-                    return (a + b)
-            modify ((n, result):)
-            return result
-
-getFibonacci :: Int -> Integer
-getFibonacci n = evalState (fibMemo n) []
-
-main :: IO ()
-main = do
-    putStrLn "First 20 Fibonacci numbers:"
-    mapM_ (print . getFibonacci) [0..19]
+fibMemo' :: Int -> Map.Map Int Integer -> (Integer, Map.Map Int Integer)
+fibMemo' n cache
+  | n <= 1    = (fromIntegral n, cache)
+  | otherwise = case Map.lookup n cache of
+      Just val -> (val, cache)
+      Nothing  -> let (a, cache1) = fibMemo' (n-1) cache
+                      (b, cache2) = fibMemo' (n-2) cache1
+                      result = a + b
+                  in (result, Map.insert n result cache2)
