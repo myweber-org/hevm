@@ -1,7 +1,10 @@
 module DataProcessor where
 
-processData :: [Int] -> [Int]
-processData = map (^2) . filter even
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
 
--- Example usage:
--- processData [1,2,3,4,5] -> [4,16]
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
