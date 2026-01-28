@@ -56,4 +56,10 @@ processCSVFile filePath columnIndex = do
     let parsedData = parseCSV content
     case extractNumericColumn parsedData columnIndex of
         Nothing -> return Nothing
-        Just values -> return $ calculateAverage values
+        Just values -> return $ calculateAverage valuesmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
