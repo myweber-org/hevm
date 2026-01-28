@@ -26,4 +26,35 @@ main = do
     putStrLn "Enter text to analyze (press Ctrl+D when done):"
     content <- getContents
     let histogram = analyzeText content
-    printHistogram histogram
+    printHistogram histogrammodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        frequencies = foldr countWord [] cleaned
+    in sortOn (Down . snd) frequencies
+  where
+    cleanWord = filter isAlpha
+    countWord w [] = [(w, 1)]
+    countWord w ((x, c):xs)
+        | w == x = (x, c + 1) : xs
+        | otherwise = (x, c) : countWord w xs
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+processText :: String -> String
+processText = formatResults . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ processText input
