@@ -67,4 +67,17 @@ formatResults = unlines . map formatRow
   where
     formatRow (colName, Nothing) = colName ++ ": No numeric data"
     formatRow (colName, Just (mean, variance, stdDev)) =
-      colName ++ ": Mean=" ++ show mean ++ ", Variance=" ++ show variance ++ ", StdDev=" ++ show stdDev
+      colName ++ ": Mean=" ++ show mean ++ ", Variance=" ++ show variance ++ ", StdDev=" ++ show stdDevmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-5, 3, 0, 8, -2, 10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
