@@ -82,3 +82,43 @@ main = do
     putStrLn $ "Original list: " ++ show sampleData
     putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of processed list: " ++ show (sumProcessedList sampleData)
+module DataProcessor where
+
+import Data.List (intercalate)
+import Text.Read (readMaybe)
+
+type Row = [String]
+type Table = [Row]
+
+parseCSV :: String -> Table
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitter [[]]
+      where
+        splitter char (current:rest)
+          | char == delimiter = []:current:rest
+          | otherwise = (char:current):rest
+
+filterRows :: (Row -> Bool) -> Table -> Table
+filterRows predicate = filter predicate
+
+numericGreaterThan :: Row -> Int -> Double -> Bool
+numericGreaterThan row columnIndex threshold =
+  case getNumericValue row columnIndex of
+    Just value -> value > threshold
+    Nothing -> False
+
+getNumericValue :: Row -> Int -> Maybe Double
+getNumericValue row idx
+  | idx < 0 || idx >= length row = Nothing
+  | otherwise = readMaybe (row !! idx)
+
+formatTable :: Table -> String
+formatTable = intercalate "\n" . map (intercalate ",")
+
+processData :: String -> Int -> Double -> String
+processData csvContent columnIndex threshold =
+  let table = parseCSV csvContent
+      filtered = filterRows (\row -> numericGreaterThan row columnIndex threshold) table
+  in formatTable filtered
