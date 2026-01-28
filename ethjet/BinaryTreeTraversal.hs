@@ -1,61 +1,18 @@
+module BinaryTreeTraversal where
 
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show)
-
-inOrder :: BinaryTree a -> [a]
-inOrder Empty = []
-inOrder (Node val left right) = inOrder left ++ [val] ++ inOrder right
-
-preOrder :: BinaryTree a -> [a]
-preOrder Empty = []
-preOrder (Node val left right) = [val] ++ preOrder left ++ preOrder right
-
-postOrder :: BinaryTree a -> [a]
-postOrder Empty = []
-postOrder (Node val left right) = postOrder left ++ postOrder right ++ [val]
-
-sampleTree :: BinaryTree Int
-sampleTree = Node 1
-                (Node 2
-                    (Node 4 Empty Empty)
-                    (Node 5 Empty Empty))
-                (Node 3
-                    Empty
-                    (Node 6 Empty Empty))data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show)
 
 inorder :: BinaryTree a -> [a]
 inorder Leaf = []
 inorder (Node left value right) = inorder left ++ [value] ++ inorder right
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show)
 
-inOrder :: BinaryTree a -> [a]
-inOrder Empty = []
-inOrder (Node val left right) = inOrder left ++ [val] ++ inOrder right
+preorder :: BinaryTree a -> [a]
+preorder Leaf = []
+preorder (Node left value right) = [value] ++ preorder left ++ preorder right
 
-preOrder :: BinaryTree a -> [a]
-preOrder Empty = []
-preOrder (Node val left right) = [val] ++ preOrder left ++ preOrder right
-
-postOrder :: BinaryTree a -> [a]
-postOrder Empty = []
-postOrder (Node val left right) = postOrder left ++ postOrder right ++ [val]
+postorder :: BinaryTree a -> [a]
+postorder Leaf = []
+postorder (Node left value right) = postorder left ++ postorder right ++ [value]
 
 exampleTree :: BinaryTree Int
-exampleTree = Node 1
-                (Node 2
-                    (Node 4 Empty Empty)
-                    (Node 5 Empty Empty))
-                (Node 3
-                    (Node 6 Empty Empty)
-                    Empty)module BinaryTreeTraversal where
-
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
-
-inOrderIterative :: BinaryTree a -> [a]
-inOrderIterative tree = go [] tree []
-  where
-    go stack Empty result =
-        case stack of
-            [] -> reverse result
-            (Node val left right):rest -> go rest right (val:result)
-    go stack (Node val left right) result =
-        go (Node val left right:stack) left result
+exampleTree = Node (Node Leaf 2 Leaf) 1 (Node (Node Leaf 4 Leaf) 3 Leaf)
