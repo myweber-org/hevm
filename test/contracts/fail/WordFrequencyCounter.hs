@@ -91,4 +91,26 @@ main = do
     args <- getArgs
     case args of
         [] -> putStrLn "Usage: wordfreq <filename>"
-        (filename:_) -> processFile filename
+        (filename:_) -> processFile filenamemodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr updateFreq Map.empty . words
+  where
+    updateFreq word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (negate . snd) $ Map.toList (countWords text)
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+processText :: Int -> String -> String
+processText n = displayFrequencies . getTopWords n
