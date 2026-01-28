@@ -3,29 +3,27 @@ module WordFrequencyCounter where
 import qualified Data.Char as Char
 import qualified Data.List as List
 import qualified Data.Map.Strict as Map
-import qualified System.IO as IO
+import System.Environment (getArgs)
 
 type WordCount = Map.Map String Int
 
 countWords :: String -> WordCount
-countWords = foldr incrementWord Map.empty . words . normalize
+countWords = foldr incrementWord Map.empty . words
   where
-    normalize = map Char.toLower . filter (\c -> Char.isAlpha c || Char.isSpace c)
-    incrementWord word = Map.insertWith (+) word 1
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
 
-readAndCount :: FilePath -> IO WordCount
-readAndCount path = do
-    content <- IO.readFile path
-    return $ countWords content
+formatResults :: WordCount -> String
+formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
 
-printWordCounts :: WordCount -> IO ()
-printWordCounts wc = do
-    let sorted = List.sortOn (\(_, count) -> negate count) $ Map.toList wc
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) sorted
+processText :: String -> String
+processText = formatResults . countWords
 
 main :: IO ()
 main = do
-    putStrLn "Enter file path:"
-    path <- getLine
-    counts <- readAndCount path
-    printWordCounts counts
+  args <- getArgs
+  case args of
+    [] -> putStrLn "Usage: WordFrequencyCounter <text>"
+    text -> putStrLn $ processText $ unwords text
