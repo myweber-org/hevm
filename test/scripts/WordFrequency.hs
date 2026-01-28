@@ -55,4 +55,33 @@ main = do
     content <- getContents
     let frequencies = countWords content
     putStrLn "\nTop 10 word frequencies:"
-    putStrLn $ displayCounts frequencies
+    putStrLn $ displayCounts frequenciesmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        normalize = filter isAlpha . map toLower
+        frequencies = foldr countWord [] wordsList
+        countWord w [] = [(w, 1)]
+        countWord w ((word, count):rest)
+            | w == word = (word, count + 1) : rest
+            | otherwise = (word, count) : countWord w rest
+    in sortOn (Down . snd) frequencies
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ processText input
