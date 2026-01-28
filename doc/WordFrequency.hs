@@ -217,4 +217,25 @@ analyzeText :: String -> IO ()
 analyzeText text = do
   putStrLn $ wordFrequencyReport 10 text
   let counts = countWords text
-  putStrLn $ "Word density: " ++ show (fromIntegral (Map.size counts) / fromIntegral (sum (Map.elems counts)) :: Double)
+  putStrLn $ "Word density: " ++ show (fromIntegral (Map.size counts) / fromIntegral (sum (Map.elems counts)) :: Double)module WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlpha)
+
+wordFrequency :: String -> Map.Map String Int
+wordFrequency text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+    in Map.fromListWith (+) [(word, 1) | word <- wordsList]
+  where
+    normalize = filter isAlpha . map toLower
+
+mostFrequent :: String -> [(String, Int)]
+mostFrequent text = 
+    take 5 $ sortByFrequency $ Map.toList $ wordFrequency text
+  where
+    sortByFrequency = reverse . sortOn snd
+
+analyzeText :: String -> IO ()
+analyzeText input = do
+    putStrLn "Top 5 most frequent words:"
+    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) $ mostFrequent input
