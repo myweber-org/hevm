@@ -53,4 +53,35 @@ countWords text =
 analyzeText :: String -> IO ()
 analyzeText input = do
     putStrLn "Top 10 most frequent words:"
-    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) $ countWords input
+    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) $ countWords inputmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanWord = map toLower . filter isAlpha
+        freqMap = foldr (\w m -> insertWord w m) [] wordsList
+        insertWord w [] = [(w, 1)]
+        insertWord w ((x, c):xs)
+            | w == x = (x, c + 1) : xs
+            | otherwise = (x, c) : insertWord w xs
+    in sortOn (Down . snd) freqMap
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <filename>"
+        (filename:_) -> do
+            content <- readFile filename
+            let frequencies = countWords content
+            putStrLn $ formatOutput $ take 10 frequencies
