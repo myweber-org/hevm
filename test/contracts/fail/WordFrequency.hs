@@ -1,37 +1,23 @@
-
 module WordFrequency where
 
 import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
-import Data.Ord (Down(..))
-import qualified Data.Map.Strict as Map
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
 
-type Histogram = [(String, Int)]
+type FrequencyMap = Map String Int
 
-analyzeText :: String -> Histogram
-analyzeText text = 
-    let wordsList = filter (not . null) $ map normalize $ words text
-        freqMap = foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
-        sorted = sortOn (Down . snd) $ Map.toList freqMap
-    in take 10 sorted
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
   where
-    normalize = map toLower . filter isAlpha
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = filter isAlpha . map toLower
 
-printHistogram :: Histogram -> IO ()
-printHistogram hist = do
-    putStrLn "\nTop 10 Word Frequencies:"
-    putStrLn "========================"
-    mapM_ (\(word, count) -> 
-        putStrLn $ padRight 15 word ++ " | " ++ bar count ++ " " ++ show count
-        ) hist
-  where
-    maxCount = maximum $ map snd hist
-    bar n = replicate (n * 50 `div` maxCount) '█'
-    padRight n str = take n $ str ++ repeat ' '
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (negate . snd) $ Map.toList $ countWords text
 
-main :: IO ()
-main = do
-    putStrLn "Enter text to analyze (press Ctrl+D when done):"
-    content <- getContents
-    let histogram = analyzeText content
-    printHistogram histogram
+displayFrequency :: [(String, Int)] -> String
+displayFrequency = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequency . topNWords n
