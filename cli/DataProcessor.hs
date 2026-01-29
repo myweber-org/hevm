@@ -130,3 +130,32 @@ main = do
     let result = processData input
     putStrLn $ "Input: " ++ show input
     putStrLn $ "Result: " ++ show result
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Record = (String, Double)
+
+parseCSV :: String -> [Record]
+parseCSV csv = mapMaybe parseLine (lines csv)
+  where
+    parseLine line = case splitOn "," line of
+      [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+      _ -> Nothing
+
+calculateAverage :: [Record] -> Double
+calculateAverage records =
+  if null records
+    then 0.0
+    else total / fromIntegral count
+  where
+    (total, count) = foldr (\(_, val) (sum, cnt) -> (sum + val, cnt + 1)) (0.0, 0) records
+
+processData :: String -> (Double, [Record])
+processData csv =
+  let records = parseCSV csv
+      avg = calculateAverage records
+  in (avg, records)
