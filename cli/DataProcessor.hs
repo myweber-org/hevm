@@ -96,4 +96,7 @@ processData = map transformToUpper . filter validateNumeric
 
 -- Format processed data as a comma-separated string
 formatOutput :: [String] -> String
-formatOutput = intercalate ", "
+formatOutput = intercalate ", "module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
