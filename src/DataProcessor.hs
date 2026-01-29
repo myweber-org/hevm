@@ -1,23 +1,24 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+validateEmail :: String -> Bool
+validateEmail email = '@' `elem` email && '.' `elem` afterAt
+  where afterAt = dropWhile (/= '@') email
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
+validatePhone :: String -> Bool
+validatePhone = all isDigit
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>0) xs then Just xs else Nothing
+normalizeName :: String -> String
+normalizeName = unwords . map capitalize . words
+  where capitalize [] = []
+        capitalize (x:xs) = toUpper x : map toLower xs
 
-main :: IO ()
-main = do
-    let sampleData = [1,2,3,4,5,6,7,8,9,10]
-    case validateInput sampleData of
-        Just validData -> do
-            putStrLn $ "Original data: " ++ show validData
-            putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
-            putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
+sanitizeInput :: String -> String
+sanitizeInput = filter (\c -> isAlpha c || isDigit c || c `elem` " -_@.")
+
+processUserData :: String -> String -> String -> Maybe (String, String, String)
+processUserData name email phone
+  | not (validateEmail email) = Nothing
+  | not (validatePhone phone) = Nothing
+  | otherwise = Just (normalizeName name, sanitizeInput email, phone)
