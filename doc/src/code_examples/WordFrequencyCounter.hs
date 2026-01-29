@@ -113,4 +113,34 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
     putStrLn "Word frequency analysis:"
-    putStrLn $ processText sampleText 1 5
+    putStrLn $ processText sampleText 1 5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        frequencyMap = foldl (\acc word -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] wordsList
+    in sortOn (Down . snd) frequencyMap
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    putStrLn "\nWord frequencies:"
+    putStrLn $ processText input
