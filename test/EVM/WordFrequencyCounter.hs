@@ -1,258 +1,29 @@
 module WordFrequencyCounter where
 
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
-import Data.Ord (Down(..))
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
 
-type WordCount = (String, Int)
+type WordFreq = Map.Map String Int
 
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
-        grouped = group $ sort wordsList
-        counts = map (\ws -> (head ws, length ws)) grouped
-    in sortOn (Down . snd) counts
+countWordFrequencies :: String -> WordFreq
+countWordFrequencies text =
+    let wordsList = filter (not . null) $ map normalize $ splitText text
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
 
-filterByFrequency :: Int -> [WordCount] -> [WordCount]
-filterByFrequency minCount = filter (\(_, count) -> count >= minCount)
+splitText :: String -> [String]
+splitText = words . map (\c -> if Char.isAlphaNum c then c else ' ')
 
-displayWordCounts :: [WordCount] -> String
-displayWordCounts counts = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+normalize :: String -> String
+normalize = map Char.toLower . filter Char.isAlpha
 
-processText :: String -> Int -> String
-processText text minFrequency = 
-    let counts = countWords text
-        filtered = filterByFrequency minFrequency counts
-    in displayWordCounts filteredmodule WordFrequencyCounter where
+getTopNWords :: Int -> WordFreq -> [(String, Int)]
+getTopNWords n freqMap =
+    take n $ List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) $ Map.toList freqMap
 
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group)
-import Data.Ord (Down(..))
+processText :: String -> Int -> [(String, Int)]
+processText text n = getTopNWords n $ countWordFrequencies text
 
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
-        grouped = group $ sort wordsList
-    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
-
-formatHistogram :: [WordCount] -> String
-formatHistogram counts = 
-    let maxWordLength = maximum $ map (length . fst) counts
-        maxCount = maximum $ map snd counts
-        scale = 50
-    in unlines $ map (\(word, count) -> 
-        padRight maxWordLength word ++ " | " ++ 
-        replicate (count * scale `div` maxCount) '█' ++ 
-        " (" ++ show count ++ ")") counts
-  where
-    padRight n s = s ++ replicate (n - length s) ' '
-
-main :: IO ()
-main = do
-    putStrLn "Enter text to analyze word frequency:"
-    input <- getContents
-    let frequencies = countWords input
-    putStrLn "\nWord Frequency Histogram:"
-    putStrLn $ formatHistogram $ take 20 frequenciesmodule WordFrequencyCounter where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleanedWords = filter (all isAlpha) wordsList
-        grouped = groupCount cleanedWords
-    in take 10 $ sortOn (Down . snd) grouped
-  where
-    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
-    
-    groupCount :: [String] -> [WordCount]
-    groupCount = foldr incrementCount []
-    
-    incrementCount :: String -> [WordCount] -> [WordCount]
-    incrementCount word [] = [(word, 1)]
-    incrementCount word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : incrementCount word rest
-
-displayResults :: [WordCount] -> String
-displayResults counts = 
-    "Top 10 most frequent words:\n" ++
-    unlines (map (\(word, count) -> word ++ ": " ++ show count) counts)
-
-processText :: String -> String
-processText = displayResults . countWordsmodule WordFrequencyCounter where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
-import Data.Ord (Down(..))
-
-type WordFreq = (String, Int)
-
-countWords :: String -> [WordFreq]
-countWords text = 
-    let wordsList = filter (not . null) $ map normalize $ words text
-        normalized = map toLower . filter isAlpha
-        freqMap = map (\ws -> (head ws, length ws)) . group . sort $ wordsList
-    in sortOn (Down . snd) freqMap
-
-filterByFrequency :: Int -> [WordFreq] -> [WordFreq]
-filterByFrequency minFreq = filter (\(_, count) -> count >= minFreq)
-
-getTopNWords :: Int -> [WordFreq] -> [WordFreq]
-getTopNWords n = take n
-
-displayFrequencies :: [WordFreq] -> String
-displayFrequencies freqs = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
-
-processText :: String -> Int -> Int -> String
-processText text minFreq topN = 
-    let freqs = countWords text
-        filtered = filterByFrequency minFreq freqs
-        topWords = getTopNWords topN filtered
-    in displayFrequencies topWords
-
-main :: IO ()
-main = do
-    let sampleText = "Hello world hello haskell world programming haskell functional programming"
-    putStrLn $ processText sampleText 1 5module WordFrequencyCounter where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleaned = map toLower wordsList
-        counts = foldl incrementCount [] cleaned
-    in sortOn (Down . snd) counts
-  where
-    cleanWord = filter isAlpha
-    incrementCount [] word = [(word, 1)]
-    incrementCount ((w, c):rest) word
-        | w == word = (w, c+1) : rest
-        | otherwise = (w, c) : incrementCount rest word
-
-formatOutput :: [WordCount] -> String
-formatOutput counts = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
-
-main :: IO ()
-main = do
-    putStrLn "Enter text to analyze word frequency:"
-    input <- getContents
-    let frequencies = countWords input
-    putStrLn "\nWord frequencies (sorted):"
-    putStrLn $ formatOutput frequenciesmodule WordFrequencyCounter where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn, group, sort)
-import Data.Ord (Down(..))
-
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
-        grouped = group $ sort wordsList
-    in map (\ws -> (head ws, length ws)) grouped
-
-sortByFrequency :: [WordCount] -> [WordCount]
-sortByFrequency = sortOn (Down . snd)
-
-filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
-filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
-
-getTopNWords :: Int -> [WordCount] -> [WordCount]
-getTopNWords n = take n . sortByFrequency
-
-wordFrequencyReport :: String -> Int -> Int -> [WordCount]
-wordFrequencyReport text minFreq topN =
-    let counts = countWords text
-        filtered = filterByMinFrequency minFreq counts
-    in getTopNWords topN filtered
-
-displayWordCounts :: [WordCount] -> String
-displayWordCounts counts =
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
-
-processText :: String -> String
-processText text =
-    let report = wordFrequencyReport text 2 10
-    in "Top 10 words appearing at least twice:\n" ++ displayWordCounts reportmodule WordFrequencyCounter where
-
-import Data.Char (toLower, isAlphaNum)
-import Data.List (sortOn)
-import Data.Map (Map)
-import qualified Data.Map as Map
-
-countWords :: String -> Map String Int
-countWords text = Map.fromListWith (+) wordCounts
-  where
-    wordsList = map normalize (words text)
-    wordCounts = map (\w -> (w, 1)) wordsList
-    normalize = map toLower . filter isAlphaNum
-
-getTopWords :: Int -> String -> [(String, Int)]
-getTopWords n text = take n sortedWords
-  where
-    wordMap = countWords text
-    sortedWords = sortOn (\(_, count) -> negate count) (Map.toList wordMap)
-
-displayFrequency :: [(String, Int)] -> String
-displayFrequency freqList = unlines (map formatEntry freqList)
-  where
-    formatEntry (word, count) = word ++ ": " ++ show count
-module WordFrequencyCounter where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleanedWords = filter (all isAlpha) wordsList
-    in sortOn (Down . snd) $ countOccurrences cleanedWords
-  where
-    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
-
-countOccurrences :: [String] -> [WordCount]
-countOccurrences = foldr incrementCount []
-  where
-    incrementCount word [] = [(word, 1)]
-    incrementCount word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : incrementCount word rest
-
-topNWords :: Int -> String -> [WordCount]
-topNWords n text = take n $ countWords text
-
-wordFrequencyReport :: String -> String
-wordFrequencyReport text = 
-    let counts = countWords text
-        totalWords = sum $ map snd counts
-        uniqueWords = length counts
-    in unlines $
-        [ "Word Frequency Report"
-        , "====================="
-        , "Total words: " ++ show totalWords
-        , "Unique words: " ++ show uniqueWords
-        , ""
-        , "Top 10 words:"
-        ] ++ map formatWordCount (take 10 counts)
-  where
-    formatWordCount (word, count) = word ++ ": " ++ show count
+displayResults :: [(String, Int)] -> String
+displayResults results =
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) results
