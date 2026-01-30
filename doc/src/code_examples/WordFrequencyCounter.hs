@@ -143,4 +143,28 @@ main = do
     putStrLn "Enter text to analyze word frequency:"
     input <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords text =
+    let wordsList = filter (not . null) $ map normalize $ words text
+    in List.foldl' (\acc w -> Map.insertWith (+) w 1 acc) Map.empty wordsList
+  where
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+printWordFrequencies :: WordCount -> IO ()
+printWordFrequencies wc = do
+    let sorted = List.sortOn (\(_, count) -> negate count) $ Map.toList wc
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) sorted
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. World of functional programming."
+    putStrLn "Word frequencies:"
+    printWordFrequencies $ countWords sampleText
