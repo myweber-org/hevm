@@ -78,3 +78,27 @@ processUserData rawName rawEmail rawAge = do
             putStrLn "User profile created successfully:"
             print profile
             putStrLn $ "Welcome, " ++ username profile ++ "!"
+module DataProcessor where
+
+import Data.Char (isDigit, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Transform a string to uppercase
+transformToUpper :: String -> String
+transformToUpper = map toUpper
+
+-- Process a list of strings: validate numeric, transform to uppercase
+processData :: [String] -> [String]
+processData = map transformToUpper . filter validateNumeric
+
+-- Format processed data as a comma-separated string
+formatOutput :: [String] -> String
+formatOutput = intercalate ", "
+
+-- Main processing pipeline
+runDataProcessor :: [String] -> String
+runDataProcessor = formatOutput . processData
