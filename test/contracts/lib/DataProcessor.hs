@@ -7,11 +7,12 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processEvenSquares :: [Int] -> [Int]
 processEvenSquares = filterAndTransform even (\x -> x * x)
 
-sumProcessedList :: [Int] -> Int
-sumProcessedList = sum . processEvenSquares
+sumProcessed :: (Int -> Int) -> [Int] -> Int
+sumProcessed processor = sum . map processor
 
 main :: IO ()
 main = do
     let numbers = [1..10]
-    let result = sumProcessedList numbers
-    putStrLn $ "Sum of squares of even numbers from 1 to 10: " ++ show result
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of doubled values: " ++ show (sumProcessed (*2) numbers)
