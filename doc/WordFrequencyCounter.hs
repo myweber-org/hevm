@@ -8,26 +8,25 @@ type WordCount = (String, Int)
 
 countWords :: String -> [WordCount]
 countWords text = 
-    let words' = filter (not . null) $ map cleanWord $ words text
-        cleaned = filter (all isAlpha) words'
-    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) $ group $ sort cleaned
-  where
-    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    let wordsList = filter (not . null) $ map normalize $ words text
+        normalized = map toLower . filter isAlpha
+        normalize = normalized
+        frequencies = foldr countWord [] wordsList
+        countWord word [] = [(word, 1)]
+        countWord word ((w, c):rest)
+            | word == w = (w, c + 1) : rest
+            | otherwise = (w, c) : countWord word rest
+    in sortOn (Down . snd) frequencies
 
-printHistogram :: [WordCount] -> IO ()
-printHistogram counts = do
-    putStrLn "Word Frequency Histogram:"
-    putStrLn "=========================="
-    mapM_ printBar counts
-  where
-    printBar (word, count) = 
-        putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")"
-    
-    maxWordLength = maximum $ map (length . fst) counts
+topNWords :: Int -> String -> [WordCount]
+topNWords n = take n . countWords
 
-analyzeText :: String -> IO ()
-analyzeText text = do
-    let frequencies = countWords text
-    putStrLn $ "Total unique words: " ++ show (length frequencies)
-    putStrLn $ "Most frequent word: " ++ fst (head frequencies)
-    printHistogram $ take 10 frequencies
+testText :: String
+testText = "The quick brown fox jumps over the lazy dog. The dog barks at the fox."
+
+main :: IO ()
+main = do
+    putStrLn "Word frequencies:"
+    mapM_ print $ countWords testText
+    putStrLn "\nTop 3 words:"
+    mapM_ print $ topNWords 3 testText
