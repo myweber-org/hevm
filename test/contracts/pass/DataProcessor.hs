@@ -125,3 +125,17 @@ main = do
     
     putStrLn "\nSum of processed numbers:"
     print $ sumProcessed (\x -> x * 2) processed
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessed :: (Int -> Int) -> [Int] -> Int
+sumProcessed f = foldl' (\acc x -> acc + f x) 0
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
