@@ -1,14 +1,10 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    print result
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map avg $ windows windowSize xs
+  where
+    windows n = takeWhile ((== n) . length) . map (take n) . tails
+    avg vals = sum vals / fromIntegral (length vals)
