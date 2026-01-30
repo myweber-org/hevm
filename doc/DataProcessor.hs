@@ -13,4 +13,7 @@ movingAverage n xs
     | otherwise = map average $ windows n xs
   where
     windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)
+    average zs = sum zs / fromIntegral (length zs)module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (*2) . filter (>0)
