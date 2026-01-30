@@ -138,4 +138,22 @@ sumProcessed f = foldl' (\acc x -> acc + f x) 0
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
-safeHead (x:_) = Just x
+safeHead (x:_) = Just xmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV csvData = map (map read . splitOn ",") (lines csvData)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose x = map head x : transpose (map tail x)
+
+processCSVData :: String -> [Double]
+processCSVData csvData = calculateAverages (parseCSV csvData)
