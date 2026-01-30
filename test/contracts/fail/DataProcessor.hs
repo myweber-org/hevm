@@ -124,4 +124,17 @@ validateData :: [Int] -> Bool
 validateData xs = all (> 0) xs && length xs > 3
 
 combineResults :: [Int] -> [Int] -> [Int]
-combineResults xs ys = zipWith (+) (processData xs) (processData ys)
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
