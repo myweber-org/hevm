@@ -55,4 +55,21 @@ main = do
     putStrLn "\nMoving average with window size 3:"
     print $ movingAverage 3 sampleData
     putStrLn "\nMoving average with window size 5:"
-    print $ movingAverage 5 sampleData
+    print $ movingAverage 5 sampleDatamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Bool
+validateInput = all (\x -> x >= -100 && x <= 100)
+
+safeProcessData :: [Int] -> Maybe [Int]
+safeProcessData xs
+    | validateInput xs = Just (processData xs)
+    | otherwise = Nothing
