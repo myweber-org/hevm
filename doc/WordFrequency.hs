@@ -238,4 +238,42 @@ mostFrequent text =
 analyzeText :: String -> IO ()
 analyzeText input = do
     putStrLn "Top 5 most frequent words:"
-    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) $ mostFrequent input
+    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) $ mostFrequent inputmodule TextUtils.WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+  where
+    cleanWord = map toLower . filter isAlpha
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = 
+    take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text =
+    let freqList = topNWords 10 text
+        totalWords = sum $ map snd freqList
+    in unlines $
+        "Word Frequency Analysis Report" :
+        "==============================" :
+        "" :
+        map (\(word, count) -> word ++ ": " ++ show count ++ " (" ++ showPercentage count totalWords ++ "%)") freqList
+  where
+    showPercentage count total = 
+        take 4 $ show ((fromIntegral count / fromIntegral total) * 100)
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn $ wordFrequencyReport text
+    let freqMap = countWords text
+    putStrLn $ "Total unique words: " ++ show (Map.size freqMap)
+    putStrLn $ "Most frequent word: " ++ fst (head $ topNWords 1 text)
