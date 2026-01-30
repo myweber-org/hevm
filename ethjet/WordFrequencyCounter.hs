@@ -94,4 +94,45 @@ sampleText :: String
 sampleText = "Hello world! Hello Haskell. Haskell is functional. World of Haskell."
 
 main :: IO ()
-main = displayAnalysis sampleText 3
+main = displayAnalysis sampleText 3module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+cleanWord :: String -> String
+cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n . sortByFrequency
+
+wordFrequencyReport :: String -> Int -> Int -> [WordCount]
+wordFrequencyReport text minFreq topN =
+    let counts = countWords text
+        filtered = filterByMinFrequency minFreq counts
+    in getTopNWords topN filtered
+
+displayWordCounts :: [WordCount] -> IO ()
+displayWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+sampleAnalysis :: IO ()
+sampleAnalysis = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World says hello."
+    putStrLn "Word frequency analysis:"
+    displayWordCounts $ wordFrequencyReport sampleText 1 5
