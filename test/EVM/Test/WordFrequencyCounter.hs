@@ -88,4 +88,43 @@ main :: IO ()
 main = do
   let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
   putStrLn "Top 3 most frequent words:"
-  putStrLn $ prettyPrint $ processText 3 sampleText
+  putStrLn $ prettyPrint $ processText 3 sampleTextmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type WordCount = Map.Map T.Text Int
+
+countWords :: T.Text -> WordCount
+countWords text =
+    let wordsList = T.words $ T.toLower $ T.filter (\c -> Char.isLetter c || Char.isSpace c) text
+    in Map.fromListWith (+) [(w, 1) | w <- wordsList]
+
+getTopWords :: Int -> WordCount -> [(T.Text, Int)]
+getTopWords n wordCount =
+    take n $ List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) $ Map.toList wordCount
+
+displayResults :: [(T.Text, Int)] -> IO ()
+displayResults results = do
+    putStrLn "Top words by frequency:"
+    putStrLn "-----------------------"
+    mapM_ (\(word, count) -> TIO.putStrLn $ T.concat [word, T.pack ": ", T.pack (show count)]) results
+
+processTextFile :: FilePath -> Int -> IO ()
+processTextFile filePath topN = do
+    content <- TIO.readFile filePath
+    let wordCount = countWords content
+    let topWords = getTopWords topN wordCount
+    displayResults topWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter file path: "
+    filePath <- getLine
+    putStrLn "Enter number of top words to display: "
+    topNStr <- getLine
+    let topN = read topNStr :: Int
+    processTextFile filePath topN
