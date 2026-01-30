@@ -84,4 +84,31 @@ processText = formatOutput . countWords
 main :: IO ()
 main = do
     input <- getContents
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        freqMap = foldr (\w m -> insertWord w m) [] cleaned
+    in take 10 $ sortOn (Down . snd) freqMap
+  where
+    cleanWord = filter isAlpha
+    insertWord w [] = [(w, 1)]
+    insertWord w ((x, n):xs)
+        | w == x = (x, n+1):xs
+        | otherwise = (x, n):insertWord w xs
+
+displayResults :: [WordCount] -> String
+displayResults counts = 
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
+
+analyzeText :: String -> String
+analyzeText = displayResults . countWords
