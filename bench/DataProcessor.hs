@@ -15,4 +15,15 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> if even x then x*x else 0) numbers)
+    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> if even x then x*x else 0) numbers)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ws = sum ws / fromIntegral (length ws)
