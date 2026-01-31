@@ -7,27 +7,17 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
+
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processEvenSquares
-
 main :: IO ()
 main = do
-    let numbers = [1..10]
+    let numbers = [-3, 2, 0, 7, -1, 4]
     putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed numbers)
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
+    putStrLn $ "First element: " ++ show (safeHead numbers)
