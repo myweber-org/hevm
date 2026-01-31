@@ -179,4 +179,40 @@ main = do
     args <- getArgs
     case args of
         [] -> putStrLn "Usage: wordfreq <text>"
-        text -> putStrLn $ formatOutput $ countWords $ unwords text
+        text -> putStrLn $ formatOutput $ countWords $ unwords textmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+    in map (\ws -> (head ws, length ws)) $ groupSorted $ sort cleaned
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+groupSorted :: [String] -> [[String]]
+groupSorted [] = []
+groupSorted (x:xs) = 
+    let (group, rest) = span (== x) (x:xs)
+    in group : groupSorted rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <filename>"
+        (filename:_) -> do
+            content <- readFile filename
+            let frequencies = countWords content
+                sorted = sortOn (Down . snd) frequencies
+            putStrLn $ formatOutput sorted
