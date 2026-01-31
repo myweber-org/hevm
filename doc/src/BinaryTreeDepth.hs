@@ -49,4 +49,8 @@ treeDepth Leaf = 0
 treeDepth (Node left _ right) = 1 + max (treeDepth left) (treeDepth right)
 
 sampleTree :: BinaryTree Int
-sampleTree = Node (Node Leaf 2 Leaf) 1 (Node (Node Leaf 4 Leaf) 3 Leaf)
+sampleTree = Node (Node Leaf 2 Leaf) 1 (Node (Node Leaf 4 Leaf) 3 Leaf)data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
+
+treeDepth :: BinaryTree a -> Int
+treeDepth Empty = 0
+treeDepth (Node _ left right) = 1 + max (treeDepth left) (treeDepth right)
