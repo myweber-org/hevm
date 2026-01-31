@@ -19,3 +19,13 @@ main = do
     putStrLn $ "Even squares: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of even squares: " ++ 
         show (sumProcessedData even (^2) sampleData)
+module DataProcessor where
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = map (^2) . filter even
+
+main :: IO ()
+main = do
+    let input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    let result = processEvenSquares input
+    print result
