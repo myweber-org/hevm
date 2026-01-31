@@ -31,4 +31,39 @@ fib = memoize fib'
 main :: IO ()
 main = do
     putStrLn "Fibonacci numbers:"
-    mapM_ (print . fib) [0..10]
+    mapM_ (print . fib) [0..10]module FibonacciSequence where
+
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+fibonacci :: Int -> Integer
+fibonacci = (map fib [0..] !!)
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+
+memoizedFibonacci :: Int -> Integer
+memoizedFibonacci = (map fib [0..] !!)
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = memoizedFibonacci (n - 1) + memoizedFibonacci (n - 2)
+
+fibonacciMemo :: Int -> Integer
+fibonacciMemo = memoize fib
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacciMemo (n - 1) + fibonacciMemo (n - 2)
+
+memoize :: (Int -> a) -> Int -> a
+memoize f = let cache = Map.fromList [(x, f x) | x <- [0..]] 
+            in \n -> cache Map.! n
+
+main :: IO ()
+main = do
+    putStrLn "Fibonacci sequence:"
+    mapM_ (print . fibonacci) [0..10]
+    putStrLn "\nMemoized version:"
+    mapM_ (print . memoizedFibonacci) [0..10]
