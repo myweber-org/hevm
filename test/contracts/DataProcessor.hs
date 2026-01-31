@@ -43,4 +43,45 @@ processSampleData = do
     let windowSize = 3
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Moving average (window=" ++ show windowSize ++ "): " 
-             ++ show (movingAverage windowSize sampleData)
+             ++ show (movingAverage windowSize sampleData)module DataProcessor where
+
+import Data.Char (isDigit, isAlpha)
+import Data.List (intercalate)
+
+type ValidationRule = String -> Bool
+type Transformation = String -> String
+
+validateNumeric :: ValidationRule
+validateNumeric = all isDigit
+
+validateAlpha :: ValidationRule
+validateAlpha = all isAlpha
+
+transformToUpper :: Transformation
+transformToUpper = map toUpper
+
+transformPadRight :: Int -> Char -> Transformation
+transformPadRight n c s = s ++ replicate (n - length s) c
+
+processField :: ValidationRule -> Transformation -> String -> Maybe String
+processField validate transform input
+    | validate input = Just (transform input)
+    | otherwise = Nothing
+
+processRow :: [ValidationRule] -> [Transformation] -> [String] -> Maybe [String]
+processRow validations transformations row
+    | length validations == length transformations && length transformations == length row =
+        sequence $ zipWith3 processField validations transformations row
+    | otherwise = Nothing
+
+formatCSVRow :: [String] -> String
+formatCSVRow = intercalate ","
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+validateCSVData :: [[String]] -> [ValidationRule] -> [Transformation] -> Maybe [String]
+validateCSVData rows validations transformations = do
+    processedRows <- mapM (processRow validations transformations) rows
+    return $ map formatCSVRow processedRows
