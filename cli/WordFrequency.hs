@@ -1,36 +1,24 @@
 module WordFrequency where
 
-import Data.Char (toLower, isAlpha)
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
 import Data.List (sortOn)
 import Data.Ord (Down(..))
 
-type WordCount = (String, Int)
+type FrequencyMap = Map.Map String Int
 
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleaned = filter (all isAlpha) wordsList
-        grouped = foldr countWord [] cleaned
-    in take 10 $ sortOn (Down . snd) grouped
+countWords :: String -> FrequencyMap
+countWords = foldr insertWord Map.empty . words
   where
-    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
-    
-    countWord :: String -> [WordCount] -> [WordCount]
-    countWord word [] = [(word, 1)]
-    countWord word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : countWord word rest
+    insertWord w = Map.insertWith (+) (normalize w) 1
+    normalize = map toLower . filter isAlpha
 
-analyzeText :: String -> IO ()
-analyzeText input = do
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
+
+readAndAnalyze :: FilePath -> IO ()
+readAndAnalyze filepath = do
+    content <- readFile filepath
+    let topWords = topNWords 10 content
     putStrLn "Top 10 most frequent words:"
-    mapM_ printWord $ countWords input
-  where
-    printWord (word, count) = 
-        putStrLn $ word ++ ": " ++ show count
-
-main :: IO ()
-main = do
-    putStrLn "Enter text to analyze (press Ctrl+D when done):"
-    content <- getContents
-    analyzeText content
+    mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWords
