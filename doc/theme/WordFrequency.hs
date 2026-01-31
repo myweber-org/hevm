@@ -1,30 +1,24 @@
 module WordFrequency where
 
-import qualified Data.Char as Char
-import qualified Data.List as List
 import qualified Data.Map.Strict as Map
-import System.Environment (getArgs)
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
 
 type FrequencyMap = Map.Map String Int
 
 countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words . normalize
+countWords = foldr updateCount Map.empty . words
   where
-    normalize = map Char.toLower . filter (\c -> Char.isAlpha c || Char.isSpace c)
-    incrementWord word = Map.insertWith (+) word 1
+    updateCount word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
 
-formatResults :: FrequencyMap -> String
-formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
+topWords :: Int -> String -> [(String, Int)]
+topWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+  putStrLn "Top 10 most frequent words:"
+  mapM_ printWord (topWords 10 text)
   where
-    formatEntry (word, count) = word ++ ": " ++ show count
-
-processText :: String -> String
-processText = formatResults . countWords
-
-main :: IO ()
-main = do
-    args <- getArgs
-    case args of
-        [] -> interact processText
-        [filename] -> readFile filename >>= putStrLn . processText
-        _ -> putStrLn "Usage: wordfreq [filename] (omit filename for stdin)"
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
