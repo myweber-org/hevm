@@ -14,4 +14,10 @@ combineProcessors :: [Int] -> [Int]
 combineProcessors xs = 
     if validateData xs 
         then processData xs 
-        else []
+        else []module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
