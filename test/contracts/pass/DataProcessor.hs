@@ -4,12 +4,8 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processEvenNumbers :: [Int] -> [Int]
-processEvenNumbers = filterAndTransform even (* 2)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
 
-processOddNumbers :: [Int] -> [Int]
-processOddNumbers = filterAndTransform odd (+ 1)
-
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = 
-    sum . filterAndTransform predicate transformer
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
