@@ -101,4 +101,30 @@ topWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
 displayTopWords :: Int -> String -> IO ()
 displayTopWords n text = do
   putStrLn $ "Top " ++ show n ++ " words:"
-  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) (topWords n text)
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) (topWords n text)module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = map (map toLower) $ filter (all isAlpha) $ words text
+    incrementWord word acc = Map.insertWith (+) word 1 acc
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (\(_, count) -> -count) $ Map.toList (countWords text)
+
+displayTopWords :: Int -> String -> IO ()
+displayTopWords n text = do
+    putStrLn $ "Top " ++ show n ++ " most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) (topNWords n text)
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again world. Testing word frequency."
+    displayTopWords 5 sampleText
