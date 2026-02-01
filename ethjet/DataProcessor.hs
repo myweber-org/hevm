@@ -69,3 +69,18 @@ processEvenSquares = filterAndTransform even (\x -> x * x)
 
 sumProcessedList :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
 sumProcessedList predicate transformer = sum . filterAndTransform predicate transformer
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformFunction numbers =
+    map transformFunction (filter predicate numbers)
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let inputData = [1, -2, 3, 0, 5, -8]
+    let result = processData inputData
+    putStrLn $ "Input: " ++ show inputData
+    putStrLn $ "Result: " ++ show result
