@@ -59,3 +59,70 @@ movingAverage n xs
 tails :: [a] -> [[a]]
 tails [] = [[]]
 tails xs@(_:ys) = xs : tails ys
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+data SummaryStats = SummaryStats
+    { count :: Int
+    , sum   :: Double
+    , mean  :: Double
+    , min   :: Double
+    , max   :: Double
+    } deriving (Show, Eq)
+
+parseCSV :: String -> CSVData
+parseCSV = map (splitOn ',') . lines
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delim = foldr splitHelper [""]
+      where
+        splitHelper ch (x:xs)
+            | ch == delim = "":x:xs
+            | otherwise   = (ch:x):xs
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble = readMaybe
+
+computeColumnStats :: CSVData -> Int -> Maybe SummaryStats
+computeColumnStats rows colIndex
+    | null validValues = Nothing
+    | otherwise = Just SummaryStats
+        { count = length validValues
+        , sum   = total
+        , mean  = total / fromIntegral (length validValues)
+        , min   = minimum validValues
+        , max   = maximum validValues
+        }
+  where
+    extractValue :: Row -> Maybe Double
+    extractValue row
+        | colIndex < length row = safeReadDouble (row !! colIndex)
+        | otherwise = Nothing
+    
+    validValues = [v | Just v <- map extractValue rows]
+    total = foldl' (+) 0 validValues
+
+processCSVFile :: String -> Int -> IO (Maybe SummaryStats)
+processCSVFile filePath columnIndex = do
+    content <- readFile filePath
+    let parsedData = parseCSV content
+    return $ computeColumnStats parsedData columnIndex
+
+validateCSV :: CSVData -> Bool
+validateCSV [] = True
+validateCSV (firstRow:rows) = all (\row -> length row == length firstRow) rows
+
+filterRows :: (Row -> Bool) -> CSVData -> CSVData
+filterRows predicate = filter predicate
+
+mapColumn :: (String -> String) -> Int -> CSVData -> CSVData
+mapColumn f colIndex = map (mapAtIndex colIndex f)
+  where
+    mapAtIndex idx func row
+        | idx < length row = take idx row ++ [func (row !! idx)] ++ drop (idx + 1) row
+        | otherwise = row
