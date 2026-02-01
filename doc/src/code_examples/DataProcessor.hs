@@ -40,4 +40,22 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processData
+sumPositiveDoubles = sum . processDatamodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows size list = take (length list - size + 1) $ 
+                        map (take size) (tails list)
+    
+    average :: Fractional a => [a] -> a
+    average lst = sum lst / fromIntegral (length lst)
+
+-- Helper function from Data.List
+tails :: [a] -> [[a]]
+tails [] = [[]]
+tails xs@(_:ys) = xs : tails ys
