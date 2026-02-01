@@ -84,3 +84,31 @@ main = do
     let result = processData inputData
     putStrLn $ "Input: " ++ show inputData
     putStrLn $ "Result: " ++ show result
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUpperCase :: String -> String
+toUpperCase = map toUpper
+
+-- Process a list of strings: validate numeric, then convert valid ones to uppercase
+processData :: [String] -> [String]
+processData = map toUpperCase . filter validateNumeric
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let testData = ["123", "abc", "456", "def789"]
+    putStrLn "Original data:"
+    print testData
+    putStrLn "\nProcessed data (numeric values converted to uppercase):"
+    print $ processData testData
