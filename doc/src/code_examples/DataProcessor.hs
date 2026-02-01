@@ -30,4 +30,14 @@ main = do
     putStrLn "\nEven numbers squared:"
     print $ processEvenSquares numbers
     putStrLn "\nOdd numbers cubed:"
-    print $ processOddCubes numbers
+    print $ processOddCubes numbersmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
