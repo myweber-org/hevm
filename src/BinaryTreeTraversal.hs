@@ -46,3 +46,27 @@ preorder (Node left val right) = [val] ++ preorder left ++ preorder right
 postorder :: BinaryTree a -> [a]
 postorder Leaf = []
 postorder (Node left val right) = postorder left ++ postorder right ++ [val]
+module BinaryTreeTraversal where
+
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
+
+inorder :: BinaryTree a -> [a]
+inorder Empty = []
+inorder (Node value left right) = inorder left ++ [value] ++ inorder right
+
+preorder :: BinaryTree a -> [a]
+preorder Empty = []
+preorder (Node value left right) = [value] ++ preorder left ++ preorder right
+
+postorder :: BinaryTree a -> [a]
+postorder Empty = []
+postorder (Node value left right) = postorder left ++ postorder right ++ [value]
+
+sampleTree :: BinaryTree Int
+sampleTree = Node 1
+                (Node 2
+                    (Node 4 Empty Empty)
+                    (Node 5 Empty Empty))
+                (Node 3
+                    (Node 6 Empty Empty)
+                    Empty)
