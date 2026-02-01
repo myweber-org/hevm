@@ -26,4 +26,36 @@ processText text n = getTopNWords n $ countWordFrequencies text
 
 displayResults :: [(String, Int)] -> String
 displayResults results =
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) results
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) resultsmodule WordFrequencyCounter where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countWord [] wordsList
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(word, count) -> word ++ ": " ++ show count) counts)
+
+processText :: String -> String
+processText = formatResults . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze:"
+    text <- getContents
+    putStrLn $ processText text
