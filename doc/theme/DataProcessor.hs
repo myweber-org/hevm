@@ -88,4 +88,21 @@ main = do
     let sampleData = [1, -5, 3, 0, 8, -2]
     print $ processNumbers sampleData
     print $ sumProcessed sampleData
-    print $ validateInput sampleData
+    print $ validateInput sampleDatamodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV = map (map read . splitOn ",") . lines
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows 
+    then []
+    else map avg $ transpose rows
+  where
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
