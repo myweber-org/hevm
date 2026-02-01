@@ -105,4 +105,10 @@ calculateAverages rows =
     transpose = foldr (zipWith (:)) (repeat [])
 
 processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
+processCSVData = calculateAverages . parseCSVmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
