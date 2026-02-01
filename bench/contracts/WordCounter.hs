@@ -2,26 +2,22 @@
 module WordCounter where
 
 import Data.Char (isSpace)
-import Data.List (groupBy)
+import Data.List (group, sort)
 
-countWords :: String -> Int
-countWords = length . words
-
-countUniqueWords :: String -> Int
-countUniqueWords = length . groupBy sameWord . words
-  where sameWord a b = map toLower a == map toLower b
-        toLower c = if c >= 'A' && c <= 'Z' then toEnum (fromEnum c + 32) else c
-
-getWordFrequencies :: String -> [(String, Int)]
-getWordFrequencies text = map (\ws -> (head ws, length ws)) grouped
+countWords :: String -> [(String, Int)]
+countWords = map (\ws -> (head ws, length ws)) 
+           . group 
+           . sort 
+           . words 
+           . map normalize
   where
-    lowerWords = map (map toLower) (words text)
-    toLower c = if c >= 'A' && c <= 'Z' then toEnum (fromEnum c + 32) else c
-    grouped = groupBy (==) (sort lowerWords)
+    normalize c
+      | c `elem` ".,!?;:\"" = ' '
+      | otherwise = toLower c
 
-processText :: String -> IO ()
-processText text = do
-  putStrLn $ "Total words: " ++ show (countWords text)
-  putStrLn $ "Unique words: " ++ show (countUniqueWords text)
+wordFrequency :: String -> IO ()
+wordFrequency text = do
+  let counts = countWords text
   putStrLn "Word frequencies:"
-  mapM_ (\(w, c) -> putStrLn $ "  " ++ w ++ ": " ++ show c) (getWordFrequencies text)
+  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) counts
+  putStrLn $ "Total unique words: " ++ show (length counts)
