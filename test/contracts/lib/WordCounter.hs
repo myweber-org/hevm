@@ -1,42 +1,18 @@
-
 module WordCounter where
 
 import Data.Char (isSpace)
 import Data.List (group, sort)
 
 countWords :: String -> [(String, Int)]
-countWords text = 
-    let wordsList = filter (not . all isSpace) $ splitWords text
-        lowerWords = map (map toLower) wordsList
-        sortedWords = sort lowerWords
-        groupedWords = group sortedWords
-    in map (\ws -> (head ws, length ws)) groupedWords
-    where
-        splitWords = words . map (\c -> if isSpace c then ' ' else c)
-        toLower c
-            | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
-            | otherwise = c
-
-displayWordCounts :: String -> IO ()
-displayWordCounts text = do
-    let counts = countWords text
-    putStrLn "Word frequencies:"
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
-    putStrLn $ "Total unique words: " ++ show (length counts)
-module WordCounter where
-
-import Data.Char (isSpace)
-import Data.List (group, sort)
-
-countWords :: String -> [(String, Int)]
-countWords text = 
-    let wordsList = filter (not . all isSpace) $ splitWords text
-        lowerWords = map (map toLower) wordsList
-    in map (\ws -> (head ws, length ws)) $ group $ sort lowerWords
+countWords = map (\xs -> (head xs, length xs)) . group . sort . words . normalize
   where
-    splitWords :: String -> [String]
-    splitWords [] = []
-    splitWords str = 
-        let (word, rest) = break isSpace str
-            (_, after) = span isSpace rest
-        in word : splitWords after
+    normalize = map toLower . filter (\c -> not (c `elem` ",.!?;:\"()[]{}"))
+    toLower c
+      | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
+      | otherwise = c
+
+displayCounts :: [(String, Int)] -> String
+displayCounts = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+processText :: String -> String
+processText = displayCounts . countWords
