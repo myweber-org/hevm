@@ -55,4 +55,35 @@ main = do
     putStrLn "Enter text to analyze word frequency:"
     input <- getLine
     putStrLn "\nWord frequencies:"
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordFreq = Map.Map String Int
+
+countWords :: String -> WordFreq
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+  where
+    normalize = filter Char.isAlpha . map Char.toLower
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = 
+    take n $ List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) $
+    Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqs = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+processText :: Int -> String -> String
+processText n = displayFrequencies . topNWords n
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell! Haskell is great. World says hello back."
+    putStrLn "Top 5 most frequent words:"
+    putStrLn $ processText 5 sampleText
