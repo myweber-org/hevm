@@ -37,4 +37,18 @@ fibonacciMemoized = fix memoFib
   where
     memoFib _ 0 = 0
     memoFib _ 1 = 1
-    memoFib f n = f (n - 1) + f (n - 2)
+    memoFib f n = f (n - 1) + f (n - 2)module FibonacciSequence where
+
+import Data.Function (fix)
+
+fibMemo :: Int -> Integer
+fibMemo = (map fib [0..] !!)
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibMemo (n - 1) + fibMemo (n - 2)
+
+main :: IO ()
+main = do
+    putStrLn "Fibonacci numbers from 0 to 20:"
+    mapM_ (print . fibMemo) [0..20]
