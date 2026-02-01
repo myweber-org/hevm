@@ -56,4 +56,16 @@ calculateAverages rows
     transpose = foldr (zipWith (:)) (repeat [])
 
 processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
+processCSVData = calculateAverages . parseCSVmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-3, 1, 0, 5, -2, 8]
+    let result = processNumbers numbers
+    print result
