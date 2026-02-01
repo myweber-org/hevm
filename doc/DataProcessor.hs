@@ -92,3 +92,50 @@ main = do
 
 processData :: [Int] -> [Int]
 processData = map (^2) . filter even
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Char
+import System.Locale
+
+type CSVRow = [String]
+type DateRange = (Day, Day)
+
+parseDate :: String -> Maybe Day
+parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
+
+parseCSVRow :: String -> CSVRow
+parseCSVRow = splitByComma . trim
+  where
+    splitByComma = unfoldr (\s -> case break (== ',') s of
+                                 (x, ',' : rest) -> Just (x, rest)
+                                 (x, "") -> Just (x, "")
+                                 _ -> Nothing)
+    trim = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
+filterByDateRange :: DateRange -> [(Day, CSVRow)] -> [(Day, CSVRow)]
+filterByDateRange (start, end) = filter (\(day, _) -> day >= start && day <= end)
+
+processCSVData :: String -> DateRange -> Maybe [(Day, CSVRow)]
+processCSVData csvContent dateRange = do
+    let rows = map parseCSVRow $ lines csvContent
+    datedRows <- mapM extractDate rows
+    return $ filterByDateRange dateRange datedRows
+  where
+    extractDate (dateStr : rest) = do
+        day <- parseDate dateStr
+        return (day, rest)
+    extractDate _ = Nothing
+
+formatOutput :: [(Day, CSVRow)] -> String
+formatOutput = unlines . map (\(day, row) -> formatTime defaultTimeLocale "%Y-%m-%d" day ++ "," ++ intercalate "," row)
+
+main :: IO ()
+main = do
+    let sampleData = "2023-01-15,ProductA,100\n2023-02-20,ProductB,150\n2023-03-10,ProductC,200"
+    let range = (fromGregorian 2023 1 1, fromGregorian 2023 2 28)
+    case processCSVData sampleData range of
+        Just filtered -> putStrLn $ formatOutput filtered
+        Nothing -> putStrLn "Error processing CSV data"
