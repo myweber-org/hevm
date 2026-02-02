@@ -58,3 +58,16 @@ processData :: String -> Maybe (Double, Double)
 processData input = do
   records <- parseCSV input
   return $ calculateAverages records
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
