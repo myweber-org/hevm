@@ -30,4 +30,48 @@ main = do
     putStrLn "Enter text to analyze (press Ctrl+D when done):"
     input <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ analyzeText input
+    putStrLn $ analyzeText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+cleanWord :: String -> String
+cleanWord = filter isAlpha
+
+sortByFrequency :: [WordFreq] -> [WordFreq]
+sortByFrequency = sortOn (Down . snd)
+
+sortAlphabetically :: [WordFreq] -> [WordFreq]
+sortAlphabetically = sortOn fst
+
+filterByMinFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n . sortByFrequency
+
+formatOutput :: [WordFreq] -> String
+formatOutput = unlines . map (\(word, count) -> word ++ ": " ++ show count)
+
+analyzeText :: String -> Int -> Int -> String
+analyzeText text minFreq topN =
+    let freqList = countWords text
+        filtered = filterByMinFrequency minFreq freqList
+        topWords = getTopNWords topN filtered
+    in formatOutput topWords
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
+    putStrLn "Word frequency analysis:"
+    putStrLn $ analyzeText sampleText 1 5
