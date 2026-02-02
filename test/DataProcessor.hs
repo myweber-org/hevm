@@ -33,4 +33,21 @@ main :: IO ()
 main = do
     let numbers = [1..10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV csv = map (map read . splitOn ",") $ lines csv
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows 
+    then []
+    else map avg $ transpose rows
+  where
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
