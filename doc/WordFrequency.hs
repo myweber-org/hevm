@@ -277,3 +277,40 @@ analyzeText text = do
     let freqMap = countWords text
     putStrLn $ "Total unique words: " ++ show (Map.size freqMap)
     putStrLn $ "Most frequent word: " ++ fst (head $ topNWords 1 text)
+module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower wordsList
+        grouped = foldr (\word acc -> insertWord word acc) [] cleaned
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processFile :: FilePath -> IO ()
+processFile filename = do
+    content <- readFile filename
+    let frequencies = countWords content
+    putStrLn $ formatOutput frequencies
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [filename] -> processFile filename
+        _ -> putStrLn "Usage: wordfrequency <filename>"
