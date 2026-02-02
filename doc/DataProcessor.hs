@@ -162,4 +162,10 @@ main = do
     let processed = processData sampleData
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show processed
-    putStrLn $ "Validation result: " ++ show (validateData processed)
+    putStrLn $ "Validation result: " ++ show (validateData processed)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
