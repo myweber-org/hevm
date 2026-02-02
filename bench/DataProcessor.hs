@@ -110,3 +110,66 @@ processCSVFile :: FilePath -> IO [Double]
 processCSVFile path = do
     content <- readFile path
     return $ calculateAverages content
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
+
+-- Process a list of strings with given transformation
+processStrings :: (String -> String) -> [String] -> [String]
+processStrings f = map f
+
+-- Combine validation and transformation
+processWithValidation :: (String -> Bool) -> (String -> String) -> String -> Maybe String
+processWithValidation validator transformer input =
+    if validator input
+    then Just (transformer input)
+    else Nothing
+
+-- Example data record
+data Person = Person
+    { firstName :: String
+    , lastName  :: String
+    , phone     :: String
+    } deriving (Show, Eq)
+
+-- Process person record with validation
+processPerson :: Person -> Maybe Person
+processPerson person = do
+    let validPhone = normalizePhone (phone person)
+    if length validPhone >= 10
+        then Just person { phone = validPhone }
+        else Nothing
+
+-- Convert person to formatted string
+personToString :: Person -> String
+personToString p = 
+    intercalate " | " 
+        [ formatName (firstName p) (lastName p)
+        , normalizePhone (phone p)
+        , toUppercase (firstName p)
+        ]
+
+-- Batch process list of persons
+processPersonList :: [Person] -> [String]
+processPersonList = map personToString . filter (maybe False (const True) . processPerson)
