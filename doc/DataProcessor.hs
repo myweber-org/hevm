@@ -138,4 +138,10 @@ main = do
     let range = (fromGregorian 2023 1 1, fromGregorian 2023 2 28)
     case processCSVData sampleData range of
         Just filtered -> putStrLn $ formatOutput filtered
-        Nothing -> putStrLn "Error processing CSV data"
+        Nothing -> putStrLn "Error processing CSV data"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
