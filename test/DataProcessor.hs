@@ -1,42 +1,24 @@
-
 module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just xmodule DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles xs = 
-    let processed = processNumbers xs
-    in sum processed
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (> -100) xs
 
 main :: IO ()
 main = do
-    let numbers = [1, -2, 3, 0, 5, -8]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
-    putStrLn $ "First element (safe): " ++ show (safeHead numbers)module DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter even
+    let sampleData = [1, -2, 3, 4, -5, 6]
+    if validateInput sampleData
+        then do
+            putStrLn $ "Original data: " ++ show sampleData
+            putStrLn $ "Processed data: " ++ show (processData sampleData)
+            putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+        else putStrLn "Invalid input data"
