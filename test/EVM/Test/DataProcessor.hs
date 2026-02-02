@@ -30,4 +30,31 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Text.Read (readMaybe)
+
+type Record = (String, Double, Double)
+
+parseCSV :: String -> Maybe [Record]
+parseCSV csvData = mapM parseLine (lines csvData)
+  where
+    parseLine line = case splitOn "," line of
+      [name, val1, val2] -> do
+        v1 <- readMaybe val1
+        v2 <- readMaybe val2
+        return (name, v1, v2)
+      _ -> Nothing
+
+calculateAverages :: [Record] -> (Double, Double)
+calculateAverages records = (avg firsts, avg seconds)
+  where
+    firsts  = map (\(_, x, _) -> x) records
+    seconds = map (\(_, _, y) -> y) records
+    avg xs = sum xs / fromIntegral (length xs)
+
+processData :: String -> Maybe (Double, Double)
+processData input = do
+  records <- parseCSV input
+  return $ calculateAverages records
