@@ -36,4 +36,7 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
-    putStrLn $ "First element (safe): " ++ show (safeHead numbers)
+    putStrLn $ "First element (safe): " ++ show (safeHead numbers)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
