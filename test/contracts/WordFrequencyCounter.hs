@@ -118,3 +118,50 @@ processText :: String -> String
 processText text =
     let report = wordFrequencyReport text 2 10
     in "Top 10 words appearing at least twice:\n" ++ displayWordCounts report
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> Int -> Int -> IO ()
+analyzeText text minFreq topN = do
+    let allCounts = countWords text
+    let filtered = filterByMinFrequency minFreq allCounts
+    let topWords = getTopNWords topN filtered
+    
+    putStrLn $ "Total unique words: " ++ show (length allCounts)
+    putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered)
+    putStrLn $ "Top " ++ show topN ++ " words:"
+    printWordCounts topWords
+
+sampleText :: String
+sampleText = "The quick brown fox jumps over the lazy dog. The dog was not amused by the fox's antics. Quick thinking saved the day."
+
+main :: IO ()
+main = do
+    putStrLn "Word Frequency Analysis"
+    putStrLn "======================="
+    analyzeText sampleText 2 5
