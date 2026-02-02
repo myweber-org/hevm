@@ -98,4 +98,7 @@ movingAverage windowSize xs
     | otherwise = map average $ windows windowSize xs
   where
     windows n = takeWhile ((== n) . length) . map (take n) . tails
-    average list = sum list / fromIntegral (length list)
+    average list = sum list / fromIntegral (length list)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
