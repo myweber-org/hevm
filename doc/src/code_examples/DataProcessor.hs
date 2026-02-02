@@ -125,4 +125,10 @@ mapColumn f colIndex = map (mapAtIndex colIndex f)
   where
     mapAtIndex idx func row
         | idx < length row = take idx row ++ [func (row !! idx)] ++ drop (idx + 1) row
-        | otherwise = row
+        | otherwise = rowmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
