@@ -1,18 +1,23 @@
 
 module DataProcessor where
 
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage windowSize xs
-    | windowSize <= 0 = error "Window size must be positive"
-    | windowSize > length xs = []
-    | otherwise = map average $ windows windowSize xs
-  where
-    windows n = takeWhile ((== n) . length) . map (take n) . tails
-    average list = sum list / fromIntegral (length list)
+import Data.Time
+import Text.CSV
 
-smoothData :: [Double] -> [Double]
-smoothData = movingAverage 3
+filterCSVByDate :: String -> Day -> Day -> Either String [Record]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (isWithinDateRange startDate endDate) csv
+    return filtered
 
-calculateTrend :: [Double] -> Maybe Double
-calculateTrend [] = Nothing
-calculateTrend xs = Just (last xs - head xs)
+isWithinDateRange :: Day -> Day -> Record -> Bool
+isWithinDateRange start end record =
+    case record of
+        (dateStr:_) -> 
+            case parseDate dateStr of
+                Just date -> date >= start && date <= end
+                Nothing -> False
+        _ -> False
+
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
