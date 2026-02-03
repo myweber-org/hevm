@@ -79,4 +79,31 @@ printWordFrequency :: String -> IO ()
 printWordFrequency text = do
   putStrLn "Word Frequency Analysis:"
   mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) 
-        (topWords 10 text)
+        (topWords 10 text)module WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = filter isAlpha . map toLower
+
+sortByFrequency :: FrequencyMap -> [(String, Int)]
+sortByFrequency = sortOn (Down . snd) . Map.toList
+
+formatOutput :: [(String, Int)] -> String
+formatOutput = unlines . map (\(word, count) -> word ++ ": " ++ show count)
+
+analyzeText :: String -> String
+analyzeText = formatOutput . sortByFrequency . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ analyzeText input
