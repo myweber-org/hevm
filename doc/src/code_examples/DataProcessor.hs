@@ -84,4 +84,23 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> if even x then x*x else 0) numbers)
+    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> if even x then x*x else 0) numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< -100) xs = Nothing
+    | any (> 1000) xs = Nothing
+    | otherwise = Just xs
+
+safeDataProcessing :: [Int] -> Maybe [Int]
+safeDataProcessing input = do
+    validated <- validateInput input
+    return $ processData validated
