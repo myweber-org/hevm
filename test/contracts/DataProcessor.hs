@@ -10,4 +10,22 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints =
+    let avg = movingAverage windowSize dataPoints
+        padding = replicate (windowSize `div` 2) (head avg)
+    in padding ++ avg ++ padding
