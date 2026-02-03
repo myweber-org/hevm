@@ -234,4 +234,34 @@ main = do
     putStrLn "Enter text to analyze (press Ctrl+D when done):"
     content <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ analyzeText content
+    putStrLn $ analyzeText contentmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        sortedWords = sort wordsList
+        grouped = group sortedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . sortByFrequency . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    putStrLn "\nWord frequencies:"
+    putStrLn $ processText input
