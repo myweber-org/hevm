@@ -13,4 +13,16 @@ validateData xs = all (> 0) xs && length xs > 3
 combineProcessors :: [Int] -> [Int]
 combineProcessors xs
     | validateData xs = processData xs
-    | otherwise = []
+    | otherwise = []module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processNumbers input
+    print result
