@@ -85,4 +85,22 @@ main :: IO ()
 main = do
     let numbers = [1..10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") (lines content)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
