@@ -93,4 +93,33 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello back."
     putStrLn "Word Frequency Report:"
-    putStrLn $ wordFrequencyReport sampleText 1 5
+    putStrLn $ wordFrequencyReport sampleText 1 5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = [(String, Int)]
+
+countWords :: String -> WordCount
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = foldr countHelper [] cleanedWords
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+printWordFrequencies :: WordCount -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn "Word frequencies (descending order):"
+    putStrLn "-------------------------------------"
+    printWordFrequencies $ countWords text
