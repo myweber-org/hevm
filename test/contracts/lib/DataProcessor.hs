@@ -78,4 +78,20 @@ groupByMonth rows = groupBy sameMonth sortedRows
         sameMonth a b = case (parseDate (a !! 2), parseDate (b !! 2)) of
             (Just d1, Just d2) -> yearMonth d1 == yearMonth d2
             _ -> False
-        yearMonth day = (fromIntegral $ year (toGregorian day), month (toGregorian day))
+        yearMonth day = (fromIntegral $ year (toGregorian day), month (toGregorian day))module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = 
+    if all (\x -> x >= -100 && x <= 100) xs
+        then Just xs
+        else Nothing
