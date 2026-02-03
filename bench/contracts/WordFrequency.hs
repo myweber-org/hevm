@@ -127,4 +127,38 @@ displayTopWords n text = do
 main :: IO ()
 main = do
     let sampleText = "Hello world! This is a test. Hello again world. Testing word frequency."
-    displayTopWords 5 sampleText
+    displayTopWords 5 sampleTextmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map clean $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = groupCount cleaned
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    clean = map toLower . filter (\c -> isAlpha c || c == '\'')
+    
+    groupCount :: [String] -> [WordCount]
+    groupCount = foldr countHelper []
+    
+    countHelper :: String -> [WordCount] -> [WordCount]
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+displayFrequency :: [WordCount] -> String
+displayFrequency counts = unlines $ map showCount counts
+  where
+    showCount (word, count) = word ++ ": " ++ show count
+
+analyzeText :: String -> String
+analyzeText text = 
+    let frequencies = countWords text
+    in "Top 10 most frequent words:\n" ++ displayFrequency frequencies
