@@ -204,3 +204,41 @@ main = do
     let sampleText = "Hello world hello haskell world programming haskell functional programming"
     putStrLn "Word frequency analysis:"
     displayResults $ analyzeText sampleText 1 5
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFrequency = (String, Int)
+
+countWords :: String -> [WordFrequency]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map toLower <$> wordsList
+        wordCounts = foldr countWord [] cleanedWords
+    in sortOn (Down . snd) wordCounts
+  where
+    cleanWord = filter isAlpha
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+mostFrequentWords :: Int -> String -> [WordFrequency]
+mostFrequentWords n text = take n $ countWords text
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+    let freqs = countWords text
+        totalWords = sum $ map snd freqs
+        uniqueWords = length freqs
+        topWords = take 5 freqs
+    in unlines $
+        [ "Text Analysis Report"
+        , "==================="
+        , "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , ""
+        , "Top 5 most frequent words:"
+        ] ++ map (\(w, c) -> "  " ++ w ++ ": " ++ show c) topWords
