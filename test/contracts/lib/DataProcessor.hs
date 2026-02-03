@@ -40,3 +40,42 @@ main = do
     putStrLn $ "Original: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> x * x) (filter even numbers))
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Maybe
+import Text.Read
+
+type CSVRow = [String]
+type DateRange = (Day, Day)
+
+parseDate :: String -> Maybe Day
+parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
+
+filterByDateRange :: DateRange -> CSVRow -> Bool
+filterByDateRange (startDate, endDate) row
+    | length row < 3 = False
+    | otherwise = case parseDate (row !! 2) of
+        Just date -> date >= startDate && date <= endDate
+        Nothing -> False
+
+processCSVData :: DateRange -> [CSVRow] -> [CSVRow]
+processCSVData dateRange = filter (filterByDateRange dateRange)
+
+calculateDailyAverage :: [CSVRow] -> Maybe Double
+calculateDailyAverage rows
+    | null validValues = Nothing
+    | otherwise = Just (sum validValues / fromIntegral (length validValues))
+    where
+        validValues = catMaybes $ map (readMaybe . head) rows
+
+groupByMonth :: [CSVRow] -> [[CSVRow]]
+groupByMonth rows = groupBy sameMonth sortedRows
+    where
+        sortedRows = sortOn (parseDate . (!! 2)) rows
+        sameMonth a b = case (parseDate (a !! 2), parseDate (b !! 2)) of
+            (Just d1, Just d2) -> yearMonth d1 == yearMonth d2
+            _ -> False
+        yearMonth day = (fromIntegral $ year (toGregorian day), month (toGregorian day))
