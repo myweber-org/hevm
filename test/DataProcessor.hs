@@ -84,3 +84,31 @@ main = do
             let result = processData data'
             putStrLn $ "Original: " ++ show sampleData
             putStrLn $ "Processed: " ++ show result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (* 2)
+
+processOddNumbers :: [Int] -> [Int]
+processOddNumbers = filterAndTransform odd (+ 1)
+
+sumProcessedData :: (Int -> Int) -> [Int] -> Int
+sumProcessedData processor = sum . map processor
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn "Original list:"
+    print numbers
+    
+    putStrLn "\nDoubled even numbers:"
+    print $ processEvenNumbers numbers
+    
+    putStrLn "\nIncremented odd numbers:"
+    print $ processOddNumbers numbers
+    
+    putStrLn "\nSum of squared numbers:"
+    print $ sumProcessedData (^2) numbers
