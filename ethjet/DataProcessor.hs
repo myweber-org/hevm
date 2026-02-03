@@ -219,3 +219,26 @@ main = do
     putStrLn $ "Odd incremented: " ++ show (processOddNumbers sampleData)
     putStrLn $ "Sum of processed odds: " ++ 
         show (sumProcessedData odd (+1) sampleData)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessed :: (Int -> Int) -> [Int] -> Int
+sumProcessed processor = sum . map processor
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn "Original list:"
+    print numbers
+    
+    putStrLn "\nEven numbers squared:"
+    let processed = processEvenSquares numbers
+    print processed
+    
+    putStrLn "\nSum of processed even squares:"
+    print $ sumProcessed (\x -> x * x) (filter even numbers)
