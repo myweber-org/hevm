@@ -29,4 +29,32 @@ main = do
     putStrLn "Word frequencies:"
     mapM_ print $ countWords testText
     putStrLn "\nTop 3 words:"
-    mapM_ print $ topNWords 3 testText
+    mapM_ print $ topNWords 3 testTextmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified System.Environment as Env
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord w = Map.insertWith (+) (normalize w) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+formatResults :: WordCount -> String
+formatResults = unlines . map formatEntry . List.sortOn (negate . snd) . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+main :: IO ()
+main = do
+    args <- Env.getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <text>"
+        textPieces -> do
+            let text = unwords textPieces
+            let counts = countWords text
+            putStrLn $ formatResults counts
