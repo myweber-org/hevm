@@ -159,3 +159,13 @@ main = do
     let input = [1, -2, 3, 0, 5, -8]
     let result = processNumbers input
     print result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
