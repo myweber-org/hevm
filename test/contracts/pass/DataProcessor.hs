@@ -104,3 +104,13 @@ calculateAverages rows =
 
 processCSVData :: String -> [Double]
 processCSVData = calculateAverages . parseCSV
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (*2) . filter (>0)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+isAllPositive :: [Int] -> Bool
+isAllPositive = all (>0)
