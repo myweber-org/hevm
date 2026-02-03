@@ -195,3 +195,27 @@ processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
 sumProcessedData = sum . processData
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (*2)
+
+processOddNumbers :: [Int] -> [Int]
+processOddNumbers = filterAndTransform odd (+1)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer =
+    sum . filterAndTransform predicate transformer
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original: " ++ show sampleData
+    putStrLn $ "Even doubled: " ++ show (processEvenNumbers sampleData)
+    putStrLn $ "Odd incremented: " ++ show (processOddNumbers sampleData)
+    putStrLn $ "Sum of processed odds: " ++ 
+        show (sumProcessedData odd (+1) sampleData)
