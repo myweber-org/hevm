@@ -85,3 +85,42 @@ validateInput xs =
 
 safeProcess :: [Int] -> Maybe Int
 safeProcess = fmap sumProcessed . validateInput
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble s = case reads s of
+    [(val, "")] -> Just val
+    _ -> Nothing
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows colIndex
+    | null validValues = Nothing
+    | otherwise = Just (sum validValues / fromIntegral (length validValues))
+  where
+    columnValues = mapMaybe (safeGetColumn colIndex) rows
+    validValues = mapMaybe safeReadDouble columnValues
+    safeGetColumn idx row
+        | idx >= 0 && idx < length row = Just (row !! idx)
+        | otherwise = Nothing
+
+processCSVFile :: String -> IO (Maybe Double)
+processCSVFile filePath = do
+    content <- readFile filePath
+    let csvData = parseCSV content
+    return $ calculateColumnAverage csvData 2
+
+main :: IO ()
+main = do
+    result <- processCSVFile "data.csv"
+    case result of
+        Just avg -> putStrLn $ "Average: " ++ show avg
+        Nothing -> putStrLn "Could not calculate average"
