@@ -84,4 +84,38 @@ main = do
         (filename:_) -> do
             content <- readFile filename
             let frequencies = countWords content
-            putStrLn $ formatOutput $ take 10 frequencies
+            putStrLn $ formatOutput $ take 10 frequenciesmodule WordFrequency where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type WordCount = Map.Map T.Text Int
+
+countWords :: T.Text -> WordCount
+countWords text =
+    let wordsList = T.words $ T.toLower $ T.filter (\c -> Char.isAlpha c || Char.isSpace c) text
+    in Map.fromListWith (+) [(w, 1) | w <- wordsList]
+
+getTopWords :: Int -> WordCount -> [(T.Text, Int)]
+getTopWords n = take n . List.sortOn (\(_, count) -> negate count) . Map.toList
+
+processFile :: FilePath -> Int -> IO ()
+processFile filePath n = do
+    content <- TIO.readFile filePath
+    let frequencies = countWords content
+        topWords = getTopWords n frequencies
+    
+    putStrLn $ "Top " ++ show n ++ " words in " ++ filePath ++ ":"
+    mapM_ (\(word, count) -> TIO.putStrLn $ T.concat [word, T.pack ": ", T.pack (show count)]) topWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter file path:"
+    filePath <- getLine
+    putStrLn "Enter number of top words to display:"
+    nStr <- getLine
+    let n = read nStr :: Int
+    processFile filePath n
