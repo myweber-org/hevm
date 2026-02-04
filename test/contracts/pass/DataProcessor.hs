@@ -82,4 +82,16 @@ validateRecord :: Record -> Bool
 validateRecord (_, v1, v2) = v1 >= 0 && v2 >= 0
 
 filterValidRecords :: [Record] -> [Record]
-filterValidRecords = filter validateRecord
+filterValidRecords = filter validateRecordmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    putStrLn $ "Processed data: " ++ show result
