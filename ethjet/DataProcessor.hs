@@ -241,4 +241,20 @@ main = do
     print processed
     
     putStrLn "\nSum of processed even squares:"
-    print $ sumProcessed (\x -> x * x) (filter even numbers)
+    print $ sumProcessed (\x -> x * x) (filter even numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = 
+    if all (\x -> x >= -100 && x <= 100) xs
+        then Just xs
+        else Nothing
