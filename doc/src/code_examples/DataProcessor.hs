@@ -1,49 +1,29 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
+import Data.Maybe (catMaybes)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
+type Record = (String, Double, Double)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+parseCSV :: String -> [Record]
+parseCSV content = catMaybes $ map parseLine (lines content)
+  where
+    parseLine line = case splitOn "," line of
+      [name, val1, val2] -> 
+        case (reads val1, reads val2) of
+          ([(v1, "")], [(v2, "")]) -> Just (name, v1, v2)
+          _ -> Nothing
+      _ -> Nothing
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+calculateAverages :: [Record] -> (Double, Double)
+calculateAverages records = (avg val1s, avg val2s)
+  where
+    (val1s, val2s) = unzip $ map (\(_, v1, v2) -> (v1, v2)) records
+    avg xs = sum xs / fromIntegral (length xs)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+processData :: String -> (Double, Double)
+processData = calculateAverages . parseCSV
 
-validateInput :: [Int] -> Bool
-validateInput = all (\x -> x >= -100 && x <= 100)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 4, -1, 5, 9, -2, 6]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processNumbers input
-    print result
+filterByThreshold :: Double -> [Record] -> [Record]
+filterByThreshold threshold = filter (\(_, v1, v2) -> v1 > threshold && v2 > threshold)
