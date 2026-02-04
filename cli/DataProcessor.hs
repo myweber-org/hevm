@@ -61,4 +61,50 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original: " ++ show numbers
     putStrLn $ "Even doubled: " ++ show (processEvenNumbers numbers)
-    putStrLn $ "Odd incremented: " ++ show (processOddNumbers numbers)
+    putStrLn $ "Odd incremented: " ++ show (processOddNumbers numbers)module DataProcessor where
+
+import Data.List (sort, group)
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.Csv as Csv
+import Data.Vector (Vector, toList)
+
+type Record = (String, Int, Double)
+
+parseCSV :: FilePath -> IO (Either String (Vector Record))
+parseCSV filePath = do
+    csvData <- BL.readFile filePath
+    return $ Csv.decode Csv.NoHeader csvData
+
+calculateMean :: [Double] -> Double
+calculateMean xs = sum xs / fromIntegral (length xs)
+
+calculateMedian :: [Double] -> Double
+calculateMedian xs
+    | null xs = 0.0
+    | odd len = sorted !! mid
+    | otherwise = (sorted !! (mid - 1) + sorted !! mid) / 2.0
+  where
+    sorted = sort xs
+    len = length xs
+    mid = len `div` 2
+
+calculateMode :: [Int] -> [Int]
+calculateMode xs
+    | null xs = []
+    | otherwise = map fst maxGroups
+  where
+    grouped = group $ sort xs
+    maxCount = maximum $ map length grouped
+    maxGroups = filter (\g -> length g == maxCount) grouped
+
+processData :: FilePath -> IO ()
+processData filePath = do
+    result <- parseCSV filePath
+    case result of
+        Left err -> putStrLn $ "Error parsing CSV: " ++ err
+        Right records -> do
+            let values = map (\(_, _, val) -> val) $ toList records
+                categories = map (\(_, cat, _) -> cat) $ toList records
+            putStrLn $ "Mean: " ++ show (calculateMean values)
+            putStrLn $ "Median: " ++ show (calculateMedian values)
+            putStrLn $ "Mode of categories: " ++ show (calculateMode categories)
