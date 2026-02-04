@@ -15,4 +15,7 @@ displayCounts :: [(String, Int)] -> String
 displayCounts = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 processText :: String -> String
-processText = displayCounts . countWords
+processText = displayCounts . countWordsmodule WordCounter (countWords) where
+
+countWords :: String -> Int
+countWords str = length $ words str
