@@ -108,3 +108,17 @@ processData filePath = do
             putStrLn $ "Mean: " ++ show (calculateMean values)
             putStrLn $ "Median: " ++ show (calculateMedian values)
             putStrLn $ "Mode of categories: " ++ show (calculateMode categories)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transform = map transform . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
