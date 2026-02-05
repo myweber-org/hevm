@@ -270,4 +270,20 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV csv = map (map read . splitOn ",") $ lines csv
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows
+    | null rows = []
+    | otherwise = map avg $ transpose rows
+  where
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
