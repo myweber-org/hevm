@@ -1,107 +1,43 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (foldl')
+import Text.Read (readMaybe)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+type Row = [String]
+type CSVData = [Row]
 
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed f = sum . map f
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitter [[]]
+      where
+        splitter c (x:xs)
+          | c == delimiter = []:x:xs
+          | otherwise = (c:x):xs
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> x * x) (filter even numbers))
-module DataProcessor where
+safeReadDouble :: String -> Maybe Double
+safeReadDouble = readMaybe
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows columnIndex
+  | null validValues = Nothing
+  | otherwise = Just (sum validValues / fromIntegral (length validValues))
+  where
+    extractValue :: Row -> Maybe Double
+    extractValue row
+      | columnIndex < length row = safeReadDouble (row !! columnIndex)
+      | otherwise = Nothing
+    
+    validValues = [val | Just val <- map extractValue rows]
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+processCSVFile :: String -> Int -> IO (Maybe Double)
+processCSVFile filePath columnIndex = do
+  content <- readFile filePath
+  let parsedData = parseCSV content
+  return $ calculateColumnAverage parsedData columnIndex
 
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
-
-main :: IO ()
-main = do
-    let dataSet = [1..10]
-    putStrLn $ "Original data: " ++ show dataSet
-    putStrLn $ "Even squares: " ++ show (processEvenSquares dataSet)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessedData even (\x -> x * x) dataSet)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData = all (> 0) . processData
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)
-module DataProcessor where
-
-import Data.List.Split (splitOn)
-import Data.Maybe (mapMaybe)
-
-type Record = (String, Double, Double)
-
-parseCSVLine :: String -> Maybe Record
-parseCSVLine line = case splitOn "," line of
-    [name, val1, val2] -> 
-        case (reads val1, reads val2) of
-            ([(v1, "")], [(v2, "")]) -> Just (name, v1, v2)
-            _ -> Nothing
-    _ -> Nothing
-
-calculateAverages :: [Record] -> (Double, Double)
-calculateAverages records = 
-    let (sum1, sum2) = foldr (\(_, v1, v2) (s1, s2) -> (s1 + v1, s2 + v2)) (0, 0) records
-        count = fromIntegral (length records)
-    in (sum1 / count, sum2 / count)
-
-processCSVData :: String -> Maybe (Double, Double)
-processCSVData csvContent = 
-    let records = mapMaybe parseCSVLine (lines csvContent)
-    in if null records 
-        then Nothing 
-        else Just (calculateAverages records)
-
-validateRecord :: Record -> Bool
-validateRecord (_, v1, v2) = v1 >= 0 && v2 >= 0
-
-filterValidRecords :: [Record] -> [Record]
-filterValidRecords = filter validateRecordmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    putStrLn $ "Processed data: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+validateCSV :: CSVData -> Bool
+validateCSV [] = True
+validateCSV (row:rows) = all (== length row) (map length rows)
