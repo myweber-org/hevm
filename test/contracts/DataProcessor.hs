@@ -85,3 +85,25 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of even squares: " ++ show (sumProcessed even (^2) numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>= -100) xs && all (<= 100) xs
+                   then Just xs
+                   else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [-5, 3, 0, 8, -2, 10]
+    case validateInput sampleData of
+        Just validData -> do
+            putStrLn $ "Original data: " ++ show validData
+            let result = processData validData
+            putStrLn $ "Processed data: " ++ show result
+        Nothing -> putStrLn "Input validation failed"
