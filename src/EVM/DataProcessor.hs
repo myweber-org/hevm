@@ -36,3 +36,21 @@ main = do
             putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
             putStrLn $ "Sum of processed: " ++ show (sumProcessed validData)
         Nothing -> putStrLn "Invalid input data"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0) . processData
+
+main :: IO ()
+main = do
+    let sampleData = [-3, 1, 0, 5, -2, 8]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)
