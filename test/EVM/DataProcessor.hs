@@ -3,81 +3,20 @@ module DataProcessor where
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    print result
-module DataProcessor where
-
-import Data.List.Split (splitOn)
-
-parseCSV :: String -> [[Double]]
-parseCSV content = map (map read . splitOn ",") $ lines content
-
-computeAverages :: [[Double]] -> [Double]
-computeAverages rows = 
-    if null rows 
-    then []
-    else map (\col -> sum col / fromIntegral (length col)) $ transpose rows
-  where
-    transpose [] = []
-    transpose ([]:_) = []
-    transpose x = map head x : transpose (map tail x)
-
-processCSVFile :: String -> IO [Double]
-processCSVFile filename = do
-    content <- readFile filename
-    let parsed = parseCSV content
-    return $ computeAverages parsed
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>= -100) xs && all (<= 100) xs
-                   then Just xs
-                   else Nothing
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs
+  | validateInput xs = Just (processData xs)
+  | otherwise = Nothing
 
-safeProcess :: [Int] -> Maybe Int
-safeProcess = fmap sumProcessedData . validateInputmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+exampleUsage :: IO ()
+exampleUsage = do
+  let input = [-5, 2, 0, 8, -1, 10]
+  case safeProcess input of
+    Just result -> putStrLn $ "Processed result: " ++ show result
+    Nothing -> putStrLn "Invalid input detected"
