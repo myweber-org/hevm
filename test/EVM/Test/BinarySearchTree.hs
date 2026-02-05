@@ -1,3 +1,4 @@
+
 module BinarySearchTree where
 
 data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show, Eq)
@@ -15,3 +16,9 @@ inOrder (Node x left right) = inOrder left ++ [x] ++ inOrder right
 
 fromList :: Ord a => [a] -> Tree a
 fromList = foldr insert Empty
+
+main :: IO ()
+main = do
+    let tree = fromList [5, 3, 7, 1, 4, 6, 8]
+    print tree
+    print $ inOrder tree
