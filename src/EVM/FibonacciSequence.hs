@@ -16,4 +16,21 @@ fibonacci n
 main :: IO ()
 main = do
     putStrLn "Fibonacci sequence up to 10 terms:"
-    print $ fibonacci 10
+    print $ fibonacci 10module FibonacciSequence where
+
+import Data.Function (fix)
+
+fibonacci :: Int -> Integer
+fibonacci n = fibs !! n
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+fibonacciMemoized :: Int -> Integer
+fibonacciMemoized = fix (\rec n -> if n < 2 then fromIntegral n else rec (n - 1) + rec (n - 2))
+
+main :: IO ()
+main = do
+    putStrLn "Fibonacci numbers from 0 to 10:"
+    mapM_ (print . fibonacci) [0..10]
+    putStrLn "\nUsing memoized version for index 15:"
+    print $ fibonacciMemoized 15
