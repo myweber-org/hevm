@@ -1,4 +1,4 @@
-data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show, Eq)
 
 treeDepth :: BinaryTree a -> Int
 treeDepth Leaf = 0
