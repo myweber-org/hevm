@@ -19,4 +19,10 @@ validateInput xs =
 safeProcess :: [Int] -> Maybe Int
 safeProcess xs = do
     validated <- validateInput xs
-    return $ sumProcessed validated
+    return $ sumProcessed validatedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
