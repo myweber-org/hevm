@@ -203,3 +203,32 @@ main = do
             putStrLn $ "Processed data: " ++ show (processData sampleData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
         else putStrLn "Invalid input data"
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Record = (String, [Double])
+
+parseCSV :: String -> [Record]
+parseCSV content = map parseLine (lines content)
+  where
+    parseLine line = case splitOn "," line of
+        (name:values) -> (name, map read values)
+        _ -> ("", [])
+
+computeAverages :: [Record] -> [(String, Double)]
+computeAverages records = map avg records
+  where
+    avg (name, vals) = 
+        if null vals 
+        then (name, 0.0)
+        else (name, sum vals / fromIntegral (length vals))
+
+processData :: String -> [(String, Double)]
+processData = computeAverages . parseCSV
+
+main :: IO ()
+main = do
+    let csvData = "Alice,85,90,78\nBob,92,88,95\nCharlie,76,82,79"
+    let results = processData csvData
+    mapM_ (\(name, avg) -> putStrLn $ name ++ ": " ++ show avg) results
