@@ -44,4 +44,38 @@ main = do
     let numbers = [-3, -1, 0, 2, 5, 8]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitter [""]
+      where
+        splitter char acc@(x:xs)
+          | char == delimiter = "":acc
+          | otherwise = (char:x):xs
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble = readMaybe
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows columnIndex
+  | null validValues = Nothing
+  | otherwise = Just (sum validValues / fromIntegral (length validValues))
+  where
+    validValues = [value | row <- rows,
+                           columnIndex < length row,
+                           Just value <- [safeReadDouble (row !! columnIndex)]]
+
+processCSVFile :: String -> Int -> IO (Maybe Double)
+processCSVFile filePath columnIndex = do
+  content <- readFile filePath
+  let parsedData = parseCSV content
+  return $ calculateColumnAverage parsedData columnIndex
