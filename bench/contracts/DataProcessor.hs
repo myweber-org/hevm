@@ -110,4 +110,59 @@ main :: IO ()
 main = do
     let numbers = [1, -2, 3, -4, 5]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+type CSVRow = [String]
+type ValidationError = String
+
+validateCSVRow :: CSVRow -> Either ValidationError CSVRow
+validateCSVRow [] = Left "Empty row"
+validateCSVRow row
+    | length row /= 3 = Left $ "Expected 3 columns, got " ++ show (length row)
+    | not (all validField row) = Left "Invalid characters in fields"
+    | not (validId (row !! 0)) = Left "Invalid ID format"
+    | not (validName (row !! 1)) = Left "Invalid name format"
+    | not (validAmount (row !! 2)) = Left "Invalid amount format"
+    | otherwise = Right row
+  where
+    validField = all (\c -> isAlpha c || isDigit c || c `elem` " -_.")
+    validId str = not (null str) && all isDigit str && length str == 6
+    validName str = not (null str) && length str <= 50 && all isAlpha (filter (/= ' ') str)
+    validAmount str = case reads str :: [(Double, String)] of
+        [(n, "")] -> n >= 0 && n <= 1000000
+        _ -> False
+
+parseCSV :: String -> Either ValidationError [CSVRow]
+parseCSV content = 
+    let rows = map (splitOn ',') (lines content)
+        validated = map validateCSVRow rows
+    in case partitionEithers validated of
+        ([], validRows) -> Right validRows
+        (errors, _) -> Left $ "Validation errors:\n" ++ intercalate "\n" (take 3 errors)
+
+splitOn :: Char -> String -> [String]
+splitOn _ [] = []
+splitOn delimiter str = 
+    let (token, rest) = break (== delimiter) str
+    in token : case rest of
+        [] -> []
+        (_:xs) -> splitOn delimiter xs
+
+partitionEithers :: [Either a b] -> ([a], [b])
+partitionEithers = foldr (either left right) ([], [])
+  where
+    left a (as, bs) = (a:as, bs)
+    right b (as, bs) = (as, b:bs)
+
+processCSVData :: String -> IO ()
+processCSVData filename = do
+    content <- readFile filename
+    case parseCSV content of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right rows -> do
+            putStrLn $ "Successfully processed " ++ show (length rows) ++ " rows"
+            let total = sum [read (row !! 2) | row <- rows]
+            putStrLn $ "Total amount: " ++ show total
