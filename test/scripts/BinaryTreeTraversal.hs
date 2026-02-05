@@ -23,4 +23,27 @@ morrisInOrder root = go root []
                         let newPred = Node v (rightSub pred) r
                          in process l (v : process (rightSub newPred) result)
                       else process l (v : result)
-       in process (Node val left right) acc
+       in process (Node val left right) accmodule BinaryTreeTraversal where
+
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show)
+
+inorder :: BinaryTree a -> [a]
+inorder Empty = []
+inorder (Node value left right) = inorder left ++ [value] ++ inorder right
+
+preorder :: BinaryTree a -> [a]
+preorder Empty = []
+preorder (Node value left right) = [value] ++ preorder left ++ preorder right
+
+postorder :: BinaryTree a -> [a]
+postorder Empty = []
+postorder (Node value left right) = postorder left ++ postorder right ++ [value]
+
+exampleTree :: BinaryTree Int
+exampleTree = Node 1
+                (Node 2
+                    (Node 4 Empty Empty)
+                    (Node 5 Empty Empty))
+                (Node 3
+                    (Node 6 Empty Empty)
+                    Empty)
