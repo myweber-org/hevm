@@ -47,4 +47,55 @@ safeMovingAverage n xs
     | otherwise = Just $ movingAverage n xs
 
 testData :: [Double]
-testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]module DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+
+type Username = String
+type Email = String
+type UserProfile = (Username, Email, Int)
+
+validateUsername :: Username -> Maybe Username
+validateUsername name
+    | length name >= 3 && length name <= 20 && all isAlpha name = Just name
+    | otherwise = Nothing
+
+normalizeEmail :: Email -> Email
+normalizeEmail = map toLower . filter (not . isSpace)
+
+validateEmail :: Email -> Maybe Email
+validateEmail email
+    | '@' `elem` email && '.' `elem` email = Just (normalizeEmail email)
+    | otherwise = Nothing
+
+createProfile :: Username -> Email -> Int -> Maybe UserProfile
+createProfile username email age = do
+    validName <- validateUsername username
+    validEmail <- validateEmail email
+    if age >= 0 && age <= 150
+        then Just (validName, validEmail, age)
+        else Nothing
+
+formatProfile :: UserProfile -> String
+formatProfile (name, email, age) =
+    intercalate " | " ["Username: " ++ name, "Email: " ++ email, "Age: " ++ show age]
+
+processUserData :: [String] -> [String]
+processUserData inputs = 
+    mapMaybe processSingle inputs
+    where
+        processSingle input =
+            case words input of
+                [name, email, ageStr] ->
+                    case reads ageStr of
+                        [(age, "")] -> createProfile name email age >>= Just . formatProfile
+                        _ -> Nothing
+                _ -> Nothing
+
+mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+mapMaybe _ [] = []
+mapMaybe f (x:xs) =
+    case f x of
+        Just y -> y : mapMaybe f xs
+        Nothing -> mapMaybe f xs
