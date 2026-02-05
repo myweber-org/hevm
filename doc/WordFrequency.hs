@@ -314,3 +314,37 @@ main = do
     case args of
         [filename] -> processFile filename
         _ -> putStrLn "Usage: wordfrequency <filename>"
+module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+import qualified Data.Map.Strict as Map
+
+type Histogram = [(String, Int)]
+
+analyzeText :: String -> Histogram
+analyzeText text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        freqMap = foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+        sorted = sortOn (Down . snd) $ Map.toList freqMap
+    in take 10 sorted
+  where
+    normalize = filter isAlpha . map toLower
+
+displayHistogram :: Histogram -> String
+displayHistogram hist = unlines $ map renderBar hist
+  where
+    maxFreq = maximum $ map snd hist
+    renderBar (word, count) = 
+        let barLength = round ((fromIntegral count / fromIntegral maxFreq) * 50)
+            bar = replicate barLength '█'
+        in word ++ " " ++ bar ++ " " ++ show count
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when done):"
+    content <- getContents
+    let histogram = analyzeText content
+    putStrLn "\nTop 10 most frequent words:"
+    putStrLn $ displayHistogram histogram
