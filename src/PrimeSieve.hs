@@ -24,4 +24,14 @@ primesUpTo n
     | otherwise = sieve [2..n]
   where
     sieve [] = []
-    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]module PrimeSieve where
+
+sieve :: [Int] -> [Int]
+sieve [] = []
+sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+
+primes :: [Int]
+primes = sieve [2..]
+
+getPrimesUpTo :: Int -> [Int]
+getPrimesUpTo n = takeWhile (<= n) primes
