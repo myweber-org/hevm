@@ -32,4 +32,25 @@ calculateAverages rows
     transpose = foldr (zipWith (:)) (repeat [])
 
 processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
+processCSVData = calculateAverages . parseCSVmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ws = sum ws / fromIntegral (length ws)
+
+-- Example usage
+sampleData :: [Double]
+sampleData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+main :: IO ()
+main = do
+    let result = movingAverage 3 sampleData
+    putStrLn "Moving average with window size 3:"
+    print result
