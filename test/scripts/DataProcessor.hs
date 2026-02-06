@@ -50,4 +50,61 @@ validateInput :: [Int] -> Either String [Int]
 validateInput [] = Left "Empty input list"
 validateInput xs
     | any (< 0) xs = Left "Negative numbers not allowed"
-    | otherwise = Right xs
+    | otherwise = Right xsmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null input = Right []
+    | otherwise = mapM parseRow (lines input)
+  where
+    parseRow line = case splitOnComma line of
+        [] -> Left "Empty row"
+        cells -> Right cells
+
+splitOnComma :: String -> [String]
+splitOnComma [] = []
+splitOnComma str = 
+    let (cell, rest) = break (== ',') str
+    in cell : case rest of
+                ',' : xs -> splitOnComma xs
+                _ -> []
+
+validateNumericField :: String -> Either String Int
+validateNumericField str
+    | all isDigit str = Right (read str)
+    | otherwise = Left $ "Invalid numeric value: " ++ str
+
+processCSVData :: CSVData -> Either String [(String, Int)]
+processCSVData rows = case rows of
+    [] -> Left "No data to process"
+    header : dataRows -> do
+        let expectedHeader = ["Name", "Age", "Score"]
+        if header == expectedHeader
+            then mapM processRow dataRows
+            else Left $ "Invalid header. Expected: " ++ intercalate "," expectedHeader
+  where
+    processRow [name, ageStr, scoreStr] = do
+        age <- validateNumericField ageStr
+        score <- validateNumericField scoreStr
+        if age >= 0 && age <= 150 && score >= 0 && score <= 100
+            then Right (name, score)
+            else Left $ "Invalid data in row: " ++ name
+    processRow _ = Left "Row has incorrect number of columns"
+
+formatOutput :: [(String, Int)] -> String
+formatOutput results =
+    "Processed Results:\n" ++
+    intercalate "\n" (map (\(name, score) -> name ++ ": " ++ show score) results)
+
+main :: IO ()
+main = do
+    let csvContent = "Name,Age,Score\nAlice,25,85\nBob,30,92\nCharlie,17,78"
+    case parseCSV csvContent >>= processCSVData of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right results -> putStrLn $ formatOutput results
