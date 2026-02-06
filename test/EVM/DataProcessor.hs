@@ -1,87 +1,23 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
-
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-  | validateInput xs = Just (processData xs)
-  | otherwise = Nothing
-
-exampleUsage :: IO ()
-exampleUsage = do
-  let input = [-5, 2, 0, 8, -1, 10]
-  case safeProcess input of
-    Just result -> putStrLn $ "Processed result: " ++ show result
-    Nothing -> putStrLn "Invalid input detected"module DataProcessor where
-
-import Data.List.Split (splitOn)
-
-type Record = (String, Int, Double)
-
-parseCSV :: String -> [Record]
-parseCSV content = map parseLine (lines content)
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
   where
-    parseLine line = case splitOn "," line of
-      [name, ageStr, scoreStr] -> (name, read ageStr, read scoreStr)
-      _ -> error "Invalid CSV format"
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
 
-calculateAverageScore :: [Record] -> Double
-calculateAverageScore records = 
-  if null records 
-    then 0.0
-    else totalScore / fromIntegral (length records)
-  where
-    totalScore = sum [score | (_, _, score) <- records]
-
-filterByAge :: Int -> [Record] -> [Record]
-filterByAge minAge = filter (\(_, age, _) -> age >= minAge)
-
-processData :: String -> Int -> (Double, [Record])
-processData csvContent minAge = 
-  let records = parseCSV csvContent
-      filtered = filterByAge minAge records
-      avgScore = calculateAverageScore filtered
-  in (avgScore, filtered)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+smoothData :: [Double] -> [Double]
+smoothData = movingAverage 3
 
 main :: IO ()
 main = do
-    let sampleData = [1, -2, 3, 0, 5, -8]
-    if validateInput sampleData
-        then do
-            putStrLn "Processing valid data..."
-            let result = processData sampleData
-            putStrLn $ "Input: " ++ show sampleData
-            putStrLn $ "Result: " ++ show result
-        else putStrLn "Invalid input detected"
+    let testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    putStrLn "Original data:"
+    print testData
+    putStrLn "\nSmoothed data (3-point moving average):"
+    print $ smoothData testData
