@@ -66,4 +66,25 @@ main = do
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Even squares: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of even squares: " ++ 
-        show (sumProcessedData even (\x -> x * x) sampleData)
+        show (sumProcessedData even (\x -> x * x) sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = 
+    if all (> -1000) xs && all (< 1000) xs
+    then Just xs
+    else Nothing
+
+safeProcess :: [Int] -> Maybe Int
+safeProcess xs = do
+    valid <- validateInput xs
+    return $ sumProcessedData valid
