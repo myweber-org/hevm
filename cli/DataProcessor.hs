@@ -206,4 +206,32 @@ main = do
         Just data' -> do
             let result = processData data'
             putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
+            putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
+
+import Data.List (sort, nub)
+
+-- Filter out even numbers from a list
+filterOdds :: [Int] -> [Int]
+filterOdds = filter odd
+
+-- Square each element in a list
+squareAll :: [Int] -> [Int]
+squareAll = map (^2)
+
+-- Remove duplicates and sort a list
+uniqueSorted :: [Int] -> [Int]
+uniqueSorted = sort . nub
+
+-- Calculate sum of squares of odd numbers
+sumOddSquares :: [Int] -> Int
+sumOddSquares = sum . squareAll . filterOdds
+
+-- Process data through a pipeline
+processData :: [Int] -> [Int]
+processData = uniqueSorted . squareAll . filterOdds
+
+-- Example utility function
+isPrime :: Int -> Bool
+isPrime n
+    | n <= 1 = False
+    | otherwise = null [x | x <- [2..floor (sqrt (fromIntegral n))], n `mod` x == 0]
