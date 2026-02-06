@@ -48,4 +48,35 @@ printWordFrequencies :: String -> IO ()
 printWordFrequencies text = do
     let frequencies = topNWords 10 text
     putStrLn "Top 10 most frequent words:"
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequenciesmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordFreq = Map.Map String Int
+
+countWords :: String -> WordFreq
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+  where
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text =
+    take n $ List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) $
+    Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqs =
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+processText :: Int -> String -> String
+processText n = displayFrequencies . topNWords n
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello."
+    putStrLn "Top 3 most frequent words:"
+    putStrLn $ processText 3 sampleText
