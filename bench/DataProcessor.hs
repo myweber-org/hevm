@@ -20,3 +20,13 @@ main = do
     Just data' -> do
       putStrLn $ "Original: " ++ show data'
       putStrLn $ "Processed: " ++ show (processData data')
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transform = map transform . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedList :: [Int] -> Int
+sumProcessedList = sum . processEvenSquares
