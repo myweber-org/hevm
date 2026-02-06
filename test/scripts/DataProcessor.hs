@@ -31,4 +31,23 @@ validateData :: [Int] -> Bool
 validateData xs = all (> 0) xs && length xs > 3
 
 combineResults :: [Int] -> [Int] -> [Int]
-combineResults xs ys = zipWith (+) (processData xs) (processData ys)
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+validateInput :: [Int] -> Either String [Int]
+validateInput [] = Left "Empty input list"
+validateInput xs
+    | any (< 0) xs = Left "Negative numbers not allowed"
+    | otherwise = Right xs
