@@ -92,4 +92,34 @@ displayTopWords n text = do
     putStrLn $ "Top " ++ show n ++ " words:"
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
   where
-    topWords = getTopWords n text
+    topWords = getTopWords n textmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Ord (Down(..))
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+sortWordCounts :: WordCount -> [(String, Int)]
+sortWordCounts = sortOn (Down . snd) . Map.toList
+
+formatResults :: [(String, Int)] -> String
+formatResults = unlines . map formatRow
+  where
+    formatRow (word, count) = word ++ ": " ++ show count
+
+analyzeText :: String -> String
+analyzeText = formatResults . sortWordCounts . countWords
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
+    putStrLn $ analyzeText sampleText
