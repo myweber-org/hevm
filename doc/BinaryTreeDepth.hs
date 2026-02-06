@@ -43,4 +43,8 @@ sampleTree = Node 1 (Node 2 (Node 4 Empty Empty) (Node 5 Empty Empty)) (Node 3 E
 main :: IO ()
 main = do
     let depth = treeDepth sampleTree
-    putStrLn $ "Depth of the sample tree is: " ++ show depth
+    putStrLn $ "Depth of the sample tree is: " ++ show depthdata BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
+
+treeDepth :: BinaryTree a -> Int
+treeDepth Empty = 0
+treeDepth (Node _ left right) = 1 + max (treeDepth left) (treeDepth right)
