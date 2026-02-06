@@ -44,4 +44,28 @@ main = do
     putStrLn "Testing moving average with window size 3:"
     print $ movingAverage 3 testData
     putStrLn "\nTesting moving average with window size 5:"
-    print $ movingAverage 5 testData
+    print $ movingAverage 5 testDatamodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Record = (String, [Double])
+
+parseCSV :: String -> [Record]
+parseCSV content = map parseLine (lines content)
+  where
+    parseLine line = 
+        let parts = splitOn "," line
+            name = head parts
+            values = map read (tail parts)
+        in (name, values)
+
+computeAverages :: [Record] -> [(String, Double)]
+computeAverages records = map avg records
+  where
+    avg (name, vals) = 
+        let total = sum vals
+            count = fromIntegral (length vals)
+        in (name, total / count)
+
+processData :: String -> [(String, Double)]
+processData = computeAverages . parseCSV
