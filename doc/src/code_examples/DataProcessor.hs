@@ -16,3 +16,20 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data (even numbers squared): " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
