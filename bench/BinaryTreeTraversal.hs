@@ -32,4 +32,37 @@ exampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     (Node 6 Empty Empty)
-                    Empty)
+                    Empty)module BinaryTreeTraversal where
+
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
+
+inorderTraversal :: BinaryTree a -> [a]
+inorderTraversal tree = go tree []
+  where
+    go Empty stack = stack
+    go (Node val left right) stack = go left (val : go right stack)
+
+preorderTraversal :: BinaryTree a -> [a]
+preorderTraversal tree = go tree []
+  where
+    go Empty stack = stack
+    go (Node val left right) stack = val : go left (go right stack)
+
+postorderTraversal :: BinaryTree a -> [a]
+postorderTraversal tree = go tree []
+  where
+    go Empty stack = stack
+    go (Node val left right) stack = go left (go right (val : stack))
+
+-- Example usage
+exampleTree :: BinaryTree Int
+exampleTree = Node 1 (Node 2 (Node 4 Empty Empty) (Node 5 Empty Empty)) (Node 3 Empty Empty)
+
+testTraversals :: IO ()
+testTraversals = do
+    putStrLn "In-order traversal:"
+    print $ inorderTraversal exampleTree
+    putStrLn "Pre-order traversal:"
+    print $ preorderTraversal exampleTree
+    putStrLn "Post-order traversal:"
+    print $ postorderTraversal exampleTree
