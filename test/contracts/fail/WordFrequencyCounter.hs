@@ -148,3 +148,44 @@ main = do
     case args of
         [filepath] -> processFile filepath
         _ -> putStrLn "Usage: wordfreq <filename>"
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        normalized = map toLower wordsList
+        grouped = foldr countWord [] normalized
+        sorted = sortOn (Down . snd) grouped
+    in sorted
+  where
+    normalize = filter isAlpha
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+topNWords :: Int -> String -> [WordCount]
+topNWords n text = take n $ countWords text
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+    in unlines $
+        [ "Word Frequency Analysis Report"
+        , "=============================="
+        , "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , ""
+        , "Top 10 most frequent words:"
+        , "---------------------------"
+        ] ++ map formatWordCount (take 10 counts)
+  where
+    formatWordCount (word, count) = word ++ ": " ++ show count
