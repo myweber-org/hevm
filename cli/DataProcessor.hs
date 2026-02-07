@@ -299,3 +299,24 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedList :: (Int -> Int) -> [Int] -> Int
+sumProcessedList processor = sum . map processor
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    
+    let evenSquares = processEvenSquares numbers
+    putStrLn $ "Squares of even numbers: " ++ show evenSquares
+    
+    let total = sumProcessedList (\x -> x * 2) numbers
+    putStrLn $ "Sum of doubled numbers: " ++ show total
