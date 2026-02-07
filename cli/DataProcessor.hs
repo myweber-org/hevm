@@ -348,4 +348,13 @@ movingAverage n xs
         avg zs = sum zs / fromIntegral (length zs)
 
 smoothData :: Fractional a => Int -> [a] -> [a]
-smoothData window dataList = movingAverage window dataList
+smoothData window dataList = movingAverage window dataListmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
