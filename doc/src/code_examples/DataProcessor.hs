@@ -1,44 +1,68 @@
+
 module DataProcessor where
 
-import Data.List.Split (splitOn)
-import Data.Maybe (mapMaybe)
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, fromMaybe)
 
-type Record = (String, Double)
+-- | Validates if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
 
-parseCSV :: String -> [Record]
-parseCSV content = mapMaybe parseLine (lines content)
+-- | Safely parses an integer, returns Nothing on failure
+safeParseInt :: String -> Maybe Int
+safeParseInt s
+    | validateDigits s = Just (read s)
+    | otherwise = Nothing
+
+-- | Normalizes phone number by removing spaces and dashes
+normalizePhone :: String -> String
+normalizePhone = filter (\c -> isDigit c || c == '+')
+
+-- | Validates email format (basic check)
+validateEmail :: String -> Bool
+validateEmail email =
+    let parts = split '@' email
+    in length parts == 2 &&
+       not (null (head parts)) &&
+       '.' `elem` (last parts)
   where
-    parseLine line = case splitOn "," line of
-      [name, valueStr] -> case reads valueStr of
-        [(value, "")] -> Just (name, value)
-        _ -> Nothing
-      _ -> Nothing
+    split delimiter = foldr (\c acc ->
+        if c == delimiter
+        then []:acc
+        else (c:head acc):tail acc) [[]]
 
-calculateAverage :: [Record] -> Double
-calculateAverage records =
-  if null records
-    then 0.0
-    else total / fromIntegral (length records)
+-- | Transforms a list of strings to uppercase
+toUpperAll :: [String] -> [String]
+toUpperAll = map (map toUpper)
   where
-    total = sum (map snd records)
+    toUpper c
+        | c >= 'a' && c <= 'z' = toEnum (fromEnum c - 32)
+        | otherwise = c
 
-filterAboveAverage :: [Record] -> [Record]
-filterAboveAverage records =
-  let avg = calculateAverage records
-   in filter (\(_, value) -> value > avg) records
+-- | Combines first and last name with proper formatting
+formatFullName :: String -> String -> String
+formatFullName firstName lastName =
+    intercalate " " [capitalize firstName, capitalize lastName]
+  where
+    capitalize [] = []
+    capitalize (x:xs) = toUpper x : xs
+    toUpper c
+        | c >= 'a' && c <= 'z' = toEnum (fromEnum c - 32)
+        | otherwise = c
 
-processData :: String -> [Record]
-processData = filterAboveAverage . parseCSVmodule DataProcessor where
+-- | Processes a list of potential integers, returning valid ones
+processNumbers :: [String] -> [Int]
+processNumbers = catMaybes . map safeParseInt
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+-- | Trims whitespace from both ends of a string
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (* 2)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show result
+-- | Main data processing pipeline example
+processUserData :: [(String, String, String)] -> [(String, Int)]
+processUserData users =
+    map (\(name, phone, ageStr) ->
+        (formatFullName name "User", fromMaybe 0 (safeParseInt ageStr))
+    ) users
