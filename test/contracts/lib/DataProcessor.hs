@@ -65,3 +65,25 @@ exampleUsage = do
     print $ movingAverage 3 dataSeries
     putStrLn "\n5-period moving average:"
     print $ movingAverage 5 dataSeries
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [Record]
+filterCSVByDate csvContent startDate endDate =
+    case parseCSV "" csvContent of
+        Left err -> Left $ "CSV parse error: " ++ err
+        Right csv -> Right $ filter (isWithinDateRange startDate endDate) csv
+
+isWithinDateRange :: Day -> Day -> Record -> Bool
+isWithinDateRange start end record =
+    case record of
+        (dateStr:_) -> 
+            case parseDate dateStr of
+                Just date -> date >= start && date <= end
+                Nothing -> False
+        _ -> False
+
+parseDate :: String -> Maybe Day
+parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
