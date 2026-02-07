@@ -1,11 +1,11 @@
 module WordFrequency where
 
-import qualified Data.Map.Strict as Map
-import Data.Char (isAlpha, toLower)
+import Data.Char (toLower, isAlpha)
 import Data.List (sortOn)
-import Data.Ord (Down(..))
+import Data.Map (Map)
+import qualified Data.Map as Map
 
-type FrequencyMap = Map.Map String Int
+type FrequencyMap = Map String Int
 
 countWords :: String -> FrequencyMap
 countWords = foldr incrementWord Map.empty . words
@@ -13,11 +13,12 @@ countWords = foldr incrementWord Map.empty . words
     incrementWord word = Map.insertWith (+) (normalize word) 1
     normalize = map toLower . filter isAlpha
 
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
+topWords :: Int -> String -> [(String, Int)]
+topWords n text = take n $ sortOn (negate . snd) $ Map.toList $ countWords text
 
-displayFrequencies :: [(String, Int)] -> String
-displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
-
-analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+analyzeText :: String -> IO ()
+analyzeText text = do
+  putStrLn "Top 10 most frequent words:"
+  mapM_ printWord $ topWords 10 text
+  where
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
