@@ -112,4 +112,10 @@ movingAverage n xs
 -- Helper function similar to Data.List.tails
 tails :: [a] -> [[a]]
 tails [] = [[]]
-tails (x:xs) = (x:xs) : tails xs
+tails (x:xs) = (x:xs) : tails xsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
