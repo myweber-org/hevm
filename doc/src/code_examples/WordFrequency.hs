@@ -29,4 +29,29 @@ main = do
         [] -> putStrLn "Usage: wordfreq <filename>"
         (filename:_) -> do
             content <- readFile filename
-            putStrLn $ formatOutput $ countWords content
+            putStrLn $ formatOutput $ countWords contentmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type FrequencyMap = Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words . map normalize
+  where
+    normalize c
+      | isAlpha c = toLower c
+      | otherwise = ' '
+    
+    incrementWord word = Map.insertWith (+) word 1
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (negate . snd) $ Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequencies . topNWords n
