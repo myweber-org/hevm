@@ -319,4 +319,20 @@ main = do
     putStrLn $ "Squares of even numbers: " ++ show evenSquares
     
     let total = sumProcessedList (\x -> x * 2) numbers
-    putStrLn $ "Sum of doubled numbers: " ++ show total
+    putStrLn $ "Sum of doubled numbers: " ++ show totalmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0) . processData
+
+main :: IO ()
+main = do
+    let sampleData = [-3, 2, 0, 7, -1, 4]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)
