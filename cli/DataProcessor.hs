@@ -335,4 +335,17 @@ main = do
     let sampleData = [-3, 2, 0, 7, -1, 4]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Data validation: " ++ show (validateData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)module DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage _ [] = []
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = []
+    | otherwise = map avg $ windows n xs
+    where
+        windows m ys = take (length ys - m + 1) $ iterate (drop 1) ys
+        avg zs = sum zs / fromIntegral (length zs)
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData window dataList = movingAverage window dataList
