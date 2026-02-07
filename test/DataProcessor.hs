@@ -53,4 +53,21 @@ main :: IO ()
 main = do
     let result = movingAverage 3 sampleData
     putStrLn "Moving average with window size 3:"
-    print result
+    print resultmodule DataProcessor where
+
+movingAverage :: (Fractional a) => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m ys = take (length ys - m + 1) $ zipWith (:) ys (tails ys)
+    
+    average :: (Fractional a) => [a] -> a
+    average zs = sum zs / fromIntegral (length zs)
+
+-- Helper function similar to Data.List.tails
+tails :: [a] -> [[a]]
+tails [] = [[]]
+tails (x:xs) = (x:xs) : tails xs
