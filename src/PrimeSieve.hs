@@ -34,4 +34,12 @@ primes :: [Int]
 primes = sieve [2..]
 
 getPrimesUpTo :: Int -> [Int]
-getPrimesUpTo n = takeWhile (<= n) primes
+getPrimesUpTo n = takeWhile (<= n) primesmodule PrimeSieve where
+
+primesUpTo :: Int -> [Int]
+primesUpTo n
+    | n < 2     = []
+    | otherwise = sieve [2..n]
+  where
+    sieve [] = []
+    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
