@@ -290,4 +290,42 @@ main :: IO ()
 main = do
   let text = "Hello world hello Haskell world of functional programming"
   let topWords = wordFrequencyReport 3 text
-  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+wordFrequencyReport :: String -> Int -> Int -> String
+wordFrequencyReport text minFreq topN =
+    let counts = countWords text
+        filtered = filterByMinFrequency minFreq counts
+        topWords = getTopNWords topN filtered
+    in unlines $ map (\(word, count) -> word ++ ": " ++ show count) topWords
+
+-- Example usage
+sampleText :: String
+sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
+
+main :: IO ()
+main = do
+    putStrLn "Word Frequency Analysis:"
+    putStrLn $ wordFrequencyReport sampleText 2 5
