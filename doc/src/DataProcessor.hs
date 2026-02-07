@@ -102,3 +102,28 @@ sumProcessed = sum . processNumbers
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterByDateRange :: Day -> Day -> [Record] -> [Record]
+filterByDateRange startDate endDate records = 
+    filter (isWithinRange . parseDate . head) records
+  where
+    parseDate dateStr = 
+        case parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr of
+            Just day -> day
+            Nothing -> error $ "Invalid date format: " ++ dateStr
+    
+    isWithinRange day = day >= startDate && day <= endDate
+
+processCSVData :: String -> Day -> Day -> Either String [Record]
+processCSVData csvContent start end = do
+    csv <- parseCSV "input" csvContent
+    case csv of
+        Left err -> Left $ "CSV parse error: " ++ err
+        Right records -> 
+            if null records 
+            then Left "Empty CSV data"
+            else Right $ filterByDateRange start end (tail records)
