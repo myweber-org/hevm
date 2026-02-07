@@ -107,3 +107,37 @@ countWordFrequencies text =
     in sortOn (\(_, count) -> -count) $ Map.toList frequencyMap
   where
     cleanWord = map toLower . filter isAlphaNum
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+-- | Count frequency of words in a text string
+countWordFrequency :: String -> [WordCount]
+countWordFrequency text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        frequencyMap = foldr countWord [] wordsList
+    in take 10 $ sortOn (Down . snd) frequencyMap
+  where
+    normalize = filter isAlpha . map toLower
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+-- | Pretty print word frequency results
+printWordFrequency :: [WordCount] -> IO ()
+printWordFrequency counts = do
+    putStrLn "Top 10 most frequent words:"
+    putStrLn "----------------------------"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+-- | Process a sample text and display results
+sampleAnalysis :: IO ()
+sampleAnalysis = do
+    let sampleText = "This is a sample text. This text contains words. Some words repeat. This is intentional."
+    let frequencies = countWordFrequency sampleText
+    printWordFrequency frequencies
