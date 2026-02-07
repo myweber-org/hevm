@@ -63,4 +63,35 @@ main = do
     putStrLn "Enter text to analyze (press Ctrl+D when finished):"
     content <- getContents
     let frequencies = analyzeText content
-    printHistogram frequencies
+    printHistogram frequenciesmodule WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = map normalize $ filter (not . null) $ splitWords text
+        frequencyMap = foldr incrementWord [] wordsList
+    in take 10 $ sortOn (Down . snd) frequencyMap
+  where
+    splitWords = words . map (\c -> if isAlphaNum c then c else ' ')
+    normalize = map toLower
+    
+    incrementWord :: String -> [WordCount] -> [WordCount]
+    incrementWord word [] = [(word, 1)]
+    incrementWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : incrementWord word rest
+
+displayResults :: [WordCount] -> String
+displayResults counts = 
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again, world!"
+    putStrLn $ displayResults $ countWords sampleText
