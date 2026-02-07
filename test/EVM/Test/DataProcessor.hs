@@ -68,4 +68,14 @@ computeAverages records = map avg records
         in (name, total / count)
 
 processData :: String -> [(String, Double)]
-processData = computeAverages . parseCSV
+processData = computeAverages . parseCSVmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
