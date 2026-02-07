@@ -1,35 +1,31 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+type Record = (String, Double)
 
-sumProcessedList :: [Int] -> Int
-sumProcessedList = sum . processEvenSquares
+parseCSV :: String -> [Record]
+parseCSV content = mapMaybe parseLine (lines content)
+  where
+    parseLine line = case splitOn "," line of
+      [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+      _ -> Nothing
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
-module DataProcessor where
+calculateAverage :: [Record] -> Double
+calculateAverage records =
+  if null records
+    then 0.0
+    else total / fromIntegral (length records)
+  where
+    total = sum (map snd records)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+filterAboveAverage :: [Record] -> [Record]
+filterAboveAverage records =
+  let avg = calculateAverage records
+   in filter (\(_, value) -> value > avg) records
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data (even numbers squared): " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+processData :: String -> [Record]
+processData = filterAboveAverage . parseCSV
