@@ -149,4 +149,31 @@ processText = formatOutput . sortByFrequency . countWords
 main :: IO ()
 main = do
     input <- getContents
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWordFrequencies :: String -> [(String, Int)]
+countWordFrequencies text =
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        frequencyMap = foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+    in reverse $ sortOn snd $ Map.toList frequencyMap
+  where
+    cleanWord = map toLower . filter isAlpha
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqList =
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqList
+
+analyzeText :: String -> String
+analyzeText text =
+    let frequencies = countWordFrequencies text
+    in "Word Frequency Analysis:\n" ++ displayFrequencies frequencies
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again, world!"
+    putStrLn $ analyzeText sampleText
