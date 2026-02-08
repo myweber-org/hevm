@@ -1,40 +1,46 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
 
-main :: IO ()
-main = do
-    let numbers = [-5, 3, 0, 8, -2, 10]
-    let result = processNumbers numbers
-    print resultmodule DataProcessor where
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+-- Transform string to uppercase
+transformToUpper :: String -> String
+transformToUpper = map toUpper
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+-- Process a list of strings with validation and transformation
+processData :: [String] -> [(String, Bool, String)]
+processData = map processSingle
+  where
+    processSingle str =
+      let numericValid = validateNumeric str
+          alphaValid = validateAlpha str
+          transformed = transformToUpper str
+      in (str, numericValid && alphaValid, transformed)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-module DataProcessor where
+-- Filter valid entries from processed data
+filterValidEntries :: [(String, Bool, String)] -> [String]
+filterValidEntries = map (\(_, _, transformed) -> transformed) . filter (\(_, valid, _) -> valid)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (\x -> x >= -100 && x <= 100) xs
-                   then Just xs
-                   else Nothing
-
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs = do
-    validated <- validateInput xs
-    return $ processData validated
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let testData = ["abc123", "test", "12345", "HELLO", "mixed123"]
+  let processed = processData testData
+  let validEntries = filterValidEntries processed
+  
+  putStrLn "Original data:"
+  mapM_ print testData
+  
+  putStrLn "\nProcessed data (original, isValid, transformed):"
+  mapM_ print processed
+  
+  putStrLn "\nValid transformed entries:"
+  mapM_ putStrLn validEntries
