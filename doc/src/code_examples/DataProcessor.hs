@@ -65,4 +65,97 @@ processUserData :: [(String, String, String)] -> [(String, Int)]
 processUserData users =
     map (\(name, phone, ageStr) ->
         (formatFullName name "User", fromMaybe 0 (safeParseInt ageStr))
-    ) users
+    ) usersmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> Either String CSVData
+parseCSV content = 
+    if null content
+    then Left "Empty CSV content"
+    else Right $ map (splitOnComma . escapeCommas) (lines content)
+  where
+    splitOnComma :: String -> Row
+    splitOnComma [] = []
+    splitOnComma str = 
+        let (cell, rest) = extractCell str
+        in cell : splitOnComma (dropWhile (== ',') rest)
+    
+    extractCell :: String -> (String, String)
+    extractCell ('"' : rest) = extractQuotedCell rest ""
+    extractCell str = let (cell, rest) = span (/= ',') str
+                      in (cell, rest)
+    
+    extractQuotedCell :: String -> String -> (String, String)
+    extractQuotedCell [] acc = (reverse acc, "")
+    extractQuotedCell ('"' : '"' : rest) acc = extractQuotedCell rest ('"' : acc)
+    extractQuotedCell ('"' : rest) acc = (reverse acc, rest)
+    extractQuotedCell (c : rest) acc = extractQuotedCell rest (c : acc)
+    
+    escapeCommas :: String -> String
+    escapeCommas [] = []
+    escapeCommas ('"' : rest) = '"' : processQuoted rest
+    escapeCommas (c : rest) = c : escapeCommas rest
+    
+    processQuoted :: String -> String
+    processQuoted [] = []
+    processQuoted ('"' : '"' : rest) = '"' : '"' : processQuoted rest
+    processQuoted ('"' : rest) = '"' : escapeCommas rest
+    processQuoted (c : rest) = c : processQuoted rest
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Right []
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index must be non-negative"
+    | otherwise = 
+        let validated = map (validateRow colIndex) rows
+        in if all isValid validated
+           then Right rows
+           else Left $ "Invalid numeric data in column " ++ show colIndex
+  where
+    validateRow :: Int -> Row -> Bool
+    validateRow idx row
+        | idx >= length row = False
+        | otherwise = all isDigit (filter (/= '.') (row !! idx))
+    
+    isValid :: Bool -> Bool
+    isValid = id
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage rows colIndex
+    | colIndex < 0 = Left "Column index must be non-negative"
+    | null rows = Left "No data to process"
+    | otherwise = 
+        let numericValues = mapMaybe (getNumericValue colIndex) rows
+        in if null numericValues
+           then Left "No valid numeric values found"
+           else Right (sum numericValues / fromIntegral (length numericValues))
+  where
+    getNumericValue :: Int -> Row -> Maybe Double
+    getNumericValue idx row
+        | idx >= length row = Nothing
+        | otherwise = case reads (row !! idx) of
+                        [(val, "")] -> Just val
+                        _ -> Nothing
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate "," . map escapeCell)
+  where
+    escapeCell :: String -> String
+    escapeCell cell
+        | any (\c -> c == ',' || c == '"' || c == '\n') cell = "\"" ++ concatMap escapeChar cell ++ "\""
+        | otherwise = cell
+    
+    escapeChar :: Char -> String
+    escapeChar '"' = "\"\""
+    escapeChar c = [c]
+
+mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+mapMaybe _ [] = []
+mapMaybe f (x:xs) = case f x of
+    Just y  -> y : mapMaybe f xs
+    Nothing -> mapMaybe f xs
