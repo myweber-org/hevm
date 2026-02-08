@@ -118,4 +118,36 @@ main = do
     putStrLn "Enter number of top words to display:"
     nStr <- getLine
     let n = read nStr :: Int
-    processFile filePath n
+    processFile filePath nmodule WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = map normalize (words text)
+    words = filter (not . null) words'
+    
+    normalize = map toLower . filter isAlpha
+    
+    incrementWord word acc = Map.insertWith (+) word 1 acc
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n sortedFreq
+  where
+    freqMap = countWords text
+    sortedFreq = sortOn (Down . snd) (Map.toList freqMap)
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn "Top 10 most frequent words:"
+    mapM_ printWord (getTopWords 10 text)
+    putStrLn $ "\nTotal unique words: " ++ show (Map.size freqMap)
+  where
+    freqMap = countWords text
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
