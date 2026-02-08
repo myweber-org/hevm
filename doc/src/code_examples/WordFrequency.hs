@@ -54,4 +54,40 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+analyzeText n = displayFrequencies . topNWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        wordMap = foldl (\acc word -> insertWord word acc) [] cleanedWords
+    in sortOn (Down . snd) wordMap
+  where
+    cleanWord = filter isAlpha
+    
+    insertWord :: String -> [WordCount] -> [WordCount]
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+displayTopWords :: Int -> [WordCount] -> String
+displayTopWords n counts = 
+    let topN = take n counts
+        maxWordLength = maximum $ map (length . fst) topN
+        formatLine (word, count) = 
+            word ++ replicate (maxWordLength - length word + 2) ' ' ++ 
+            "| " ++ show count
+    in unlines $ map formatLine topN
+
+processText :: String -> Int -> String
+processText text n = 
+    let counts = countWords text
+    in "Top " ++ show n ++ " most frequent words:\n" ++ 
+       displayTopWords n counts
