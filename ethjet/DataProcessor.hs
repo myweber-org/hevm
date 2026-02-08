@@ -31,4 +31,19 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessedData = sum . processDatamodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
+    average zs = sum zs / fromIntegral (length zs)
+
+smoothData :: [Double] -> [Double]
+smoothData = movingAverage 3
+
+processDataset :: [Double] -> (Double, Double, Double)
+processDataset dataset = (minimum dataset, maximum dataset, sum dataset / fromIntegral (length dataset))
