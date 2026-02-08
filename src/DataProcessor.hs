@@ -1,16 +1,14 @@
-
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (\x -> x * x + 1)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+main :: IO ()
+main = do
+    let input = [1..10]
+    let result = processData input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
