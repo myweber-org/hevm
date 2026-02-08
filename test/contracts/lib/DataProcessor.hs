@@ -29,4 +29,31 @@ main = do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
+        Nothing -> putStrLn "Invalid input: all numbers must be positive"module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: Fractional a => [a] -> a
+    average ws = sum ws / fromIntegral (length ws)
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataSeries = movingAverage windowSize dataSeries
+
+calculateTrend :: Fractional a => [a] -> Maybe a
+calculateTrend [] = Nothing
+calculateTrend [_] = Nothing
+calculateTrend values = Just slope
+  where
+    n = fromIntegral $ length values
+    indices = [0..n-1]
+    sumX = sum indices
+    sumY = sum values
+    sumXY = sum $ zipWith (*) indices values
+    sumX2 = sum $ map (^2) indices
+    slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
