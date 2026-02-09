@@ -114,4 +114,21 @@ exampleUsage = do
     let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     let ma3 = movingAverage 3 dataSeries
     putStrLn $ "Original series: " ++ show dataSeries
-    putStrLn $ "3-period moving average: " ++ show ma3
+    putStrLn $ "3-period moving average: " ++ show ma3module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
