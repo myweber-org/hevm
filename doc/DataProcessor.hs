@@ -106,4 +106,16 @@ main = do
         Just validData -> 
             let result = sumProcessedData validData
             in putStrLn $ "Sum of squares of even numbers: " ++ show result
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
+        Nothing -> putStrLn "Invalid input: all numbers must be positive"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> -1000) xs then Just xs else Nothing
