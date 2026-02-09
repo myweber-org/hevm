@@ -38,4 +38,42 @@ countWords text =
 printHistogram :: Histogram -> IO ()
 printHistogram hist = mapM_ printEntry hist
   where
-    printEntry (word, count) = putStrLn $ word ++ ": " ++ replicate count '*'
+    printEntry (word, count) = putStrLn $ word ++ ": " ++ replicate count '*'module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = [(String, Int)]
+
+countWords :: String -> WordCount
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanWord = filter isAlpha . map toLower
+        frequencyMap = foldr incrementWord [] wordsList
+        incrementWord word [] = [(word, 1)]
+        incrementWord word ((w, c):rest)
+            | w == word = (w, c + 1) : rest
+            | otherwise = (w, c) : incrementWord word rest
+    in sortOn (Down . snd) frequencyMap
+
+topNWords :: Int -> String -> WordCount
+topNWords n text = take n $ countWords text
+
+displayFrequency :: WordCount -> String
+displayFrequency counts = unlines $ map showEntry counts
+  where
+    showEntry (word, count) = word ++ ": " ++ show count
+
+analyzeText :: String -> String
+analyzeText text = 
+    let totalWords = length $ words text
+        uniqueWords = length $ countWords text
+        topWords = take 5 $ countWords text
+    in unlines
+        [ "Text Analysis Results:"
+        , "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , "Top 5 frequent words:"
+        , displayFrequency topWords
+        ]
