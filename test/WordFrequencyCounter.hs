@@ -215,4 +215,35 @@ main = do
             content <- readFile filename
             let frequencies = countWords content
                 sorted = sortOn (Down . snd) frequencies
-            putStrLn $ formatOutput sorted
+            putStrLn $ formatOutput sortedmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        counts = foldl countWord [] cleaned
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = filter isAlpha
+    countWord [] word = [(word, 1)]
+    countWord ((w, c):rest) word
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord rest word
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ processText input
