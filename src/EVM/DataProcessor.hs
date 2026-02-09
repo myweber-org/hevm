@@ -43,4 +43,10 @@ main = do
             let result = processData validData
             in print result
         Nothing -> 
-            putStrLn "Invalid input: contains values <= -100"
+            putStrLn "Invalid input: contains values <= -100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
