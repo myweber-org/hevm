@@ -1,7 +1,20 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") (lines content)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xs = map head xs : transpose (map tail xs)
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
