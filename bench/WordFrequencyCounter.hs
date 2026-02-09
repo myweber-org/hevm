@@ -79,4 +79,31 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello."
     putStrLn "Top 3 most frequent words:"
-    putStrLn $ processText 3 sampleText
+    putStrLn $ processText 3 sampleTextmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = words text
+        lowerWords = map (map toLower) wordsList
+        sortedWords = sort lowerWords
+        grouped = group sortedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+        filtered = filter (\(_, count) -> count > 1) counts
+        sortedCounts = sortOn (Down . snd) filtered
+    in sortedCounts
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world hello haskell world test test test"
+    let frequencies = countWords sampleText
+    printWordFrequencies frequencies
