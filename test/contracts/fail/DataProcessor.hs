@@ -86,3 +86,56 @@ validateInput xs
 
 safeProcess :: [Int] -> Maybe Int
 safeProcess = fmap sumProcessed . validateInput
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+
+type ValidationRule = String -> Bool
+type Transformation = String -> String
+
+validateNumeric :: ValidationRule
+validateNumeric = all (\c -> isDigit c || c == '.')
+
+validateNonEmpty :: ValidationRule
+validateNonEmpty = not . all isSpace
+
+trimWhitespace :: Transformation
+trimWhitespace = reverse . dropWhile isSpace . reverse . dropWhile isSpace
+
+normalizeCase :: Transformation
+normalizeCase = map toLower
+
+processCSVRow :: [ValidationRule] -> [Transformation] -> [String] -> Either String [String]
+processCSVRow validators transformers row
+  | length row /= length validators = Left "Row length mismatch"
+  | otherwise = case validateAll validators row of
+      Left err -> Left err
+      Right _ -> Right $ applyTransformations transformers row
+
+validateAll :: [ValidationRule] -> [String] -> Either String ()
+validateAll validators values = 
+  case filter (not . snd) $ zip validators values of
+    [] -> Right ()
+    ((_, val):_) -> Left $ "Validation failed for value: " ++ val
+
+applyTransformations :: [Transformation] -> [String] -> [String]
+applyTransformations transformers = zipWith ($) transformers
+
+formatCSVOutput :: [String] -> String
+formatCSVOutput = intercalate ","
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble s = 
+  case reads s of
+    [(val, "")] -> Just val
+    _ -> Nothing
+
+dataProcessingPipeline :: [ValidationRule] -> [Transformation] -> [[String]] -> Either String [[String]]
+dataProcessingPipeline validators transformers = 
+  foldr processRow (Right [])
+  where
+    processRow row acc = do
+      processed <- processCSVRow validators transformers row
+      rows <- acc
+      return (processed : rows)
