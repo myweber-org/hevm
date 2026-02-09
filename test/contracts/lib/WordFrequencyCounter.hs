@@ -74,4 +74,53 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
     putStrLn "Word frequency analysis:"
-    putStrLn $ analyzeText sampleText 1 5
+    putStrLn $ analyzeText sampleText 1 5module WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = words $ map normalizeChar text
+        normalized = map normalizeWord wordsList
+        filtered = filter (not . isStopWord) normalized
+        grouped = group $ sort filtered
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    normalizeChar c
+        | c `elem` ",.!?;:\"()[]{}" = ' '
+        | otherwise = c
+    
+    normalizeWord = map toLower
+    
+    isStopWord w = w `elem` commonStopWords
+    
+    commonStopWords = ["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"]
+
+filterByMinimumFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinimumFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, freq) -> putStrLn $ word ++ ": " ++ show freq) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
+    let frequencies = countWords sampleText
+    
+    putStrLn "All word frequencies:"
+    printWordFrequencies frequencies
+    
+    putStrLn "\nWords with frequency >= 2:"
+    printWordFrequencies $ filterByMinimumFrequency 2 frequencies
+    
+    putStrLn "\nTop 3 words:"
+    printWordFrequencies $ getTopNWords 3 frequencies
