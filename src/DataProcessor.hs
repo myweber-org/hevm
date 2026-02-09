@@ -4,66 +4,18 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of even squares: " ++ show (sumProcessed (\x -> if even x then x*x else 0) numbers)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 4, -1, 5, 9, -2, 6]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processData :: [Int] -> [Int]
 processData = filterAndTransform (> 10) (* 2)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+validateInput :: [Int] -> Maybe [Int]
+validateInput [] = Nothing
+validateInput xs = Just xs
+
+main :: IO ()
+main = do
+    let sampleData = [5, 12, 8, 20, 3, 15]
+    case validateInput sampleData of
+        Nothing -> putStrLn "Empty input list"
+        Just data' -> do
+            let result = processData data'
+            putStrLn $ "Original: " ++ show sampleData
+            putStrLn $ "Processed: " ++ show result
