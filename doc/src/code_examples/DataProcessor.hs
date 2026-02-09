@@ -158,4 +158,16 @@ mapMaybe :: (a -> Maybe b) -> [a] -> [b]
 mapMaybe _ [] = []
 mapMaybe f (x:xs) = case f x of
     Just y  -> y : mapMaybe f xs
-    Nothing -> mapMaybe f xs
+    Nothing -> mapMaybe f xsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-5, 3, 0, 8, -2, 10]
+    let result = processNumbers numbers
+    print result
