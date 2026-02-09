@@ -57,3 +57,52 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [[]]
+      where
+        splitHelper char acc@(current:rest)
+          | char == delimiter = []:acc
+          | otherwise = (char:current):rest
+
+computeColumnAverages :: CSVData -> Maybe [Double]
+computeColumnAverages [] = Nothing
+computeColumnAverages rows@(header:_) = 
+  let numericRows = map (map parseDouble) (tail rows)
+      transposed = transpose numericRows
+  in mapM averageColumn transposed
+  where
+    parseDouble :: String -> Maybe Double
+    parseDouble = readMaybe
+    
+    transpose :: [[Maybe Double]] -> [[Maybe Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+    
+    averageColumn :: [Maybe Double] -> Maybe Double
+    averageColumn col =
+      let validValues = [x | Just x <- col]
+      in if null validValues 
+         then Nothing 
+         else Just (sum validValues / fromIntegral (length validValues))
+
+processCSVFile :: String -> IO ()
+processCSVFile filename = do
+  content <- readFile filename
+  let parsed = parseCSV content
+  case computeColumnAverages parsed of
+    Nothing -> putStrLn "No data to process"
+    Just averages -> do
+      putStrLn "Column averages:"
+      mapM_ (putStrLn . show) (zip [1..] averages)
