@@ -151,4 +151,10 @@ main = do
     let input = [1, -2, 3, 0, 5, -7]
     let result = processNumbers input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
