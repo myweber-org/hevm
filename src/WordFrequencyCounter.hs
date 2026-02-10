@@ -44,3 +44,41 @@ main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is functional. World of Haskell."
         analysis = analyzeText sampleText 1 5
     printAnalysis analysis
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map toLower <$> wordsList
+        wordMap = foldr (\word acc -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] cleanedWords
+    in sortOn (Down . snd) wordMap
+  where
+    cleanWord = filter isAlpha
+
+topNWords :: Int -> String -> [WordCount]
+topNWords n text = take n $ countWords text
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+    in unlines $
+        [ "Word Frequency Analysis"
+        , "======================"
+        , "Total words: " ++ show totalWords
+        , "Unique words: " ++ show uniqueWords
+        , ""
+        , "Top 10 words:"
+        ] ++
+        map (\(word, count) -> word ++ ": " ++ show count) (topNWords 10 text)
