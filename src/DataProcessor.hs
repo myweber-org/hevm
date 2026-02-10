@@ -1,28 +1,37 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (foldl')
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.Csv as Csv
+import Data.Vector (Vector)
+import qualified Data.Vector as V
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
+type Record = (String, Double, Int)
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput [] = Nothing
-validateInput xs = Just xs
+parseCSV :: BL.ByteString -> Either String (Vector Record)
+parseCSV input = do
+    decoded <- Csv.decode Csv.NoHeader input
+    return $ V.map toRecord decoded
+  where
+    toRecord (name, value, count) = (name, value, count)
 
-main :: IO ()
-main = do
-    let sampleData = [5, 12, 8, 20, 3, 15]
-    case validateInput sampleData of
-        Nothing -> putStrLn "Empty input list"
-        Just data' -> do
-            let result = processData data'
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
-module DataProcessor where
+calculateStats :: Vector Record -> (Double, Double, Double)
+calculateStats records = (avgValue, totalCount, maxValue)
+  where
+    values = V.map (\(_, v, _) -> v) records
+    counts = V.map (\(_, _, c) -> fromIntegral c) records
+    
+    avgValue = if V.null values then 0.0 else V.sum values / fromIntegral (V.length values)
+    totalCount = V.sum counts
+    maxValue = if V.null values then 0.0 else V.maximum values
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+filterByThreshold :: Double -> Vector Record -> Vector Record
+filterByThreshold threshold = V.filter (\(_, v, _) -> v > threshold)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processData :: BL.ByteString -> Double -> Either String (Vector Record, (Double, Double, Double))
+processData csvData threshold = do
+    records <- parseCSV csvData
+    let filtered = filterByThreshold threshold records
+    let stats = calculateStats filtered
+    return (filtered, stats)
