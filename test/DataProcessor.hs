@@ -1,29 +1,32 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+type Record = (String, Double)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-module DataProcessor where
+parseCSV :: String -> [Record]
+parseCSV csvData = mapMaybe parseLine (lines csvData)
+  where
+    parseLine line = case splitOn "," line of
+      [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+      _ -> Nothing
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+calculateAverage :: [Record] -> Double
+calculateAverage records =
+  if null records
+    then 0.0
+    else total / fromIntegral (length records)
+  where
+    total = sum (map snd records)
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
+filterAboveAverage :: [Record] -> [Record]
+filterAboveAverage records =
+  let avg = calculateAverage records
+   in filter (\(_, value) -> value > avg) records
 
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of doubled values: " ++ show (sumProcessed (*2) numbers)
+processCSVData :: String -> [Record]
+processCSVData = filterAboveAverage . parseCSV
