@@ -150,4 +150,21 @@ validateInput xs
 safeProcess :: [Int] -> Maybe [Int]
 safeProcess xs = do
     validated <- validateInput xs
-    return $ processData validated
+    return $ processData validatedmodule DataProcessor where
+
+filterAndSquareEvens :: [Int] -> [Int]
+filterAndSquareEvens xs = map (^2) (filter even xs)
+
+processData :: [Int] -> (Int, Int, Double)
+processData xs = (total, count, average)
+  where
+    filtered = filterAndSquareEvens xs
+    total = sum filtered
+    count = length filtered
+    average = if count == 0 then 0.0 else fromIntegral total / fromIntegral count
+
+main :: IO ()
+main = do
+    let sampleData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    let result = processData sampleData
+    putStrLn $ "Processed data result: " ++ show result
