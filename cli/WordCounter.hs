@@ -24,3 +24,19 @@ processText text = unlines
         total = countWords text
         unique = countUniqueWords text
         freq = wordFrequency text
+module WordCounter where
+
+import System.Environment (getArgs)
+import Data.List (words)
+
+countWords :: String -> Int
+countWords = length . words
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordcounter <text>"
+        (text:_) -> do
+            let wordCount = countWords text
+            putStrLn $ "Word count: " ++ show wordCount
