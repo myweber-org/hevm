@@ -170,4 +170,23 @@ main :: IO ()
 main = do
     let numbers = [-5, 3, 0, 8, -2, 10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats [] = (0, 0, 0.0)
+calculateStats xs = 
+    let total = sum xs
+        count = length xs
+        average = fromIntegral total / fromIntegral count
+    in (total, count, average)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
