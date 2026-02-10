@@ -22,3 +22,10 @@ validateRowLengths rows = all ((== expectedLength) . length) rows
     expectedLength
         | null rows = 0
         | otherwise = length (head rows)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
