@@ -1,16 +1,4 @@
-module BinaryTreeDepth where
-
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a)
-
-treeDepth :: BinaryTree a -> Int
-treeDepth Empty = 0
-treeDepth (Node _ left right) = 1 + max (treeDepth left) (treeDepth right)module BinaryTreeDepth where
-
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a)
-
-treeDepth :: BinaryTree a -> Int
-treeDepth Empty = 0
-treeDepth (Node _ left right) = 1 + max (treeDepth left) (treeDepth right)data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show, Eq)
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
 
 treeDepth :: BinaryTree a -> Int
 treeDepth Leaf = 0
