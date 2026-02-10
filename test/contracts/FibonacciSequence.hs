@@ -20,4 +20,9 @@ fibMemo = (map fib [0..] !!)
         fib n = fibMemo (n-1) + fibMemo (n-2)
 
 fibonacci :: Int -> Integer
-fibonacci = fix fibMemo
+fibonacci = fix fibMemomodule FibonacciSequence where
+
+fib :: Int -> Integer
+fib n = fibs !! n
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
