@@ -1,146 +1,24 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.List.Split (splitOn)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
 
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-main :: IO ()
-main = do
-    let numbers = [-3, 2, 0, 7, -1, 4]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processDatamodule DataProcessor where
-
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows
+    | null rows = []
+    | otherwise = map avg $ transpose rows
   where
-    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
 
-smoothData :: [Double] -> [Double]
-smoothData = movingAverage 3
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
 
-processDataset :: [Double] -> (Double, Double, Double)
-processDataset dataset = (minimum dataset, maximum dataset, sum dataset / fromIntegral (length dataset))module DataProcessor where
-
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
+validateRowLengths :: [[Double]] -> Bool
+validateRowLengths rows = all ((== expectedLength) . length) rows
   where
-    windows :: Int -> [a] -> [[a]]
-    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
-    
-    average :: [Double] -> Double
-    average ys = sum ys / fromIntegral (length ys)
-
--- Example usage
-sampleData :: [Double]
-sampleData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-
-main :: IO ()
-main = do
-    putStrLn "Original data:"
-    print sampleData
-    putStrLn "\n3-point moving average:"
-    print $ movingAverage 3 sampleData
-    putStrLn "\n5-point moving average:"
-    print $ movingAverage 5 sampleDatamodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processNumbers input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
-  where
-    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)
-
--- Helper function from Data.List
-tails :: [a] -> [[a]]
-tails [] = [[]]
-tails xs@(_:ys) = xs : tails ys
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>0) xs then Just xs else Nothing
-
-main :: IO ()
-main = do
-    let sampleData = [1, 2, 3, 4, 5, 6]
-    case validateInput sampleData of
-        Just validData -> do
-            putStrLn $ "Original data: " ++ show validData
-            putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
-            putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
+    expectedLength
+        | null rows = 0
+        | otherwise = length (head rows)
