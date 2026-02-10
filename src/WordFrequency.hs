@@ -153,4 +153,35 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topWords n
+analyzeText n = displayFrequencies . topWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        frequencyMap = foldr countWord [] cleanedWords
+    in take 10 $ sortOn (Down . snd) frequencyMap
+  where
+    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+displayResults :: [WordCount] -> String
+displayResults counts =
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(w, c) -> w ++ ": " ++ show c) counts)
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze:"
+    input <- getContents
+    let results = countWords input
+    putStrLn $ displayResults results
