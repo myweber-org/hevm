@@ -51,4 +51,39 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! This is a test. Hello again, world."
     putStrLn "Top 10 most frequent words:"
-    putStrLn $ displayCounts $ countWords sampleText
+    putStrLn $ displayCounts $ countWords sampleTextmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        groups = groupCount cleaned
+    in sortOn (Down . snd) groups
+  where
+    cleanWord = filter isAlpha
+    groupCount [] = []
+    groupCount (x:xs) = 
+        let (matches, rest) = span (== x) (x:xs)
+        in (x, length matches) : groupCount rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(w, c) -> w ++ ": " ++ show c) counts
+
+processFile :: FilePath -> IO ()
+processFile path = do
+    content <- readFile path
+    putStrLn $ formatOutput $ countWords content
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [filename] -> processFile filename
+        _ -> putStrLn "Usage: wordfreq <filename>"
