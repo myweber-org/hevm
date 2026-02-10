@@ -34,4 +34,16 @@ validateInput xs = if all (\x -> x >= -100 && x <= 100) xs
                    else Nothing
 
 processValidated :: [Int] -> Maybe Int
-processValidated xs = sumProcessed <$> validateInput xs
+processValidated xs = sumProcessed <$> validateInput xsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
