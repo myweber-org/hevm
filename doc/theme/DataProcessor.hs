@@ -167,4 +167,10 @@ main :: IO ()
 main = do
     let sampleData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     let result = processData sampleData
-    putStrLn $ "Processed data result: " ++ show result
+    putStrLn $ "Processed data result: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
