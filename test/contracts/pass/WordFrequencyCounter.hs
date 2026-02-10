@@ -122,4 +122,31 @@ analyzeText = formatResults . sortWordCounts . countWords
 main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is functional. World is imperative."
-    putStrLn $ analyzeText sampleText
+    putStrLn $ analyzeText sampleTextmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let words' = filter (not . null) $ map (map toLower . filter isAlpha) $ words text
+        sortedWords = sort words'
+        grouped = group sortedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . sortByFrequency . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStr $ processText input
