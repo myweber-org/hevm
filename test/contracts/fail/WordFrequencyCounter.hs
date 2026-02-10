@@ -188,4 +188,34 @@ wordFrequencyReport text =
         , "---------------------------"
         ] ++ map formatWordCount (take 10 counts)
   where
-    formatWordCount (word, count) = word ++ ": " ++ show count
+    formatWordCount (word, count) = word ++ ": " ++ show countmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        freqMap = foldr incrementWord [] wordsList
+    in take 10 $ sortOn (Down . snd) freqMap
+  where
+    cleanWord = map toLower . filter isAlpha
+    incrementWord word [] = [(word, 1)]
+    incrementWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : incrementWord word rest
+
+formatResults :: [WordCount] -> String
+formatResults counts = unlines $ map formatLine counts
+  where
+    formatLine (word, count) = word ++ ": " ++ show count
+
+processText :: String -> String
+processText text = 
+    let topWords = countWords text
+    in if null topWords 
+        then "No words found in text"
+        else "Top 10 most frequent words:\n" ++ formatResults topWords
