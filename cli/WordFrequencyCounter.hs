@@ -176,4 +176,37 @@ analyzeText text =
 main :: IO ()
 main = do
     let sampleText = "Hello world! This is a test. Hello again, world!"
-    putStrLn $ analyzeText sampleText
+    putStrLn $ analyzeText sampleTextmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        wordMap = foldr (\word acc -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] cleanedWords
+    in sortOn (Down . snd) wordMap
+  where
+    cleanWord = filter isAlpha
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency (press Ctrl+D when done):"
+    content <- getContents
+    putStrLn "\nWord frequencies:"
+    putStrLn $ processText content
