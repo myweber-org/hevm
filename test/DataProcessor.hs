@@ -29,4 +29,20 @@ filterAboveAverage records =
    in filter (\(_, value) -> value > avg) records
 
 processCSVData :: String -> [Record]
-processCSVData = filterAboveAverage . parseCSV
+processCSVData = filterAboveAverage . parseCSVmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0)
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 0, 5, -8]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "All positive? " ++ show (validateData sampleData)
