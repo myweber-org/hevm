@@ -1,10 +1,39 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+type Record = (String, Double)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case splitOn "," line of
+    [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+    _ -> Nothing
+
+parseCSV :: String -> [Record]
+parseCSV content = mapMaybe parseCSVLine (lines content)
+
+calculateAverage :: [Record] -> Double
+calculateAverage records = 
+    if null records 
+    then 0.0 
+    else total / fromIntegral (length records)
+  where
+    total = sum (map snd records)
+
+processCSVData :: String -> (Double, Int)
+processCSVData csvContent = 
+    let records = parseCSV csvContent
+        avg = calculateAverage records
+        count = length records
+    in (avg, count)
+
+main :: IO ()
+main = do
+    let sampleData = "Alice,85.5\nBob,92.0\nCharlie,78.5\nDiana,88.0"
+    let (average, recordCount) = processCSVData sampleData
+    putStrLn $ "Processed " ++ show recordCount ++ " records"
+    putStrLn $ "Average value: " ++ show average
