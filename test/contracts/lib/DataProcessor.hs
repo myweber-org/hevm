@@ -123,3 +123,65 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
     print result
+module DataProcessor where
+
+import Data.Char (isAlpha, isSpace, toLower)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes)
+
+type Username = String
+type Email = String
+type Age = Int
+type UserProfile = (Username, Email, Age)
+
+validateUsername :: Username -> Maybe Username
+validateUsername name
+    | length name < 3 = Nothing
+    | length name > 20 = Nothing
+    | not (all isAlpha name) = Nothing
+    | otherwise = Just name
+
+validateEmail :: Email -> Maybe Email
+validateEmail email
+    | '@' `notElem` email = Nothing
+    | '.' `notElem` (dropWhile (/= '@') email) = Nothing
+    | any isSpace email = Nothing
+    | otherwise = Just email
+
+validateAge :: Age -> Maybe Age
+validateAge age
+    | age < 0 = Nothing
+    | age > 150 = Nothing
+    | otherwise = Just age
+
+createUserProfile :: Username -> Email -> Age -> Maybe UserProfile
+createUserProfile username email age = do
+    validUsername <- validateUsername username
+    validEmail <- validateEmail email
+    validAge <- validateAge age
+    return (validUsername, validEmail, validAge)
+
+normalizeUsername :: Username -> Username
+normalizeUsername = map toLower
+
+sanitizeEmail :: Email -> Email
+sanitizeEmail = filter (not . isSpace)
+
+formatProfile :: UserProfile -> String
+formatProfile (username, email, age) =
+    intercalate " | " [username, email, show age]
+
+processUserInputs :: [Username] -> [Email] -> [Age] -> [String]
+processUserInputs usernames emails ages =
+    let normalizedUsernames = map normalizeUsername usernames
+        sanitizedEmails = map sanitizeEmail emails
+        profiles = catMaybes $ zipWith3 createUserProfile 
+                   normalizedUsernames sanitizedEmails ages
+    in map formatProfile profiles
+
+validateAllProfiles :: [UserProfile] -> ([UserProfile], [UserProfile])
+validateAllProfiles profiles =
+    let validated = map (\(u,e,a) -> createUserProfile u e a) profiles
+        valid = catMaybes validated
+        invalid = [p | (p, mv) <- zip profiles validated, mv == Nothing]
+    in (valid, invalid)
