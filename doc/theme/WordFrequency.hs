@@ -86,4 +86,31 @@ main = do
     args <- getArgs
     case args of
         [filename] -> processFile filename
-        _ -> putStrLn "Usage: wordfreq <filename>"
+        _ -> putStrLn "Usage: wordfreq <filename>"module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = foldr countHelper [] cleaned
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+displayResults :: [WordCount] -> IO ()
+displayResults counts = do
+    putStrLn "Top 10 most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> IO ()
+analyzeText = displayResults . countWords
