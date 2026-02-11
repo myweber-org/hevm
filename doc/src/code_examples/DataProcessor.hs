@@ -198,4 +198,45 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.Char (isDigit, isAlpha)
+import Data.List (intercalate)
+
+type ValidationRule = String -> Bool
+type Transformation = String -> String
+
+validateNumeric :: ValidationRule
+validateNumeric = all isDigit
+
+validateAlpha :: ValidationRule
+validateAlpha = all isAlpha
+
+transformToUpper :: Transformation
+transformToUpper = map toUpper
+
+transformToLower :: Transformation
+transformToLower = map toLower
+
+sanitizePhone :: Transformation
+sanitizePhone = filter isDigit
+
+processCSVRow :: [ValidationRule] -> [Transformation] -> [String] -> Either String [String]
+processCSVRow validators transformers row
+    | length row /= length validators = Left "Row length doesn't match validator count"
+    | not (all id $ zipWith ($) validators row) = Left "Validation failed"
+    | otherwise = Right $ zipWith ($) transformers row
+
+formatCSV :: [String] -> String
+formatCSV = intercalate ","
+
+validateAndTransform :: [[String]] -> Either String [[String]]
+validateAndTransform rows = 
+    let phoneValidator = validateNumeric
+        nameValidator = validateAlpha
+        validators = [phoneValidator, nameValidator]
+        
+        phoneTransformer = sanitizePhone
+        nameTransformer = transformToUpper
+        transformers = [phoneTransformer, nameTransformer]
+    in sequence $ map (processCSVRow validators transformers) rows
