@@ -90,4 +90,31 @@ processText :: String -> Int -> String
 processText text n = 
     let counts = countWords text
     in "Top " ++ show n ++ " most frequent words:\n" ++ 
-       displayTopWords n counts
+       displayTopWords n countsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type FrequencyMap = Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = map normalize $ filter (not . null) $ splitWords text
+    words = filter (all isAlpha) words'
+    
+    normalize = map toLower
+    splitWords = words . map (\c -> if c `elem` ".,!?;:" then ' ' else c)
+    
+    incrementWord word acc = Map.insertWith (+) word 1 acc
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (\(_, count) -> negate count) $ Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqs = unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+analyzeText :: Int -> String -> String
+analyzeText n text = displayFrequencies $ topNWords n text
