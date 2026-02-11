@@ -57,4 +57,47 @@ main = do
         textPieces -> do
             let text = unwords textPieces
             let counts = countWords text
-            putStrLn $ formatResults counts
+            putStrLn $ formatResults countsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = filter isAlpha
+
+filterByMinimum :: Int -> [WordCount] -> [WordCount]
+filterByMinimum minCount = filter (\(_, count) -> count >= minCount)
+
+getTopN :: Int -> [WordCount] -> [WordCount]
+getTopN n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+processText :: String -> Int -> Int -> IO ()
+processText text minCount topN = do
+    let allCounts = countWords text
+        filtered = filterByMinimum minCount allCounts
+        topResults = getTopN topN filtered
+    
+    putStrLn $ "Total unique words: " ++ show (length allCounts)
+    putStrLn $ "Words with at least " ++ show minCount ++ " occurrences: " ++ show (length filtered)
+    putStrLn "Top words:"
+    printWordCounts topResults
+
+sampleText :: String
+sampleText = "This is a sample text. This text contains words. Some words repeat. Text analysis is useful."
+
+main :: IO ()
+main = processText sampleText 2 5
