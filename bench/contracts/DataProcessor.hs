@@ -120,4 +120,7 @@ classifyRow :: [String] -> ProcessingResult
 classifyRow [] = EmptyRow
 classifyRow row
     | any null row = InvalidRow row
-    | otherwise = ValidRow row
+    | otherwise = ValidRow rowmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
