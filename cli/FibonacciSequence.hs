@@ -11,4 +11,13 @@ fibonacci n
 printFibonacci :: Int -> IO ()
 printFibonacci n = do
     putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
-    mapM_ (putStrLn . show) (fibonacci n)
+    mapM_ (putStrLn . show) (fibonacci n)module FibonacciSequence where
+
+import Data.Function.Memoize (memoize)
+
+fib :: Int -> Integer
+fib = memoize fib'
+  where
+    fib' 0 = 0
+    fib' 1 = 1
+    fib' n = fib (n - 1) + fib (n - 2)
