@@ -277,4 +277,35 @@ main = do
             print $ processData testData
             putStrLn "Sum of processed data:"
             print $ sumProcessedData testData
-        else putStrLn "Invalid input data"
+        else putStrLn "Invalid input data"module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (toLower)
+
+type CSVRow = [String]
+
+parseCSV :: String -> [CSVRow]
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper :: Char -> [String] -> [String]
+        splitHelper ch (x:xs)
+          | ch == delimiter = "":x:xs
+          | otherwise = (ch:x):xs
+
+filterRows :: (CSVRow -> Bool) -> [CSVRow] -> [CSVRow]
+filterRows predicate = filter predicate
+
+containsKeyword :: String -> CSVRow -> Bool
+containsKeyword keyword row = any (keyword `isInfixOf`) (map toLower <$> row)
+
+formatCSV :: [CSVRow] -> String
+formatCSV rows = intercalate "\n" (map (intercalate ",") rows)
+
+processCSVData :: String -> String -> String
+processCSVData keyword csvContent =
+  let parsed = parseCSV csvContent
+      filtered = filterRows (containsKeyword keyword) parsed
+  in formatCSV filtered
