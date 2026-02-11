@@ -36,4 +36,18 @@ main = do
     let sampleData = "Alice,85.5\nBob,92.0\nCharlie,78.5\nDiana,88.0"
     let (average, recordCount) = processCSVData sampleData
     putStrLn $ "Processed " ++ show recordCount ++ " records"
-    putStrLn $ "Average value: " ++ show average
+    putStrLn $ "Average value: " ++ show averagemodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs
+    | validateInput xs = Just (processData xs)
+    | otherwise = Nothing
