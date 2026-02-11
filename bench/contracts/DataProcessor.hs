@@ -68,3 +68,56 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha, isSpace)
+
+type ValidationRule = String -> Bool
+type Transformation = String -> String
+
+validateNonEmpty :: ValidationRule
+validateNonEmpty = not . null
+
+validateNumeric :: ValidationRule
+validateNumeric = all (\c -> isDigit c || c == '.')
+
+validateAlpha :: ValidationRule
+validateAlpha = all isAlpha
+
+trimWhitespace :: Transformation
+trimWhitespace = reverse . dropWhile isSpace . reverse . dropWhile isSpace
+
+normalizeCase :: Transformation
+normalizeCase = map toLower
+
+validateRow :: [ValidationRule] -> [String] -> [Bool]
+validateRow rules row = zipWith ($) rules row
+
+transformRow :: [Transformation] -> [String] -> [String]
+transformRow transforms row = zipWith ($) transforms row
+
+processCSVRow :: [ValidationRule] -> [Transformation] -> [String] -> Maybe [String]
+processCSVRow validations transforms row
+    | all id validationResults = Just $ transformRow transforms row
+    | otherwise = Nothing
+    where validationResults = validateRow validations row
+
+formatOutput :: [String] -> String
+formatOutput = intercalate ","
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble str = case reads str of
+    [(num, "")] -> Just num
+    _ -> Nothing
+
+sanitizeInput :: String -> String
+sanitizeInput = filter (\c -> isAlpha c || isDigit c || c `elem` " .,-")
+
+data ProcessingResult = ValidRow [String] | InvalidRow [String] | EmptyRow
+
+classifyRow :: [String] -> ProcessingResult
+classifyRow [] = EmptyRow
+classifyRow row
+    | any null row = InvalidRow row
+    | otherwise = ValidRow row
