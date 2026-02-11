@@ -39,4 +39,13 @@ main = do
         Just data' -> do
             let result = processData data'
             putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
+            putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
