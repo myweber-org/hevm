@@ -1,31 +1,15 @@
-module DataProcessor where
 
-import Data.List.Split (splitOn)
-
-parseCSV :: String -> [[Double]]
-parseCSV content = map (map read . splitOn ",") $ lines content
-
-calculateAverages :: [[Double]] -> [Double]
-calculateAverages rows
-    | null rows = []
-    | otherwise = map avg $ transpose rows
-  where
-    avg xs = sum xs / fromIntegral (length xs)
-    transpose = foldr (zipWith (:)) (repeat [])
-
-processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
-
-validateRowLengths :: [[Double]] -> Bool
-validateRowLengths rows = all ((== expectedLength) . length) rows
-  where
-    expectedLength
-        | null rows = 0
-        | otherwise = length (head rows)
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (\x -> x * x + 1)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
