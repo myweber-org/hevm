@@ -184,4 +184,10 @@ validateAllProfiles profiles =
     let validated = map (\(u,e,a) -> createUserProfile u e a) profiles
         valid = catMaybes validated
         invalid = [p | (p, mv) <- zip profiles validated, mv == Nothing]
-    in (valid, invalid)
+    in (valid, invalid)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
