@@ -73,4 +73,66 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessedData = sum . processDatamodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isSpace)
+import Control.Monad (when)
+
+data ValidationError = InvalidFormat String
+                     | MissingField String
+                     | InvalidValue String String
+                     deriving (Show, Eq)
+
+type CSVRow = [String]
+type Header = [String]
+
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
+
+validateRowLength :: Header -> CSVRow -> Either ValidationError CSVRow
+validateRowLength header row
+  | length header == length row = Right row
+  | otherwise = Left $ InvalidFormat $
+      "Expected " ++ show (length header) ++ 
+      " fields, got " ++ show (length row)
+
+validateNumericField :: String -> String -> Either ValidationError String
+validateNumericField fieldName value
+  | all isDigit (trim value) = Right value
+  | otherwise = Left $ InvalidValue fieldName $
+      "Non-numeric value: " ++ value
+
+validateRequiredField :: String -> String -> Either ValidationError String
+validateRequiredField fieldName value
+  | not (null (trim value)) = Right value
+  | otherwise = Left $ MissingField fieldName
+
+processCSVRow :: Header -> CSVRow -> Either ValidationError [(String, String)]
+processCSVRow header rawRow = do
+  validatedRow <- validateRowLength header rawRow
+  sequence [validateField h v | (h, v) <- zip header validatedRow]
+  where
+    validateField h v
+      | h == "age" = validateNumericField h v
+      | h == "name" = validateRequiredField h v
+      | otherwise = Right v
+
+formatErrors :: [ValidationError] -> String
+formatErrors errors = intercalate "\n" $ map formatError errors
+  where
+    formatError (InvalidFormat msg) = "Invalid format: " ++ msg
+    formatError (MissingField field) = "Missing required field: " ++ field
+    formatError (InvalidValue field msg) = 
+      "Invalid value in field '" ++ field ++ "': " ++ msg
+
+processCSVData :: Header -> [CSVRow] -> ([(String, String)], String)
+processCSVData header rows = (validRows, errorReport)
+  where
+    results = map (processCSVRow header) rows
+    validRows = [row | Right row <- results]
+    errors = [err | Left err <- results]
+    errorReport = if null errors 
+                  then "All rows processed successfully"
+                  else "Validation errors:\n" ++ formatErrors errors
