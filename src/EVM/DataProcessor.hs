@@ -64,4 +64,13 @@ calculateAverages rows =
     transpose x = map head x : transpose (map tail x)
 
 processCSVData :: String -> [Double]
-processCSVData = calculateAverages . parseCSV
+processCSVData = calculateAverages . parseCSVmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
