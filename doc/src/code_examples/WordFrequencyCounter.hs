@@ -1,64 +1,29 @@
 module WordFrequencyCounter where
 
-import qualified Data.Char as Char
-import qualified Data.List as List
-import qualified Data.Map.Strict as Map
-import System.Environment (getArgs)
-
-type WordCount = Map.Map String Int
-
-countWords :: String -> WordCount
-countWords = foldr incrementWord Map.empty . words
-  where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = filter Char.isAlpha . map Char.toLower
-
-formatResults :: WordCount -> String
-formatResults = unlines . map formatItem . List.sortOn snd . Map.toList
-  where
-    formatItem (word, count) = word ++ ": " ++ show count
-
-processText :: String -> String
-processText = formatResults . countWords
-
-main :: IO ()
-main = do
-  args <- getArgs
-  case args of
-    [] -> putStrLn "Please provide text as argument"
-    textArgs -> putStrLn $ processText $ unwords textArgsmodule WordFrequencyCounter where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
+import Data.Char (toLower)
+import Data.List (sortOn, group, sort)
 import Data.Ord (Down(..))
 
-type WordCount = (String, Int)
+countWordFrequencies :: String -> [(String, Int)]
+countWordFrequencies text =
+  let wordsList = words text
+      lowerWords = map (map toLower) wordsList
+      sortedWords = sort lowerWords
+      grouped = group sortedWords
+      frequencies = map (\ws -> (head ws, length ws)) grouped
+      sortedFreq = sortOn (Down . snd) frequencies
+  in sortedFreq
 
-countWords :: String -> [WordCount]
-countWords text = 
-    let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleanedWords = map (map toLower) wordsList
-        wordMap = foldl (\acc word -> insertWord word acc) [] cleanedWords
-    in sortOn (Down . snd) wordMap
-  where
-    cleanWord = filter isAlpha
-    
-    insertWord :: String -> [WordCount] -> [WordCount]
-    insertWord word [] = [(word, 1)]
-    insertWord word ((w, c):rest)
-        | word == w = (w, c + 1) : rest
-        | otherwise = (w, c) : insertWord word rest
-
-formatOutput :: [WordCount] -> String
-formatOutput counts = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqList =
+  unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqList
 
 processText :: String -> String
-processText = formatOutput . countWords
+processText = displayFrequencies . countWordFrequencies
 
 main :: IO ()
 main = do
-    putStrLn "Enter text to analyze word frequency:"
-    input <- getContents
-    putStrLn "\nWord frequencies:"
-    putStrLn $ processText input
+  putStrLn "Enter text to analyze word frequencies:"
+  input <- getLine
+  putStrLn "\nWord frequencies (case-insensitive, sorted by frequency):"
+  putStrLn $ processText input
