@@ -135,4 +135,7 @@ processCSVData header rows = (validRows, errorReport)
     errors = [err | Left err <- results]
     errorReport = if null errors 
                   then "All rows processed successfully"
-                  else "Validation errors:\n" ++ formatErrors errors
+                  else "Validation errors:\n" ++ formatErrors errorsmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
