@@ -7,4 +7,9 @@ fibonacci n
     | n == 1    = [0]
     | n == 2    = [0, 1]
     | otherwise = let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-                  in take n fibs
+                  in take n fibsmodule FibonacciSequence where
+
+fibonacci :: Integer -> [Integer]
+fibonacci n = takeWhile (<= n) fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
