@@ -329,4 +329,44 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+    putStrLn $ "First element: " ++ show (safeHead numbers)module DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+
+data UserProfile = UserProfile
+    { userName :: String
+    , userEmail :: String
+    , userAge :: Int
+    } deriving (Show, Eq)
+
+validateName :: String -> Maybe String
+validateName name
+    | all (\c -> isAlpha c || isSpace c) name && not (null name) = Just name
+    | otherwise = Nothing
+
+normalizeEmail :: String -> String
+normalizeEmail = map toLower . filter (/= ' ')
+
+validateAge :: Int -> Maybe Int
+validateAge age
+    | age >= 0 && age <= 150 = Just age
+    | otherwise = Nothing
+
+createProfile :: String -> String -> Int -> Maybe UserProfile
+createProfile name email age = do
+    validName <- validateName name
+    validAge <- validateAge age
+    let normalizedEmail = normalizeEmail email
+    return $ UserProfile validName normalizedEmail validAge
+
+profileToString :: UserProfile -> String
+profileToString profile =
+    intercalate ", " 
+        [ "Name: " ++ userName profile
+        , "Email: " ++ userEmail profile
+        , "Age: " ++ show (userAge profile)
+        ]
+
+processProfiles :: [UserProfile] -> [String]
+processProfiles = map profileToString . filter (\p -> userAge p >= 18)
