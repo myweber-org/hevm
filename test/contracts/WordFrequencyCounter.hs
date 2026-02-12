@@ -164,4 +164,31 @@ main :: IO ()
 main = do
     putStrLn "Word Frequency Analysis"
     putStrLn "======================="
-    analyzeText sampleText 2 5
+    analyzeText sampleText 2 5module WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+countWords :: T.Text -> Map.Map T.Text Int
+countWords text = Map.fromListWith (+) [(T.toLower word, 1) | word <- T.words text]
+
+cleanWord :: T.Text -> T.Text
+cleanWord = T.filter Char.isAlpha . T.toLower
+
+countWordsCleaned :: T.Text -> Map.Map T.Text Int
+countWordsCleaned text = Map.fromListWith (+) [(cleanWord word, 1) | word <- T.words text, not (T.null (cleanWord word))]
+
+sortByFrequency :: Map.Map T.Text Int -> [(T.Text, Int)]
+sortByFrequency = List.sortOn (\(_, count) -> -count) . Map.toList
+
+printWordFrequencies :: [(T.Text, Int)] -> IO ()
+printWordFrequencies frequencies = mapM_ (\(word, count) -> TIO.putStrLn (T.pack (show count) <> " " <> word)) frequencies
+
+main :: IO ()
+main = do
+    input <- TIO.getContents
+    let frequencies = sortByFrequency (countWordsCleaned input)
+    printWordFrequencies frequencies
