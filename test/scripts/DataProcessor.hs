@@ -132,3 +132,17 @@ main = do
     let inputData = [1, -2, 3, -4, 5, 0, 7]
     let result = sumProcessedData inputData
     putStrLn $ "Sum of processed data: " ++ show result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumOfProcessed :: [Int] -> Int
+sumOfProcessed = sum . processEvenSquares
