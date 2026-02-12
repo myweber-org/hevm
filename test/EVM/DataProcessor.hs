@@ -37,3 +37,18 @@ main = do
     let result = processData input
     putStrLn $ "Original list: " ++ show input
     putStrLn $ "Processed list: " ++ show result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles xs = sum $ processNumbers xs
