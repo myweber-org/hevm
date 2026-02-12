@@ -14,4 +14,49 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
+    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = if null input
+                 then Left "Empty input"
+                 else Right $ map parseRow (lines input)
+  where
+    parseRow :: String -> CSVRow
+    parseRow = splitByComma . trim
+
+    splitByComma :: String -> CSVRow
+    splitByComma [] = []
+    splitByComma str = 
+        let (cell, rest) = break (== ',') str
+        in trim cell : if null rest then [] else splitByComma (tail rest)
+
+    trim :: String -> String
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+validateNumericColumn :: CSVData -> Int -> Either String ()
+validateNumericColumn [] _ = Right ()
+validateNumericColumn (header:rows) colIndex
+    | colIndex < 0 || colIndex >= length header = Left "Invalid column index"
+    | otherwise = validateRows rows
+  where
+    validateRows [] = Right ()
+    validateRows (row:rest)
+        | colIndex >= length row = Left $ "Row " ++ show (length rows - length rest + 1) ++ " missing column"
+        | all isDigit (trim (row !! colIndex)) = validateRows rest
+        | otherwise = Left $ "Non-numeric value in row " ++ show (length rows - length rest + 1)
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage [] _ = Left "No data"
+calculateColumnAverage (header:rows) colIndex = do
+    validateNumericColumn (header:rows) colIndex
+    let values = map (read . trim . (!! colIndex)) rows
+    return $ sum values / fromIntegral (length values)
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate ",")
