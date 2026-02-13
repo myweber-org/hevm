@@ -71,3 +71,67 @@ main = do
     let result = processData input
     putStrLn $ "Input: " ++ show input
     putStrLn $ "Result: " ++ show result
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUpperCase :: String -> String
+toUpperCase = map toUpper
+
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
+
+-- Process a list of strings with validation and transformation
+processData :: [String] -> [String]
+processData = map processItem
+  where
+    processItem str
+      | validateNumeric str = "NUMERIC: " ++ normalizePhone str
+      | validateAlpha str   = "ALPHA: " ++ toUpperCase str
+      | otherwise           = "MIXED: " ++ str
+
+-- Calculate statistics about processed data
+calculateStats :: [String] -> (Int, Int, Int)
+calculateStats dataList = (numericCount, alphaCount, mixedCount)
+  where
+    numericCount = length $ filter (isPrefixOf "NUMERIC") dataList
+    alphaCount = length $ filter (isPrefixOf "ALPHA") dataList
+    mixedCount = length $ filter (isPrefixOf "MIXED") dataList
+    isPrefixOf prefix str = prefix `elem` words str
+
+-- Generate report from processed data
+generateReport :: [String] -> String
+generateReport dataList = 
+    let stats = calculateStats dataList
+        (numCount, alphaCount, mixedCount) = stats
+        total = numCount + alphaCount + mixedCount
+    in intercalate "\n" $
+        ["Data Processing Report", "======================"] ++
+        ["Total items: " ++ show total] ++
+        ["Numeric items: " ++ show numCount] ++
+        ["Alpha items: " ++ show alphaCount] ++
+        ["Mixed items: " ++ show mixedCount] ++
+        ["", "Processed Data:"] ++
+        map ("  - " ++) dataList
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let testData = ["123-456-7890", "John", "Doe123", "Alice", "555-1234"]
+    let processed = processData testData
+    putStrLn $ generateReport processed
