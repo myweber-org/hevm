@@ -55,4 +55,7 @@ movingAverage n xs
 -- Helper function from Data.List
 tails :: [a] -> [[a]]
 tails [] = [[]]
-tails (x:xs) = (x:xs) : tails xs
+tails (x:xs) = (x:xs) : tails xsmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
