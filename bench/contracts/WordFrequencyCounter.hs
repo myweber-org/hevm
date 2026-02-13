@@ -82,4 +82,34 @@ main :: IO ()
 main = do
     putStrLn "Enter text to analyze (press Ctrl+D when done):"
     input <- getContents
-    processText input
+    processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = [(String, Int)]
+
+countWords :: String -> WordCount
+countWords text =
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        frequencyMap = foldl updateCount [] cleanedWords
+    in sortOn (Down . snd) frequencyMap
+  where
+    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
+    updateCount [] word = [(word, 1)]
+    updateCount ((w, c):rest) word
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : updateCount rest word
+
+displayCounts :: WordCount -> IO ()
+displayCounts counts = do
+    putStrLn "Word frequencies:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. This is a test of the word frequency counter. Hello again!"
+    let frequencies = countWords sampleText
+    displayCounts frequencies
