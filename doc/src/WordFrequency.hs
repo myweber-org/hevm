@@ -179,4 +179,18 @@ displayFrequency counts =
     unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
 
 analyzeText :: String -> String
-analyzeText = displayFrequency . countWords
+analyzeText = displayFrequency . countWordsmodule WordFrequency where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlpha)
+
+countWords :: String -> Map.Map String Int
+countWords text = Map.fromListWith (+) wordCounts
+  where
+    words' = map (map toLower) $ filter (all isAlpha) $ words text
+    wordCounts = zip words' (repeat 1)
+
+mostFrequent :: String -> [(String, Int)]
+mostFrequent text = take 5 $ reverse $ sortByFrequency $ Map.toList $ countWords text
+  where
+    sortByFrequency = sortOn snd
