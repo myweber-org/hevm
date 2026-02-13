@@ -193,4 +193,27 @@ countWords text = Map.fromListWith (+) wordCounts
 mostFrequent :: String -> [(String, Int)]
 mostFrequent text = take 5 $ reverse $ sortByFrequency $ Map.toList $ countWords text
   where
-    sortByFrequency = sortOn snd
+    sortByFrequency = sortOn sndmodule WordFrequency where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = foldr incrementWord Map.empty (words text)
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlphaNum
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+
+processFile :: FilePath -> IO ()
+processFile path = do
+  content <- readFile path
+  let topWords = getTopWords 10 content
+  putStrLn "Top 10 most frequent words:"
+  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWords
