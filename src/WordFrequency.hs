@@ -184,4 +184,29 @@ main = do
     putStrLn "Enter text to analyze:"
     input <- getContents
     let results = countWords input
-    putStrLn $ displayResults results
+    putStrLn $ displayResults resultsmodule WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = groupCount cleanedWords
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = filter (\c -> isAlphaNum c || c == '\'')
+    groupCount [] = []
+    groupCount (w:ws) = 
+        let (matches, rest) = partition (== w) ws
+        in (w, 1 + length matches) : groupCount rest
+
+    partition _ [] = ([], [])
+    partition p (x:xs)
+        | p x       = (x:ys, zs)
+        | otherwise = (ys, x:zs)
+      where (ys, zs) = partition p xs
