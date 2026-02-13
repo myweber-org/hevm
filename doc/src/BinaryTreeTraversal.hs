@@ -20,4 +20,18 @@ exampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     (Node 6 Empty Empty)
-                    Empty)
+                    Empty)module BinaryTreeTraversal where
+
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show)
+
+inorder :: BinaryTree a -> [a]
+inorder Leaf = []
+inorder (Node left value right) = inorder left ++ [value] ++ inorder right
+
+preorder :: BinaryTree a -> [a]
+preorder Leaf = []
+preorder (Node left value right) = [value] ++ preorder left ++ preorder right
+
+postorder :: BinaryTree a -> [a]
+postorder Leaf = []
+postorder (Node left value right) = postorder left ++ postorder right ++ [value]
