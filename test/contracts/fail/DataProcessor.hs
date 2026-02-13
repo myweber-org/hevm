@@ -33,4 +33,16 @@ safeHead [] = Nothing
 safeHead (x:_) = Just x
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
+
+combineData :: [Int] -> [Int] -> [Int]
+combineData xs ys = zipWith (+) (processData xs) (processData ys)
