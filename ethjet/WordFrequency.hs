@@ -1,70 +1,36 @@
 module WordFrequency where
 
-import qualified Data.Map.Strict as Map
-import Data.Char (isAlpha, toLower)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type FrequencyMap = Map.Map String Int
-
-countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
-  where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
-
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
-
-analyzeText :: String -> IO ()
-analyzeText text = do
-  putStrLn "Top 10 most frequent words:"
-  mapM_ printWord (topNWords 10 text)
-  where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
-
-import qualified Data.Map.Strict as Map
-import Data.Char (isAlpha, toLower)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type FrequencyMap = Map.Map String Int
-
-countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
-  where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
-
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
-
-analyzeText :: String -> IO ()
-analyzeText text = do
-  putStrLn "Top 10 most frequent words:"
-  mapM_ printWord (topNWords 10 text)
-  where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
-
-import qualified Data.Map.Strict as Map
 import Data.Char (toLower, isAlpha)
 import Data.List (sortOn)
 import Data.Ord (Down(..))
 
-type WordCount = Map.Map String Int
+type WordCount = (String, Int)
 
-countWords :: String -> WordCount
-countWords = foldr incrementWord Map.empty . words
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = groupWords cleaned
+    in take 10 $ sortOn (Down . snd) grouped
   where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    
+    groupWords :: [String] -> [WordCount]
+    groupWords = foldr incrementCount []
+    
+    incrementCount :: String -> [WordCount] -> [WordCount]
+    incrementCount word [] = [(word, 1)]
+    incrementCount word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : incrementCount word rest
 
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+displayResults :: [WordCount] -> IO ()
+displayResults counts = do
+    putStrLn "Top 10 most frequent words:"
+    putStrLn "---------------------------"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
 
-displayFrequency :: String -> IO ()
-displayFrequency text = do
-  putStrLn "Top 10 most frequent words:"
-  mapM_ printWord (topNWords 10 text)
-  where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+analyzeText :: String -> IO ()
+analyzeText text = do
+    let frequencies = countWords text
+    displayResults frequencies
