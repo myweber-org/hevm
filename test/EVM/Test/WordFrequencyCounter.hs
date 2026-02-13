@@ -30,3 +30,33 @@ processText text = do
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
     
     putStrLn $ "\nTotal unique words: " ++ show (Map.size frequencies)
+module WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import System.Environment
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+formatResults :: WordCount -> String
+formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+main :: IO ()
+main = do
+  args <- getArgs
+  case args of
+    [] -> putStrLn "Usage: wordfreq <text>"
+    textPieces -> do
+      let text = unwords textPieces
+      let frequencies = countWords text
+      putStrLn "Word frequencies:"
+      putStrLn $ formatResults frequencies
