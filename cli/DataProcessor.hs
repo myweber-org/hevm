@@ -150,4 +150,15 @@ main = do
     let input = [1, -2, 3, 0, 5, -8]
     let result = processData input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
+
+sampleData :: [Int]
+sampleData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+main :: IO ()
+main = do
+    let result = processData sampleData
+    putStrLn $ "Processed data: " ++ show result
