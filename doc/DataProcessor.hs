@@ -62,3 +62,43 @@ safeProcessData :: [Int] -> Maybe [Int]
 safeProcessData xs
     | validateInput xs = Just (processData xs)
     | otherwise = Nothing
+module DataProcessor where
+
+import Data.Char (isDigit)
+import Data.Maybe (catMaybes)
+import Text.Read (readMaybe)
+
+-- Safe integer parsing with validation
+safeParseInt :: String -> Maybe Int
+safeParseInt str
+    | all isDigit str = readMaybe str
+    | otherwise = Nothing
+
+-- Process list of strings to valid integers
+processNumbers :: [String] -> [Int]
+processNumbers = catMaybes . map safeParseInt
+
+-- Validate and transform key-value pairs
+validateKeyValue :: [(String, String)] -> [(String, Int)]
+validateKeyValue pairs = 
+    [(key, val) | (key, strVal) <- pairs, 
+                  Just val <- [safeParseInt strVal]]
+
+-- Calculate statistics from processed data
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats nums
+    | null nums = (0, 0, 0.0)
+    | otherwise = (minimum nums, maximum nums, average)
+    where
+        total = sum nums
+        count = length nums
+        average = fromIntegral total / fromIntegral count
+
+-- Main processing pipeline
+processDataPipeline :: [String] -> Maybe (Int, Int, Double)
+processDataPipeline inputs
+    | null validNumbers = Nothing
+    | otherwise = Just stats
+    where
+        validNumbers = processNumbers inputs
+        stats = calculateStats validNumbers
