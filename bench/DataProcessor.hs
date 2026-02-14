@@ -24,4 +24,37 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessedData = sum . processDatamodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
+
+validateData :: [Double] -> Maybe [Double]
+validateData [] = Nothing
+validateData xs
+    | any isInfinite xs = Nothing
+    | any isNaN xs = Nothing
+    | otherwise = Just xs
+
+processDataStream :: Int -> [Double] -> Maybe [Double]
+processDataStream windowSize rawData = do
+    validated <- validateData rawData
+    return $ smoothData windowSize validated
+
+exampleUsage :: IO ()
+exampleUsage = do
+    let testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    case processDataStream 3 testData of
+        Just result -> putStrLn $ "Smoothed data: " ++ show result
+        Nothing -> putStrLn "Invalid data encountered"
