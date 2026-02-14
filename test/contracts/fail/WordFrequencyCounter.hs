@@ -218,4 +218,32 @@ processText text =
     let topWords = countWords text
     in if null topWords 
         then "No words found in text"
-        else "Top 10 most frequent words:\n" ++ formatResults topWords
+        else "Top 10 most frequent words:\n" ++ formatResults topWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let normalized = map toLower text
+        words' = words normalized
+        cleanWords = filter (all isAlpha) words'
+        frequencies = foldr countWord [] cleanWords
+    in take 10 $ sortOn (Down . snd) frequencies
+  where
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+displayResults :: [WordCount] -> String
+displayResults counts = 
+    unlines $ "Top 10 most frequent words:" : map formatCount counts
+  where
+    formatCount (word, count) = word ++ ": " ++ show count
+
+analyzeText :: String -> String
+analyzeText = displayResults . countWords
