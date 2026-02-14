@@ -413,3 +413,36 @@ filterAndTransform predicate transformer =
 
 processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.List (sort, nub)
+
+-- Filter even numbers from a list
+filterEvens :: [Int] -> [Int]
+filterEvens = filter even
+
+-- Square each element in a list
+squareAll :: [Int] -> [Int]
+squareAll = map (^2)
+
+-- Remove duplicates and sort a list
+uniqueSorted :: [Int] -> [Int]
+uniqueSorted = sort . nub
+
+-- Combine filtering and transformation
+processNumbers :: [Int] -> [Int]
+processNumbers = uniqueSorted . squareAll . filterEvens
+
+-- Calculate sum of processed numbers
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let numbers = [1,2,3,4,5,6,7,8,9,10,2,4,6,8,10]
+    putStrLn $ "Original: " ++ show numbers
+    putStrLn $ "Filtered evens: " ++ show (filterEvens numbers)
+    putStrLn $ "Squared: " ++ show (squareAll numbers)
+    putStrLn $ "Processed: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum processed: " ++ show (sumProcessed numbers)
