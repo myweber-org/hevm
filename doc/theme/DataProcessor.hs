@@ -267,4 +267,7 @@ validateInput xs
     | null xs = Nothing
     | any (< -100) xs = Nothing
     | any (> 100) xs = Nothing
-    | otherwise = Just xs
+    | otherwise = Just xsmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
