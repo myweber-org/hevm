@@ -32,4 +32,25 @@ countWordsExplicit str = go str False 0
     go (c:cs) inWord count
         | isSpace c = go cs False count
         | not inWord = go cs True (count + 1)
-        | otherwise = go cs inWord count
+        | otherwise = go cs inWord countmodule WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (words)
+
+countWords :: String -> Int
+countWords = length . words
+
+countWordsCustom :: String -> Int
+countWordsCustom = length . filter (not . null) . splitWords
+  where
+    splitWords = foldr splitter [[]]
+    splitter c acc@(current:rest)
+        | isSpace c = []:acc
+        | otherwise = (c:current):rest
+
+main :: IO ()
+main = do
+    let text = "Hello world! This is a test."
+    putStrLn $ "Text: " ++ text
+    putStrLn $ "Standard word count: " ++ show (countWords text)
+    putStrLn $ "Custom word count: " ++ show (countWordsCustom text)
