@@ -58,3 +58,13 @@ exampleUsage = do
     case processDataStream 3 testData of
         Just result -> putStrLn $ "Smoothed data: " ++ show result
         Nothing -> putStrLn "Invalid data encountered"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
