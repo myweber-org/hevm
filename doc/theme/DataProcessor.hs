@@ -277,3 +277,24 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (>0) xs then Just xs else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Even squares: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of even squares: " ++ show (sumProcessedData even (\x -> x * x) sampleData)
+    putStrLn $ "Validation result: " ++ show (validateInput sampleData)
