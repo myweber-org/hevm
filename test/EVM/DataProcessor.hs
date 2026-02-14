@@ -1,41 +1,51 @@
 
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (intercalate)
+import Data.List.Split (splitOn)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
+type CSVRow = [String]
+type CSVData = [CSVRow]
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput [] = Nothing
-validateInput xs = Just xs
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
 
-main :: IO ()
-main = do
-    let sampleData = [5, 12, 8, 20, 3, 15]
-    case validateInput sampleData of
-        Nothing -> putStrLn "Empty input list"
-        Just data' -> do
-            let result = processData data'
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
+numericColumns :: CSVData -> [Int]
+numericColumns rows = 
+    case rows of
+        [] -> []
+        (header:_) -> 
+            map fst $ filter (\(_, val) -> all isNumericChar val) $ zip [0..] header
+    where
+        isNumericChar c = c `elem` "0123456789.-"
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+computeColumnStats :: CSVData -> Int -> (Double, Double, Double)
+computeColumnStats rows colIndex =
+    let values = mapMaybe (safeRead . (!! colIndex)) rows
+        count = fromIntegral $ length values
+        total = sum values
+        avg = total / count
+        variance = sum (map (\x -> (x - avg) ** 2) values) / count
+    in (total, avg, sqrt variance)
+    where
+        safeRead s = case reads s of
+            [(x, "")] -> Just x
+            _ -> Nothing
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+generateReport :: CSVData -> String
+generateReport csvData =
+    let headers = head csvData
+        numericCols = numericColumns csvData
+        stats = map (computeColumnStats (tail csvData)) numericCols
+        reportLines = zipWith3 (\col idx (total, avg, std) ->
+            "Column " ++ show idx ++ " (" ++ headers !! col ++ "): " ++
+            "Sum=" ++ show total ++ ", " ++
+            "Avg=" ++ show avg ++ ", " ++
+            "StdDev=" ++ show std) numericCols [0..] stats
+    in intercalate "\n" reportLines
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+processCSVFile :: FilePath -> IO String
+processCSVFile path = do
+    content <- readFile path
+    let parsed = parseCSV content
+    return $ generateReport parsed
