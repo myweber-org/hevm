@@ -48,4 +48,22 @@ processCSVFile :: FilePath -> IO String
 processCSVFile path = do
     content <- readFile path
     let parsed = parseCSV content
-    return $ generateReport parsed
+    return $ generateReport parsedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (> -100) xs
+
+processWithValidation :: [Int] -> Maybe Int
+processWithValidation xs
+    | validateInput xs = Just (sumProcessedData xs)
+    | otherwise = Nothing
