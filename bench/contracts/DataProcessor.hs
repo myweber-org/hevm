@@ -106,3 +106,50 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of even squares: " ++ show (sumProcessedList even (\x -> x * x) numbers)
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.CSV (parseCSV, Record)
+
+type SummaryStats = (Double, Double, Double, Double)
+
+computeStats :: [Double] -> SummaryStats
+computeStats [] = (0, 0, 0, 0)
+computeStats xs = (minimum xs, maximum xs, mean, stdDev)
+  where
+    n = fromIntegral (length xs)
+    mean = sum xs / n
+    variance = sum (map (\x -> (x - mean) ** 2) xs) / n
+    stdDev = sqrt variance
+
+parseNumericColumn :: String -> Maybe [Double]
+parseNumericColumn csvData = case parseCSV "" csvData of
+    Left _ -> Nothing
+    Right csv -> Just $ processRecords csv
+  where
+    processRecords :: [Record] -> [Double]
+    processRecords = concatMap (mapMaybe readDouble)
+    
+    mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+    mapMaybe f = foldr (\x acc -> case f x of
+        Just y -> y : acc
+        Nothing -> acc) []
+    
+    readDouble :: String -> Maybe Double
+    readDouble s = case reads s of
+        [(val, "")] -> Just val
+        _ -> Nothing
+
+summarizeCSVColumn :: String -> Maybe SummaryStats
+summarizeCSVColumn csvData = do
+    numbers <- parseNumericColumn csvData
+    if null numbers
+        then Nothing
+        else Just $ computeStats numbers
+
+formatStats :: SummaryStats -> String
+formatStats (minVal, maxVal, meanVal, stdVal) =
+    "Minimum: " ++ show minVal ++ "\n" ++
+    "Maximum: " ++ show maxVal ++ "\n" ++
+    "Mean: " ++ show meanVal ++ "\n" ++
+    "Std Dev: " ++ show stdVal
