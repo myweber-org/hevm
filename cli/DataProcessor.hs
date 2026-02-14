@@ -191,3 +191,40 @@ sumPositiveDoubles = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
 validateInput xs = if all (> -1000) xs then Just xs else Nothing
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Maybe
+
+type CSVRow = [String]
+type DateRange = (Day, Day)
+
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+
+filterByDateRange :: DateRange -> CSVRow -> Bool
+filterByDateRange (start, end) row
+    | length row < 3 = False
+    | otherwise = case parseDate (row !! 2) of
+        Just date -> date >= start && date <= end
+        Nothing   -> False
+
+processCSV :: DateRange -> [CSVRow] -> [CSVRow]
+processCSV range = filter (filterByDateRange range)
+
+calculateDailyAverage :: [CSVRow] -> Maybe Double
+calculateDailyAverage rows
+    | null validValues = Nothing
+    | otherwise = Just (sum validValues / fromIntegral (length validValues))
+  where
+    validValues = mapMaybe parseValue rows
+    parseValue row
+        | length row >= 4 = readMaybe (row !! 3)
+        | otherwise = Nothing
+
+readMaybe :: Read a => String -> Maybe a
+readMaybe s = case reads s of
+    [(x, "")] -> Just x
+    _         -> Nothing
