@@ -462,4 +462,43 @@ validateInput xs
     | null xs = Nothing
     | any (< -100) xs = Nothing
     | any (> 100) xs = Nothing
-    | otherwise = Just xs
+    | otherwise = Just xsmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+numericColumns :: CSVRow -> [Double]
+numericColumns row = map read row
+
+calculateColumnAverages :: CSVData -> [Double]
+calculateColumnAverages [] = []
+calculateColumnAverages rows@(firstRow:_)
+    | all (== length firstRow) (map length rows) = 
+        let transposed = transpose rows
+            numericRows = map (filter (not . null) . mapMaybe safeRead) transposed
+        in map average numericRows
+    | otherwise = error "Inconsistent row lengths"
+  where
+    safeRead :: String -> Maybe Double
+    safeRead s = case reads s of
+        [(n, "")] -> Just n
+        _ -> Nothing
+    
+    average :: [Double] -> Double
+    average xs = if null xs then 0 else sum xs / fromIntegral (length xs)
+    
+    transpose :: [[a]] -> [[a]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVFile :: String -> IO [Double]
+processCSVFile filename = do
+    content <- readFile filename
+    let parsed = parseCSV content
+    return $ calculateColumnAverages parsed
