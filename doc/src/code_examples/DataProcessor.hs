@@ -445,4 +445,21 @@ exampleUsage = do
     putStrLn $ "Filtered evens: " ++ show (filterEvens numbers)
     putStrLn $ "Squared: " ++ show (squareAll numbers)
     putStrLn $ "Processed: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum processed: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum processed: " ++ show (sumProcessed numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< -100) xs = Nothing
+    | any (> 100) xs = Nothing
+    | otherwise = Just xs
