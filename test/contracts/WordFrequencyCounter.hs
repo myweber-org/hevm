@@ -191,4 +191,32 @@ main :: IO ()
 main = do
     input <- TIO.getContents
     let frequencies = sortByFrequency (countWordsCleaned input)
-    printWordFrequencies frequencies
+    printWordFrequencies frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+
+displayHistogram :: [WordCount] -> String
+displayHistogram counts = 
+    let maxCount = maximum $ map snd counts
+        scale = 50.0 / fromIntegral maxCount
+        bar count = replicate (round $ fromIntegral count * scale) '█'
+    in unlines $ map (\(word, count) -> word ++ ": " ++ bar count ++ " (" ++ show count ++ ")") counts
+
+analyzeText :: String -> String
+analyzeText text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+    in "Total words: " ++ show totalWords ++ 
+       "\nUnique words: " ++ show uniqueWords ++ 
+       "\n\nWord frequency histogram:\n" ++ displayHistogram (take 20 counts)
