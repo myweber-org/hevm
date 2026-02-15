@@ -1,69 +1,20 @@
-
 module DataProcessor where
-
-import Data.List (intercalate)
-import Data.List.Split (splitOn)
-
-type CSVRow = [String]
-type CSVData = [CSVRow]
-
-parseCSV :: String -> CSVData
-parseCSV content = map (splitOn ",") (lines content)
-
-numericColumns :: CSVData -> [Int]
-numericColumns rows = 
-    case rows of
-        [] -> []
-        (header:_) -> 
-            map fst $ filter (\(_, val) -> all isNumericChar val) $ zip [0..] header
-    where
-        isNumericChar c = c `elem` "0123456789.-"
-
-computeColumnStats :: CSVData -> Int -> (Double, Double, Double)
-computeColumnStats rows colIndex =
-    let values = mapMaybe (safeRead . (!! colIndex)) rows
-        count = fromIntegral $ length values
-        total = sum values
-        avg = total / count
-        variance = sum (map (\x -> (x - avg) ** 2) values) / count
-    in (total, avg, sqrt variance)
-    where
-        safeRead s = case reads s of
-            [(x, "")] -> Just x
-            _ -> Nothing
-
-generateReport :: CSVData -> String
-generateReport csvData =
-    let headers = head csvData
-        numericCols = numericColumns csvData
-        stats = map (computeColumnStats (tail csvData)) numericCols
-        reportLines = zipWith3 (\col idx (total, avg, std) ->
-            "Column " ++ show idx ++ " (" ++ headers !! col ++ "): " ++
-            "Sum=" ++ show total ++ ", " ++
-            "Avg=" ++ show avg ++ ", " ++
-            "StdDev=" ++ show std) numericCols [0..] stats
-    in intercalate "\n" reportLines
-
-processCSVFile :: FilePath -> IO String
-processCSVFile path = do
-    content <- readFile path
-    let parsed = parseCSV content
-    return $ generateReport parsedmodule DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 10) (* 2)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
 
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (> -100) xs
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< 0) xs = Nothing
+    | otherwise = Just xs
 
-processWithValidation :: [Int] -> Maybe Int
-processWithValidation xs
-    | validateInput xs = Just (sumProcessedData xs)
-    | otherwise = Nothing
+safeProcess :: [Int] -> Maybe Int
+safeProcess = fmap sumProcessed . validateInput
