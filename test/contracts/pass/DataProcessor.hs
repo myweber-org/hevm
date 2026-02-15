@@ -21,3 +21,7 @@ exampleUsage = do
     print $ movingAverage 3 dataSeries
     putStrLn "\n5-period moving average:"
     print $ movingAverage 5 dataSeries
+module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
