@@ -6,58 +6,17 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    print resultmodule DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
 
 main :: IO ()
 main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData = all (> 0)
-
-main :: IO ()
-main = do
-    let inputData = [1, -2, 3, 0, 5, -8]
-    let processed = processData inputData
-    putStrLn $ "Original data: " ++ show inputData
-    putStrLn $ "Processed data: " ++ show processed
-    putStrLn $ "Validation result: " ++ show (validateData processed)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * 2 + 1)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-main :: IO ()
-main = do
-    let numbers = [1..20]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    let sampleData = [-5, 2, 0, 8, -3, 10]
+    if validateInput sampleData
+        then do
+            putStrLn "Processing valid data..."
+            let result = processData sampleData
+            putStrLn $ "Input: " ++ show sampleData
+            putStrLn $ "Result: " ++ show result
+        else
+            putStrLn "Invalid input detected"
