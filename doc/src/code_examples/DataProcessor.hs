@@ -540,4 +540,28 @@ main = do
     let sampleData = [1, -2, 3, 4, -5, 6]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)
+    putStrLn $ "Validation result: " ++ show (validateData sampleData)module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") (lines content)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
+
+main :: IO ()
+main = do
+    let csvData = "1.0,2.0,3.0\n4.0,5.0,6.0\n7.0,8.0,9.0"
+    let averages = processCSVData csvData
+    putStrLn $ "Column averages: " ++ show averages
