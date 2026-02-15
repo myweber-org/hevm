@@ -96,4 +96,27 @@ countWords text =
         splitWords = words . map (\c -> if isSpace c then ' ' else c)
         toLower c
             | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
-            | otherwise = c
+            | otherwise = cmodule WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (words)
+
+-- | Counts the number of words in a given string.
+-- Words are defined as sequences of characters separated by whitespace.
+countWords :: String -> Int
+countWords input = length $ words input
+
+-- | A more explicit version using a fold to count words.
+-- This handles multiple consecutive spaces correctly.
+countWordsExplicit :: String -> Int
+countWordsExplicit = fst . foldl' step (0, True)
+  where
+    step (count, inWord) c
+        | isSpace c = (count, False)
+        | not inWord = (count + 1, True)
+        | otherwise = (count, True)
+
+-- Strict foldl' helper
+foldl' :: (a -> b -> a) -> a -> [b] -> a
+foldl' f z []     = z
+foldl' f z (x:xs) = let z' = f z x in z' `seq` foldl' f z' xs
