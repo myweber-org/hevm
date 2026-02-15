@@ -13,11 +13,10 @@ countWords = foldr incrementWord Map.empty . words
     incrementWord word = Map.insertWith (+) (normalize word) 1
     normalize = map toLower . filter isAlpha
 
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (\(_, count) -> negate count) $ Map.toList $ countWords text
+topWords :: Int -> String -> [(String, Int)]
+topWords n text = take n $ sortOn (negate . snd) $ Map.toList (countWords text)
 
-displayFrequency :: [(String, Int)] -> String
-displayFrequency = unlines . map (\(word, count) -> word ++ ": " ++ show count)
-
-analyzeText :: Int -> String -> String
-analyzeText n = displayFrequency . topNWords n
+displayFrequency :: String -> IO ()
+displayFrequency text = do
+  putStrLn "Top 10 most frequent words:"
+  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) (topWords 10 text)
