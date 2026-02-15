@@ -359,4 +359,38 @@ main = do
     input <- getContents
     let frequencies = countWords input
     putStrLn "\nWord frequencies (sorted by count):"
-    putStrLn $ formatOutput frequencies
+    putStrLn $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map toLower <$> wordsList
+        frequencyMap = foldr countWord [] cleanedWords
+    in sortOn (Down . snd) frequencyMap
+  where
+    cleanWord = filter isAlpha
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+displayTopWords :: Int -> [WordCount] -> String
+displayTopWords n counts = 
+    let topN = take n counts
+        maxWordLength = maximum $ map (length . fst) topN
+        formatLine (word, count) = 
+            word ++ replicate (maxWordLength - length word + 2) ' ' ++ 
+            "| " ++ show count
+    in unlines $ map formatLine topN
+
+processText :: String -> Int -> String
+processText text n = 
+    let counts = countWords text
+    in "Top " ++ show n ++ " most frequent words:\n" ++ 
+       displayTopWords n counts
