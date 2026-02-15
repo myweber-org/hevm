@@ -25,4 +25,42 @@ processText = formatOutput . sortByFrequency . countWords
 main :: IO ()
 main = do
     input <- TIO.getContents
-    TIO.putStr $ processText input
+    TIO.putStr $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+-- | Count frequency of words in a text string
+--   Converts to lowercase and filters non-alphabetic characters
+countWordFrequencies :: String -> [WordCount]
+countWordFrequencies text =
+  let wordsList = words text
+      cleanedWords = map (filter isAlpha . map toLower) wordsList
+      nonEmptyWords = filter (not . null) cleanedWords
+      frequencyMap = foldr countWord [] nonEmptyWords
+  in sortOn (Down . snd) frequencyMap
+  where
+    countWord :: String -> [WordCount] -> [WordCount]
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+      | w == word = (w, c + 1) : rest
+      | otherwise = (w, c) : countWord word rest
+
+-- | Get top N most frequent words
+topNWords :: Int -> [WordCount] -> [WordCount]
+topNWords n = take n
+
+-- | Format word frequencies for display
+formatFrequencies :: [WordCount] -> String
+formatFrequencies freqs =
+  unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+-- | Process a text and return formatted top N words
+analyzeText :: Int -> String -> String
+analyzeText n text =
+  let freqs = countWordFrequencies text
+      topWords = topNWords n freqs
+  in formatFrequencies topWords
