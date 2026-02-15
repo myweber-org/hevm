@@ -1,30 +1,23 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-module DataProcessor where
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ws = sum ws / fromIntegral (length ws)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>= -100) xs && all (<= 100) xs
-                   then Just xs
-                   else Nothing
-
-main :: IO ()
-main = do
-    let sampleData = [-5, 10, 0, 25, -15, 30]
-    case validateInput sampleData of
-        Just validData -> do
-            putStrLn "Original data:"
-            print validData
-            putStrLn "Processed data (positive numbers doubled):"
-            print $ processData validData
-        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    putStrLn "Original data:"
+    print dataSeries
+    putStrLn "\n3-period moving average:"
+    print $ movingAverage 3 dataSeries
+    putStrLn "\n5-period moving average:"
+    print $ movingAverage 5 dataSeries
