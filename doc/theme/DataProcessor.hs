@@ -19,4 +19,16 @@ processDataSet dataset =
         meanVal = sum smoothed / fromIntegral (length smoothed)
         variance = sum (map (\x -> (x - meanVal) ** 2) smoothed) 
                    / fromIntegral (length smoothed)
-    in (smoothed, meanVal, variance)
+    in (smoothed, meanVal, variance)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-3, 1, 0, 5, -2, 8]
+    let result = processNumbers numbers
+    print result
