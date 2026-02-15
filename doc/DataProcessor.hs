@@ -37,3 +37,16 @@ smoothData = movingAverage 3
 
 processData :: [Double] -> (Double, Double, Double)
 processData xs = (minimum xs, maximum xs, sum xs / fromIntegral (length xs))
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+processOddCubes :: [Int] -> [Int]
+processOddCubes = filterAndTransform odd (\x -> x * x * x)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
