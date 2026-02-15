@@ -246,4 +246,34 @@ displayResults counts =
     formatCount (word, count) = word ++ ": " ++ show count
 
 analyzeText :: String -> String
-analyzeText = displayResults . countWords
+analyzeText = displayResults . countWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        freqMap = foldl updateCount emptyMap wordsList
+    in sortOn (Down . snd) $ toList freqMap
+  where
+    cleanWord = map toLower . filter isAlphaNum
+    emptyMap = []
+    updateCount [] word = [(word, 1)]
+    updateCount ((w, c):rest) word
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : updateCount rest word
+    toList = id
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is fun, world is big."
+    let frequencies = countWords sampleText
+    printWordFrequencies frequencies
