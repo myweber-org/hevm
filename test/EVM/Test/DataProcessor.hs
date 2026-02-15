@@ -8,4 +8,13 @@ movingAverage n xs
     | otherwise = map average $ windows n xs
   where
     average ys = sum ys / fromIntegral (length ys)
-    windows m = takeWhile ((== m) . length) . map (take m) . tails
+    windows m = takeWhile ((== m) . length) . map (take m) . tailsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
