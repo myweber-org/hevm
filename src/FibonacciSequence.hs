@@ -1,21 +1,8 @@
 module FibonacciSequence where
 
-fib :: Int -> Integer
-fib n = fibs !! n
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
-
-fibonacci :: Int -> Integer
-fibonacci n = fibs !! n
-  where fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-main :: IO ()
-main = do
-    putStrLn "First 20 Fibonacci numbers:"
-    mapM_ (print . fibonacci) [0..19]
+fibonacci :: Int -> [Int]
+fibonacci n
+    | n <= 0    = []
+    | otherwise = takeWhile (<= n) fibs
+    where
+        fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
