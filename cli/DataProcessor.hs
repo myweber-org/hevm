@@ -227,4 +227,17 @@ calculateDailyAverage rows
 readMaybe :: Read a => String -> Maybe a
 readMaybe s = case reads s of
     [(x, "")] -> Just x
-    _         -> Nothing
+    _         -> Nothingmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
