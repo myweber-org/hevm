@@ -88,4 +88,26 @@ displayAnalysis :: String -> Int -> IO ()
 displayAnalysis text n = do
   putStrLn $ "Top " ++ show n ++ " most frequent words:"
   mapM_ (\(word, count) -> putStrLn $ "  " ++ word ++ ": " ++ show count) 
-        (analyzeText text n)
+        (analyzeText text n)module WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+topWords :: Int -> String -> [(String, Int)]
+topWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequencies . topWords n
