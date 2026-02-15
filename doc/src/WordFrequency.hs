@@ -216,4 +216,37 @@ processFile path = do
   content <- readFile path
   let topWords = getTopWords 10 content
   putStrLn "Top 10 most frequent words:"
-  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWords
+  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        normalize = map toLower . filter isAlpha
+        frequencies = foldr countWord [] wordsList
+        countWord w [] = [(w, 1)]
+        countWord w ((word, count):rest)
+            | w == word = (word, count + 1) : rest
+            | otherwise = (word, count) : countWord w rest
+    in sortOn (Down . snd) frequencies
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map formatLine counts
+  where
+    formatLine (word, count) = word ++ ": " ++ show count
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <filename>"
+        (filename:_) -> do
+            content <- readFile filename
+            let frequencies = countWords content
+            putStrLn $ formatOutput frequencies
