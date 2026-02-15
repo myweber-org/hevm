@@ -56,3 +56,20 @@ calculateTrend values =
         sumX2 = sum $ map (^2) indices
         slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
     in Just slope
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedList :: [Int] -> Int
+sumProcessedList = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original list: " ++ show sampleData
+    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList sampleData)
