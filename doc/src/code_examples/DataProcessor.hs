@@ -587,3 +587,10 @@ main = do
             putStrLn $ "Processed data: " ++ show (processData validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
         Nothing -> putStrLn "Invalid input detected"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
