@@ -1,76 +1,13 @@
 module DataProcessor where
 
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
 processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)module DataProcessor where
+processData = filterAndTransform (> 0) (* 2)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -7]
-    let result = processNumbers input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data (even numbers squared): " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)module DataProcessor where
-
-import Data.List (tails)
-
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | n > length xs = error "Window size exceeds list length"
-    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
-  where
-    average ws = sum ws / fromIntegral n
-
-smoothData :: Int -> [Double] -> [Double]
-smoothData window dataPoints =
-    let avg = movingAverage window dataPoints
-        padding = replicate (window `div` 2) (head avg)
-    in padding ++ avg ++ padding
-
-processDataSet :: [Double] -> (Double, Double, [Double])
-processDataSet xs =
-    let meanVal = sum xs / fromIntegral (length xs)
-        variance = sum (map (\x -> (x - meanVal)^2) xs) / fromIntegral (length xs)
-        smoothed = smoothData 5 xs
-    in (meanVal, variance, smoothed)
+combineResults :: [Int] -> [Int] -> [Int]
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)
