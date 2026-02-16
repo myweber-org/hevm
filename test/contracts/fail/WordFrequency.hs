@@ -47,4 +47,37 @@ analyzeText text = do
     let freq = countWords text
     putStrLn $ "Total unique words: " ++ show (length freq)
     putStrLn $ "Most frequent word: " ++ fst (head freq)
+    printHistogram freqmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type Histogram = [(String, Int)]
+
+wordFrequency :: String -> Histogram
+wordFrequency text = 
+    let wordsList = filter (not . null) $ map clean $ words text
+        cleaned = map (map toLower) wordsList
+        grouped = group $ sort cleaned
+        frequencies = map (\ws -> (head ws, length ws)) grouped
+    in take 10 $ sortOn (Down . snd) frequencies
+  where
+    clean = filter isAlpha
+
+printHistogram :: Histogram -> IO ()
+printHistogram freq = do
+    putStrLn "Top 10 most frequent words:"
+    putStrLn "----------------------------"
+    mapM_ (\(word, count) -> 
+        putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")") freq
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+    let freq = wordFrequency text
     printHistogram freq
+
+main :: IO ()
+main = do
+    let sampleText = "This is a sample text. This text contains words. Some words repeat. This is intentional."
+    analyzeText sampleText
