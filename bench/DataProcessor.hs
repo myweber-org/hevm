@@ -115,4 +115,24 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ws = sum ws / fromIntegral n
+
+safeMovingAverage :: Int -> [Double] -> Maybe [Double]
+safeMovingAverage n xs
+    | n <= 0 = Nothing
+    | n > length xs = Nothing
+    | otherwise = Just $ movingAverage n xs
+
+testData :: [Double]
+testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
