@@ -69,3 +69,23 @@ main = do
     let numbers = [1..10]
     let result = processNumbers numbers
     print result
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterByDateRange :: Day -> Day -> [Record] -> [Record]
+filterByDateRange startDate endDate records = 
+    filter (\(dateStr:_) -> 
+        case parseDate dateStr of
+            Just date -> date >= startDate && date <= endDate
+            Nothing   -> False) records
+  where
+    parseDate :: String -> Maybe Day
+    parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
+
+processCSVData :: String -> Day -> Day -> Either String [Record]
+processCSVData csvContent start end =
+    case parseCSV "input" csvContent of
+        Left err -> Left $ "CSV parse error: " ++ err
+        Right csv -> Right $ filterByDateRange start end csv
