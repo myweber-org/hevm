@@ -113,4 +113,31 @@ displayResults counts = do
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
 
 analyzeText :: String -> IO ()
-analyzeText = displayResults . countWords
+analyzeText = displayResults . countWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type Histogram = [(String, Int)]
+
+countWords :: String -> Histogram
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+
+printHistogram :: Histogram -> IO ()
+printHistogram hist = do
+    putStrLn "Word Frequency Histogram:"
+    putStrLn "========================="
+    mapM_ (\(word, count) -> 
+        putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")") hist
+    putStrLn "========================="
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze (press Ctrl+D when done):"
+    input <- getContents
+    let histogram = countWords input
+    printHistogram histogram
