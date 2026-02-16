@@ -3,51 +3,26 @@ module DataProcessor where
 movingAverage :: Fractional a => Int -> [a] -> [a]
 movingAverage n xs
     | length xs < n = []
-    | otherwise = avg (take n xs) : movingAverage n (tail xs)
+    | otherwise = avg : movingAverage n (tail xs)
     where
-        avg ys = sum ys / fromIntegral (length ys)
+        window = take n xs
+        avg = sum window / fromIntegral n
 
 smoothData :: Fractional a => Int -> [a] -> [a]
 smoothData windowSize dataPoints =
-    let avg = movingAverage windowSize dataPoints
-        padding = replicate (windowSize `div` 2) (head dataPoints)
-    in padding ++ avg ++ padding
+    let padSize = windowSize `div` 2
+        padded = replicate padSize (head dataPoints) ++ dataPoints ++ replicate padSize (last dataPoints)
+    in movingAverage windowSize padded
 
-processDataSet :: Fractional a => [a] -> ([a], a, a)
-processDataSet dataset =
-    let smoothed = smoothData 5 dataset
-        meanVal = sum smoothed / fromIntegral (length smoothed)
-        variance = sum (map (\x -> (x - meanVal) ** 2) smoothed) 
-                   / fromIntegral (length smoothed)
-    in (smoothed, meanVal, variance)module DataProcessor where
+calculateTrend :: (Fractional a, Ord a) => [a] -> String
+calculateTrend values
+    | null values = "No data"
+    | last values > head values = "Increasing"
+    | last values < head values = "Decreasing"
+    | otherwise = "Stable"
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 0, 5, -2, 8]
-    let result = processNumbers numbers
-    print result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (>0) xs then Just xs else Nothingmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processDataset :: Fractional a => Int -> [a] -> ([a], String)
+processDataset windowSize dataset =
+    let smoothed = smoothData windowSize dataset
+        trend = calculateTrend smoothed
+    in (smoothed, trend)
