@@ -106,4 +106,23 @@ main :: IO ()
 main = do
     let sampleText = "Hello world hello haskell world test test test"
     let frequencies = countWords sampleText
-    printWordFrequencies frequencies
+    printWordFrequencies frequenciesimport Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+countWords :: String -> [(String, Int)]
+countWords text = sortOn (Down . snd) $ map (\xs@(x:_) -> (x, length xs)) grouped
+  where
+    cleaned = map toLower $ filter (\c -> isAlpha c || c == ' ') text
+    wordsList = filter (not . null) $ words cleaned
+    grouped = group $ sort wordsList
+
+main :: IO ()
+main = do
+  args <- getArgs
+  case args of
+    [] -> putStrLn "Usage: WordFrequencyCounter <text>"
+    input -> do
+      let frequencies = countWords $ unwords input
+      mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
