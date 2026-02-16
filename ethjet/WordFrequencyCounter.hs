@@ -63,4 +63,41 @@ analyzeText :: Int -> String -> String
 analyzeText n text =
   let freqs = countWordFrequencies text
       topWords = topNWords n freqs
-  in formatFrequencies topWords
+  in formatFrequencies topWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countHelper [] wordsList
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlphaNum
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w,c):rest)
+        | w == word = (w, c+1) : rest
+        | otherwise = (w,c) : countHelper word rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map formatLine counts
+  where
+    formatLine (word, count) = word ++ ": " ++ show count
+
+processFile :: FilePath -> IO ()
+processFile filename = do
+    content <- readFile filename
+    let counts = countWords content
+    putStrLn $ formatOutput counts
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [filename] -> processFile filename
+        _ -> putStrLn "Usage: wordfreq <filename>"
