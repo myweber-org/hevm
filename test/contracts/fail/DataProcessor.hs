@@ -50,4 +50,27 @@ main = do
     let sampleData = [1..10]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data (even numbers squared): " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
+  where
+    average ws = sum ws / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData window dataPoints =
+    let avg = movingAverage window dataPoints
+        padding = replicate (window `div` 2) (head avg)
+    in padding ++ avg ++ padding
+
+processDataSet :: [Double] -> (Double, Double, [Double])
+processDataSet xs =
+    let meanVal = sum xs / fromIntegral (length xs)
+        variance = sum (map (\x -> (x - meanVal)^2) xs) / fromIntegral (length xs)
+        smoothed = smoothData 5 xs
+    in (meanVal, variance, smoothed)
