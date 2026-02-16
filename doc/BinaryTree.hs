@@ -21,3 +21,19 @@ preOrder (Node x left right) = [x] ++ preOrder left ++ preOrder right
 postOrder :: BinaryTree a -> [a]
 postOrder Empty = []
 postOrder (Node x left right) = postOrder left ++ postOrder right ++ [x]
+module BinaryTree where
+
+import Data.Aeson (ToJSON, toJSON, encode)
+import Data.ByteString.Lazy.Char8 (unpack)
+
+data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show, Eq)
+
+instance ToJSON a => ToJSON (Tree a) where
+    toJSON Empty = toJSON ([] :: [String])
+    toJSON (Node val left right) = toJSON [toJSON val, toJSON left, toJSON right]
+
+serializeTree :: ToJSON a => Tree a -> String
+serializeTree = unpack . encode
+
+sampleTree :: Tree Int
+sampleTree = Node 1 (Node 2 Empty Empty) (Node 3 Empty Empty)
