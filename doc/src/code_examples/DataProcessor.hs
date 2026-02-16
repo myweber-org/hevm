@@ -40,4 +40,30 @@ main = do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
+        Nothing -> putStrLn "Invalid input: all numbers must be positive"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (*2)
+
+processOddNumbers :: [Int] -> [Int]
+processOddNumbers = filterAndTransform odd (+1)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer =
+    sum . filterAndTransform predicate transformer
+
+main :: IO ()
+main = do
+    let testData = [1..10]
+    putStrLn "Original data:"
+    print testData
+    putStrLn "\nDoubled even numbers:"
+    print $ processEvenNumbers testData
+    putStrLn "\nIncremented odd numbers:"
+    print $ processOddNumbers testData
+    putStrLn "\nSum of doubled even numbers:"
+    print $ sumProcessedData even (*2) testData
