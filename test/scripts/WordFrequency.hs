@@ -48,4 +48,30 @@ displayFrequency counts =
     formatCount (word, count) = word ++ ": " ++ show count
 
 analyzeText :: String -> String
-analyzeText = displayFrequency . countWords
+analyzeText = displayFrequency . countWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map normalize $ words text
+        freqMap = foldr (\w m -> insertWord w m) [] wordsList
+    in sortOn (Down . snd) freqMap
+  where
+    normalize = map toLower . filter isAlphaNum
+    
+    insertWord :: String -> [WordCount] -> [WordCount]
+    insertWord w [] = [(w, 1)]
+    insertWord w ((x, n):xs)
+        | w == x = (x, n+1):xs
+        | otherwise = (x, n):insertWord w xs
+
+processFile :: FilePath -> IO ()
+processFile path = do
+    content <- readFile path
+    let frequencies = countWords content
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
