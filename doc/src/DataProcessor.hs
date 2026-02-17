@@ -1,54 +1,40 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+type CSVRow = [String]
+type CSVData = [CSVRow]
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+parseCSV :: String -> CSVData
+parseCSV = map (splitBy ',') . lines
+  where
+    splitBy :: Char -> String -> [String]
+    splitBy delimiter = foldr splitter [[]]
+      where
+        splitter :: Char -> [String] -> [String]
+        splitter c (current:rest)
+          | c == delimiter = []:current:rest
+          | otherwise = (c:current):rest
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+validateRow :: CSVRow -> Bool
+validateRow row = length row >= 2 && all validField row
+  where
+    validField :: String -> Bool
+    validField field = not (null field) && all validChar field
+    
+    validChar :: Char -> Bool
+    validChar c = isAlpha c || isDigit c || c `elem` ".-_ "
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+processCSV :: String -> Either String CSVData
+processCSV input
+  | null input = Left "Empty input"
+  | otherwise = 
+      let parsed = parseCSV input
+          validRows = filter validateRow parsed
+      in if length validRows == length parsed
+         then Right parsed
+         else Left "Invalid data format detected"
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -1000) xs then Just xs else Nothing
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData = all (> 0) . processData
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 2, 0, 7, -1, 4]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
-
-main :: IO ()
-main = do
-    let sampleData = [1, -2, 3, 0, 5, -10]
-    case validateInput sampleData of
-        Just validData -> do
-            let result = processData validData
-            putStrLn $ "Processed data: " ++ show result
-        Nothing -> putStrLn "Invalid input detected"
+formatOutput :: CSVData -> String
+formatOutput = intercalate "\n" . map (intercalate " | ")
