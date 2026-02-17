@@ -19,4 +19,13 @@ main = do
             putStrLn $ "Input: " ++ show sampleData
             putStrLn $ "Result: " ++ show result
         else
-            putStrLn "Invalid input detected"
+            putStrLn "Invalid input detected"module DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    average ws = sum ws / fromIntegral (length ws)
+    windows n = takeWhile (\w -> length w == n) . map (take n) . tails
