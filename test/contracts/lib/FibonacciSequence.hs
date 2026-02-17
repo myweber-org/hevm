@@ -37,4 +37,23 @@ fibMemo = fix memoize
 main :: IO ()
 main = do
     putStrLn "Fibonacci numbers from 0 to 20:"
-    mapM_ (print . fibMemo) [0..20]
+    mapM_ (print . fibMemo) [0..20]module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+printFibonacci :: Int -> IO ()
+printFibonacci n = do
+    putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
+    mapM_ (putStrLn . show) (fibonacci n)
+
+main :: IO ()
+main = do
+    putStr "Enter number of terms: "
+    input <- getLine
+    let n = read input :: Int
+    if n > 0
+        then printFibonacci n
+        else putStrLn "Please enter a positive integer."
