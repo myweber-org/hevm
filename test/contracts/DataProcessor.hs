@@ -1,36 +1,35 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processNumbers input
-    print resultmodule DataProcessor where
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints =
+    let avg = movingAverage windowSize dataPoints
+        padding = replicate (windowSize `div` 2) (head avg)
+    in padding ++ avg ++ padding
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+calculateTrend :: [Double] -> Double
+calculateTrend [] = 0.0
+calculateTrend points =
+    let n = fromIntegral $ length points
+        indices = [0..n-1]
+        sumX = sum indices
+        sumY = sum points
+        sumXY = sum $ zipWith (*) indices points
+        sumX2 = sum $ map (^2) indices
+        slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
+    in slope
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs
-    | null xs = Nothing
-    | any (< -100) xs = Nothing
-    | any (> 100) xs = Nothing
-    | otherwise = Just xs
+processDataset :: Int -> [Double] -> (Double, [Double])
+processDataset windowSize dataset =
+    let smoothed = smoothData windowSize dataset
+        trend = calculateTrend smoothed
+    in (trend, smoothed)
