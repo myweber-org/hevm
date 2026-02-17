@@ -64,4 +64,15 @@ safeReadDouble str
     | otherwise = Left $ "Invalid numeric format: " ++ str
 
 processNumericColumn :: String -> Either String Double
-processNumericColumn = safeReadDouble . trimWhitespace
+processNumericColumn = safeReadDouble . trimWhitespacemodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+sumProcessed :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessed predicate transformer = 
+    sum . filterAndTransform predicate transformer
