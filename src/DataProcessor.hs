@@ -28,3 +28,40 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+
+type ValidationRule = String -> Bool
+type Transformation = String -> String
+
+validateNumeric :: ValidationRule
+validateNumeric = all (\c -> isDigit c || c == '.')
+
+validateNonEmpty :: ValidationRule
+validateNonEmpty = not . all isSpace
+
+trimWhitespace :: Transformation
+trimWhitespace = reverse . dropWhile isSpace . reverse . dropWhile isSpace
+
+toUpperCase :: Transformation
+toUpperCase = map toUpper
+
+processCSVRow :: [ValidationRule] -> [Transformation] -> [String] -> Either String [String]
+processCSVRow validators transformers row
+    | length row /= length validators = Left "Column count mismatch"
+    | any (== False) validationResults = Left $ "Validation failed: " ++ formatErrors validationResults
+    | otherwise = Right transformedRow
+  where
+    validationResults = zipWith ($) validators row
+    transformedRow = zipWith ($) transformers row
+    formatErrors = intercalate ", " . map snd . filter (not . fst) . zip validationResults . map (("Column " ++) . show) $ [1..]
+
+safeReadDouble :: String -> Either String Double
+safeReadDouble str
+    | validateNumeric str = Right (read str)
+    | otherwise = Left $ "Invalid numeric format: " ++ str
+
+processNumericColumn :: String -> Either String Double
+processNumericColumn = safeReadDouble . trimWhitespace
