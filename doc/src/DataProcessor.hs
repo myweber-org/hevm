@@ -1,40 +1,15 @@
 module DataProcessor where
 
-import Data.List (intercalate)
-import Data.Char (isDigit, isAlpha)
-
-type CSVRow = [String]
-type CSVData = [CSVRow]
-
-parseCSV :: String -> CSVData
-parseCSV = map (splitBy ',') . lines
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage _ [] = []
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = []
+    | otherwise = map avg $ windows n xs
   where
-    splitBy :: Char -> String -> [String]
-    splitBy delimiter = foldr splitter [[]]
-      where
-        splitter :: Char -> [String] -> [String]
-        splitter c (current:rest)
-          | c == delimiter = []:current:rest
-          | otherwise = (c:current):rest
+    windows m ys = take (length ys - m + 1) $ iterate (drop 1) ys
+    avg zs = sum zs / fromIntegral (length zs)
 
-validateRow :: CSVRow -> Bool
-validateRow row = length row >= 2 && all validField row
-  where
-    validField :: String -> Bool
-    validField field = not (null field) && all validChar field
-    
-    validChar :: Char -> Bool
-    validChar c = isAlpha c || isDigit c || c `elem` ".-_ "
-
-processCSV :: String -> Either String CSVData
-processCSV input
-  | null input = Left "Empty input"
-  | otherwise = 
-      let parsed = parseCSV input
-          validRows = filter validateRow parsed
-      in if length validRows == length parsed
-         then Right parsed
-         else Left "Invalid data format detected"
-
-formatOutput :: CSVData -> String
-formatOutput = intercalate "\n" . map (intercalate " | ")
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
