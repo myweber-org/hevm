@@ -117,4 +117,40 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies freqs = unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
 
 analyzeText :: Int -> String -> String
-analyzeText n text = displayFrequencies $ topNWords n text
+analyzeText n text = displayFrequencies $ topNWords n textmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = [(String, Int)]
+
+countWords :: String -> WordCount
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+    in aggregateCounts cleaned
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+aggregateCounts :: [String] -> WordCount
+aggregateCounts = foldr incrementCount []
+  where
+    incrementCount word [] = [(word, 1)]
+    incrementCount word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : incrementCount word rest
+
+sortByFrequency :: WordCount -> WordCount
+sortByFrequency = sortOn (Down . snd)
+
+topNWords :: Int -> String -> WordCount
+topNWords n = take n . sortByFrequency . countWords
+
+displayResults :: WordCount -> String
+displayResults counts = unlines $ map formatEntry counts
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayResults . topNWords n
