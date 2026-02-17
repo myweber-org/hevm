@@ -26,4 +26,7 @@ main = do
     let sampleData = [1, -2, 3, 0, 5, -8]
     if validateInput sampleData
         then print $ processData sampleData
-        else putStrLn "Input validation failed"
+        else putStrLn "Input validation failed"module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
