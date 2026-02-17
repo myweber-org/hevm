@@ -131,4 +131,13 @@ extractNumbers = filter validateNumeric
 
 -- Filter valid alphabetic entries and convert to uppercase
 extractAlphabetic :: [String] -> [String]
-extractAlphabetic = map toUppercase . filter validateAlpha
+extractAlphabetic = map toUppercase . filter validateAlphamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
