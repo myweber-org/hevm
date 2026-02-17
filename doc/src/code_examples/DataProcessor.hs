@@ -66,4 +66,10 @@ main = do
     putStrLn "\nIncremented odd numbers:"
     print $ processOddNumbers testData
     putStrLn "\nSum of doubled even numbers:"
-    print $ sumProcessedData even (*2) testData
+    print $ sumProcessedData even (*2) testDatamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
