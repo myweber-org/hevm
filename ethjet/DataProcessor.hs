@@ -100,3 +100,35 @@ formatOutput :: [(String, Double)] -> String
 formatOutput totals = 
     "Monthly Report:\n" ++ 
     unlines (map (\(month, total) -> month ++ ": " ++ show total) totals)
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Process a list of strings: validate and transform
+processData :: [String] -> [String]
+processData = map processItem
+  where
+    processItem item
+      | validateNumeric item = "NUMERIC: " ++ item
+      | validateAlpha item   = "ALPHA: " ++ toUppercase item
+      | otherwise            = "INVALID: " ++ item
+
+-- Filter valid numeric entries
+extractNumbers :: [String] -> [String]
+extractNumbers = filter validateNumeric
+
+-- Filter valid alphabetic entries and convert to uppercase
+extractAlphabetic :: [String] -> [String]
+extractAlphabetic = map toUppercase . filter validateAlpha
