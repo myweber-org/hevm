@@ -84,4 +84,10 @@ main = do
             let result = processData validData
             putStrLn $ "Original: " ++ show validData
             putStrLn $ "Processed: " ++ show result
-        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"
+        Nothing -> putStrLn "Input validation failed: values must be between -100 and 100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
