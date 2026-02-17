@@ -34,3 +34,38 @@ processEvenSquares = filterAndTransform even (\x -> x * x)
 
 sumProcessedData :: [Int] -> Int
 sumProcessedData = sum . processEvenSquares
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (catMaybes)
+
+type Row = [Double]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map parseRow (lines content)
+  where
+    parseRow line = catMaybes $ map parseDouble (splitOn "," line)
+    parseDouble s = case reads s of
+                     [(val, "")] -> Just val
+                     _ -> Nothing
+
+calculateColumnAverages :: CSVData -> [Double]
+calculateColumnAverages [] = []
+calculateColumnAverages rows = 
+    let colCount = length (head rows)
+        sums = foldl (zipWith (+)) (replicate colCount 0) rows
+        rowCount = fromIntegral (length rows)
+    in map (/ rowCount) sums
+
+processCSVFile :: String -> IO [Double]
+processCSVFile filename = do
+    content <- readFile filename
+    let parsed = parseCSV content
+    return $ calculateColumnAverages parsed
+
+validateCSVData :: CSVData -> Bool
+validateCSVData [] = True
+validateCSVData (row:rows) = 
+    let expectedLen = length row
+    in all (\r -> length r == expectedLen) rows
