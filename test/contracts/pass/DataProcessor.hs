@@ -1,33 +1,23 @@
+
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = 
-    if all (> -1000) xs && all (< 1000) xs
-    then Just xs
-    else Nothingmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processEvenSquares
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = 
-    if all (> -1000) xs && all (< 1000) xs
-    then Just xs
-    else Nothing
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    putStrLn $ "Head of processed: " ++ show (safeHead $ processEvenSquares numbers)
