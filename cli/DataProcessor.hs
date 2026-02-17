@@ -113,3 +113,40 @@ main = do
     let numbers = [1..10]
     let result = processNumbers numbers
     print result
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.CSV (parseCSV)
+
+type Record = [String]
+type Summary = (Int, Double, Double, Double)
+
+parseCSVData :: String -> Either String [Record]
+parseCSVData input = case parseCSV "input" input of
+    Left err -> Left $ "Parse error: " ++ err
+    Right csv -> Right csv
+
+computeStatistics :: [Record] -> Either String Summary
+computeStatistics records = do
+    let numericValues = mapMaybe parseNumeric records
+    if null numericValues
+        then Left "No valid numeric data found"
+        else Right $ calculateStats numericValues
+  where
+    parseNumeric :: Record -> Maybe Double
+    parseNumeric [] = Nothing
+    parseNumeric (x:_) = case reads x of
+        [(n, "")] -> Just n
+        _ -> Nothing
+
+calculateStats :: [Double] -> Summary
+calculateStats values = (count, minimum values, maximum values, mean)
+  where
+    count = length values
+    sumValues = foldl' (+) 0 values
+    mean = sumValues / fromIntegral count
+
+processData :: String -> Either String Summary
+processData input = do
+    records <- parseCSVData input
+    computeStatistics records
