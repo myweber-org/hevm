@@ -178,4 +178,13 @@ safeHead (x:_) = Just x
 
 safeTail :: [a] -> Maybe [a]
 safeTail [] = Nothing
-safeTail (_:xs) = Just xs
+safeTail (_:xs) = Just xsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
