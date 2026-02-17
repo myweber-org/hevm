@@ -112,3 +112,70 @@ main = do
     let numbers = [1, -2, 3, -4, 5]
     let result = processNumbers numbers
     print result
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+data SummaryStats = SummaryStats
+    { count :: Int
+    , sum   :: Double
+    , mean  :: Double
+    , min   :: Maybe Double
+    , max   :: Maybe Double
+    } deriving (Show, Eq)
+
+parseCSV :: String -> CSVData
+parseCSV = map (splitOn ',') . lines
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper char acc@(current:rest)
+            | char == delimiter = "":acc
+            | otherwise = (char:current):rest
+
+computeNumericStats :: CSVData -> Int -> SummaryStats
+computeNumericStats rows columnIndex
+    | null numericValues = emptyStats
+    | otherwise = SummaryStats
+        { count = length numericValues
+        , sum   = total
+        , mean  = total / fromIntegral (length numericValues)
+        , min   = Just minimumVal
+        , max   = Just maximumVal
+        }
+  where
+    numericValues = [v | row <- rows, 
+                        length row > columnIndex,
+                        let cell = row !! columnIndex,
+                        Just v <- [readMaybe cell]]
+    
+    (total, minimumVal, maximumVal) = foldl' 
+        (\(s, mn, mx) val -> (s + val, min mn val, max mx val))
+        (0, head numericValues, head numericValues)
+        (tail numericValues)
+    
+    emptyStats = SummaryStats 0 0 0 Nothing Nothing
+
+validateColumn :: CSVData -> Int -> Bool
+validateColumn rows colIndex = all (\row -> length row > colIndex) rows
+
+processCSVFile :: String -> Int -> IO (Maybe SummaryStats)
+processCSVFile filePath columnIndex = do
+    content <- readFile filePath
+    let parsedData = parseCSV content
+    if null parsedData || not (validateColumn parsedData columnIndex)
+        then return Nothing
+        else return $ Just $ computeNumericStats parsedData columnIndex
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+safeTail :: [a] -> Maybe [a]
+safeTail [] = Nothing
+safeTail (_:xs) = Just xs
