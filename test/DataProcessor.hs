@@ -4,134 +4,18 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs
-    | null xs = Nothing
-    | otherwise = Just xs
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 0, 5, 2, -1, 8]
-    case validateInput sampleData of
-        Nothing -> putStrLn "Empty input list"
-        Just data' -> do
-            let result = processData data'
-            putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
 processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
-
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothingmodule DataProcessor where
-
-movingAverage :: (Fractional a) => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
+processNumbers = filterAndTransform isEven square
   where
-    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)
-
--- Helper function from Data.List
-tails :: [a] -> [[a]]
-tails [] = [[]]
-tails (x:xs) = (x:xs) : tails xsmodule DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter even
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+    isEven n = n `mod` 2 == 0
+    square n = n * n
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
+sumProcessed = sum . processNumbers
 
 main :: IO ()
 main = do
     let numbers = [1..10]
-    let result = processNumbers numbers
     putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
-
-main :: IO ()
-main = do
-    let inputData = [1, -2, 3, 0, 5, -10]
-    if validateInput inputData
-        then do
-            let result = processData inputData
-            putStrLn $ "Processed data: " ++ show result
-        else putStrLn "Invalid input data detected"module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processData input
-    print resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
