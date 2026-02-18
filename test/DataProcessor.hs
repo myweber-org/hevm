@@ -68,4 +68,62 @@ generateReport (valid, invalid) =
   "Valid records: " ++ show (length valid) ++ "\n" ++
   "Invalid records: " ++ show (length invalid) ++ "\n" ++
   "Valid data: " ++ intercalate ", " valid ++ "\n" ++
-  "Errors: " ++ intercalate ", " invalid
+  "Errors: " ++ intercalate ", " invalidmodule DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+
+type Username = String
+type Email = String
+type UserProfile = (Username, Email, Int)
+
+validateUsername :: Username -> Maybe Username
+validateUsername username
+    | length username >= 3 && length username <= 20 &&
+      all (\c -> isAlpha c || c == '_' || c == '-') username = Just username
+    | otherwise = Nothing
+
+normalizeEmail :: Email -> Email
+normalizeEmail = map toLower . filter (not . isSpace)
+
+validateEmail :: Email -> Maybe Email
+validateEmail email
+    | '@' `elem` email && '.' `elem` (dropWhile (/= '@') email) = 
+        Just (normalizeEmail email)
+    | otherwise = Nothing
+
+createUserProfile :: Username -> Email -> Int -> Maybe UserProfile
+createUserProfile username email age = do
+    validUsername <- validateUsername username
+    validEmail <- validateEmail email
+    if age >= 0 && age <= 150
+        then Just (validUsername, validEmail, age)
+        else Nothing
+
+formatProfile :: UserProfile -> String
+formatProfile (username, email, age) =
+    intercalate " | " ["User: " ++ username, "Email: " ++ email, "Age: " ++ show age]
+
+processUserData :: [String] -> [String]
+processUserData inputs = 
+    map processSingle inputs
+    where
+        processSingle input =
+            case words input of
+                [username, email, ageStr] ->
+                    case reads ageStr of
+                        [(age, "")] ->
+                            case createUserProfile username email age of
+                                Just profile -> formatProfile profile
+                                Nothing -> "Invalid profile data"
+                        _ -> "Invalid age format"
+                _ -> "Invalid input format"
+
+sampleData :: [String]
+sampleData =
+    [ "john_doe john@example.com 30"
+    , "alice alice@test.org 25"
+    , "bob123 bob@company.net 40"
+    , "a a@b.c 200"
+    , "test_user invalid-email 35"
+    ]
