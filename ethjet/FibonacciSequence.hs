@@ -14,4 +14,9 @@ fibonacci n
         (a, b) = fibPair (k `div` 2)
         c = a * (b * 2 - a)
         d = a * a + b * b
-        (a, b) = if even k then (c, d) else (d, c + d)
+        (a, b) = if even k then (c, d) else (d, c + d)module FibonacciSequence where
+
+fibonacci :: Int -> [Int]
+fibonacci n = takeWhile (<= n) fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
