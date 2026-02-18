@@ -135,4 +135,70 @@ analyzeText text minFreq topN = do
     putStrLn "Word Frequency Analysis:"
     printWordFrequencies topWords
     putStrLn $ "\nTotal unique words: " ++ show (length allFreqs)
-    putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered)
+    putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered){-# LANGUAGE OverloadedStrings #-}
+
+module WordFrequencyCounter where
+
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+-- Common English stop words
+stopWords :: [T.Text]
+stopWords = map T.pack ["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"]
+
+-- Simple stemming: remove common suffixes
+stemWord :: T.Text -> T.Text
+stemWord word
+    | T.length word < 4 = word
+    | T.isSuffixOf "ing" word = T.take (T.length word - 3) word
+    | T.isSuffixOf "ed" word = T.take (T.length word - 2) word
+    | T.isSuffixOf "s" word = T.take (T.length word - 1) word
+    | T.isSuffixOf "es" word = T.take (T.length word - 2) word
+    | otherwise = word
+
+-- Clean and normalize a word
+cleanWord :: T.Text -> Maybe T.Text
+cleanWord txt = 
+    let lower = T.toLower txt
+        filtered = T.filter isAlpha lower
+    in if T.null filtered || filtered `elem` stopWords
+       then Nothing
+       else Just (stemWord filtered)
+
+-- Count word frequencies in text
+countWordFrequencies :: T.Text -> Map.Map T.Text Int
+countWordFrequencies text =
+    let wordsList = T.words text
+        cleanedWords = map cleanWord wordsList
+        validWords = [w | Just w <- cleanedWords]
+    in Map.fromListWith (+) [(w, 1) | w <- validWords]
+
+-- Get top N most frequent words
+getTopWords :: Int -> T.Text -> [(T.Text, Int)]
+getTopWords n text =
+    let frequencies = countWordFrequencies text
+        sorted = sortOn (Down . snd) (Map.toList frequencies)
+    in take n sorted
+
+-- Process a file and display top words
+processFile :: FilePath -> Int -> IO ()
+processFile filePath n = do
+    content <- TIO.readFile filePath
+    let topWords = getTopWords n content
+    putStrLn $ "Top " ++ show n ++ " words in " ++ filePath ++ ":"
+    mapM_ (\(word, count) -> 
+        putStrLn $ T.unpack word ++ ": " ++ show count) topWords
+
+-- Example usage
+main :: IO ()
+main = do
+    let sampleText = "The quick brown fox jumps over the lazy dog. \
+                     \The dog barks at the fox, but the fox keeps jumping."
+    putStrLn "Sample text analysis:"
+    let topWords = getTopWords 5 (T.pack sampleText)
+    mapM_ (\(word, count) -> 
+        putStrLn $ T.unpack word ++ ": " ++ show count) topWords
