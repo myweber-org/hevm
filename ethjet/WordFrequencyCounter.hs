@@ -101,3 +101,38 @@ main = do
     case args of
         [filename] -> processFile filename
         _ -> putStrLn "Usage: wordfreq <filename>"
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+        frequencies = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) frequencies
+
+filterByFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n
+
+printWordFrequencies :: [WordFreq] -> IO ()
+printWordFrequencies freqs = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqs
+
+analyzeText :: String -> Int -> Int -> IO ()
+analyzeText text minFreq topN = do
+    let allFreqs = countWords text
+    let filtered = filterByFrequency minFreq allFreqs
+    let topWords = getTopNWords topN filtered
+    
+    putStrLn "Word Frequency Analysis:"
+    printWordFrequencies topWords
+    putStrLn $ "\nTotal unique words: " ++ show (length allFreqs)
+    putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered)
