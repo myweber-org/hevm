@@ -104,3 +104,44 @@ processSensorReadings :: [Double] -> [Double]
 processSensorReadings readings =
     let cleaned = filter (\x -> x >= 0 && x <= 100) readings
     in if null cleaned then [] else smoothData 5 cleaned
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Transform a list of strings to uppercase
+transformToUpper :: [String] -> [String]
+transformToUpper = map (map toUpper)
+
+-- Filter out invalid numeric strings from a list
+filterValidNumbers :: [String] -> [String]
+filterValidNumbers = filter validateNumeric
+
+-- Join a list of strings with a separator
+joinWithSeparator :: String -> [String] -> String
+joinWithSeparator separator = intercalate separator
+
+-- Process a list by validating numbers and joining valid ones
+processData :: [String] -> String
+processData input = 
+    let validNumbers = filterValidNumbers input
+    in joinWithSeparator ", " validNumbers
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let testData = ["123", "abc", "456", "def789", "101112"]
+    putStrLn "Original data:"
+    print testData
+    putStrLn "\nValid numeric data:"
+    print $ filterValidNumbers testData
+    putStrLn "\nProcessed result:"
+    putStrLn $ processData testData
