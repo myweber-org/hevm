@@ -75,4 +75,13 @@ processEvenSquares = filterAndTransform even (^2)
 
 sumProcessed :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
 sumProcessed predicate transformer = 
-    sum . filterAndTransform predicate transformer
+    sum . filterAndTransform predicate transformermodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
