@@ -32,4 +32,10 @@ safeHead (x:_) = Just x
 sumPositiveDoubles :: [Int] -> Int
 sumPositiveDoubles xs = 
     let processed = processNumbers xs
-    in sum processed
+    in sum processedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
