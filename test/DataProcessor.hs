@@ -138,4 +138,20 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+    where
+        window = take n xs
+        avg = sum window / fromIntegral n
+
+-- Example usage with a helper function
+demoMovingAverage :: IO ()
+demoMovingAverage = do
+    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    putStrLn $ "Original series: " ++ show dataSeries
+    putStrLn $ "3-period moving average: " ++ show (movingAverage 3 dataSeries)
+    putStrLn $ "5-period moving average: " ++ show (movingAverage 5 dataSeries)
