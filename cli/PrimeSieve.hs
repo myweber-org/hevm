@@ -20,4 +20,16 @@ main = do
     let limit = read input :: Int
     let primes = primesUpTo limit
     putStrLn $ "Primes up to " ++ show limit ++ ": " ++ show primes
-    putStrLn $ "Total primes found: " ++ show (length primes)
+    putStrLn $ "Total primes found: " ++ show (length primes)module PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = sieveHelper [2..limit] []
+
+sieveHelper :: [Int] -> [Int] -> [Int]
+sieveHelper [] primes = reverse primes
+sieveHelper (x:xs) primes = sieveHelper (filter (\n -> n `mod` x /= 0) xs) (x:primes)
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
