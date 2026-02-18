@@ -207,4 +207,30 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topWords n
+analyzeText n = displayFrequencies . topWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        freqMap = foldr (\word acc -> 
+            let lowerWord = map toLower word
+            in case lookup lowerWord acc of
+                Just count -> (lowerWord, count + 1) : filter ((/= lowerWord) . fst) acc
+                Nothing -> (lowerWord, 1) : acc
+            ) [] wordsList
+    in sortOn (Down . snd) freqMap
+  where
+    cleanWord = filter isAlphaNum
+
+displayWordCounts :: [WordCount] -> String
+displayWordCounts counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = displayWordCounts . countWords
