@@ -68,4 +68,16 @@ validateCSVData :: CSVData -> Bool
 validateCSVData [] = True
 validateCSVData (row:rows) = 
     let expectedLen = length row
-    in all (\r -> length r == expectedLen) rows
+    in all (\r -> length r == expectedLen) rowsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
+
+combineResults :: [Int] -> [Int] -> [Int]
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)
