@@ -28,4 +28,16 @@ main = do
     putStrLn "Original data:"
     print sampleData
     putStrLn "\nSmoothed data (3-point moving average):"
-    print $ smoothData sampleData
+    print $ smoothData sampleDatamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
