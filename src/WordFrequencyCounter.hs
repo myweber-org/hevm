@@ -81,4 +81,46 @@ wordFrequencyReport text =
         , ""
         , "Top 10 words:"
         ] ++
-        map (\(word, count) -> word ++ ": " ++ show count) (topNWords 10 text)
+        map (\(word, count) -> word ++ ": " ++ show count) (topNWords 10 text)module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+cleanWord :: String -> String
+cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n . sortByFrequency
+
+analyzeText :: String -> Int -> Int -> [WordCount]
+analyzeText text minFreq topN = 
+    getTopNWords topN 
+    . filterByMinFrequency minFreq 
+    . countWords 
+    $ text
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts = mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count)
+
+exampleUsage :: IO ()
+exampleUsage = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
+    let results = analyzeText sampleText 1 5
+    putStrLn "Top 5 most frequent words (minimum frequency: 1):"
+    printWordCounts results
