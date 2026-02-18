@@ -101,4 +101,20 @@ calculateTrend values =
         sumXY = sum $ zipWith (*) indices values
         sumX2 = sum $ map (^2) indices
         slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
-    in Just slope
+    in Just slopemodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage _ [] = []
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = []
+    | otherwise = map avg $ windows n xs
+  where
+    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
+    avg zs = sum zs / fromIntegral (length zs)
+
+-- Helper function similar to Data.List.tails but returns lists of exact length
+tails :: [a] -> [[a]]
+tails [] = []
+tails xs@(_:ys) = take n (iterate init xs)
+  where n = length xs
