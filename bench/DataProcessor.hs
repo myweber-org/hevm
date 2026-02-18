@@ -31,4 +31,38 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+    putStrLn $ "First element: " ++ show (safeHead numbers)module DataProcessor where
+
+import Data.Char (toUpper)
+
+-- Validate that a string is not empty and contains only letters
+validateName :: String -> Maybe String
+validateName "" = Nothing
+validateName name
+    | all isLetter name = Just name
+    | otherwise = Nothing
+  where
+    isLetter c = c `elem` ['a'..'z'] ++ ['A'..'Z']
+
+-- Convert a string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Process a name: validate then transform
+processName :: String -> Maybe String
+processName name = do
+    validated <- validateName name
+    return $ toUppercase validated
+
+-- Calculate average of a list of numbers
+calculateAverage :: [Double] -> Maybe Double
+calculateAverage [] = Nothing
+calculateAverage xs = Just (sum xs / fromIntegral (length xs))
+
+-- Filter even numbers from a list
+filterEven :: [Int] -> [Int]
+filterEven = filter even
+
+-- Main processing pipeline example
+processData :: [String] -> [Maybe String]
+processData = map processName
