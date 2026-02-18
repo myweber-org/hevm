@@ -32,4 +32,7 @@ processDataset :: Int -> [Double] -> (Double, [Double])
 processDataset windowSize dataset =
     let smoothed = smoothData windowSize dataset
         trend = calculateTrend smoothed
-    in (trend, smoothed)
+    in (trend, smoothed)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter (>0)
