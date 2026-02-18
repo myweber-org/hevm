@@ -118,3 +118,20 @@ tails :: [a] -> [[a]]
 tails [] = []
 tails xs@(_:ys) = take n (iterate init xs)
   where n = length xs
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV csvData = map (map read . splitOn ",") (lines csvData)
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = map (\col -> sum col / fromIntegral (length col)) (transpose rows)
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVData :: String -> [Double]
+processCSVData csvData = calculateAverages (parseCSV csvData)
