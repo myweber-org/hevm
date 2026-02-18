@@ -1,68 +1,44 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (intercalate)
+import Data.Char (isDigit)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+type CSVRow = [String]
+type CSVData = [CSVRow]
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-module DataProcessor where
-
-import Data.List.Split (splitOn)
-import Data.Maybe (catMaybes)
-
-type Record = (String, Double)
-
-parseCSV :: String -> [Record]
-parseCSV content = catMaybes $ map parseLine (lines content)
+parseCSV :: String -> Either String CSVData
+parseCSV input = case lines input of
+    [] -> Left "Empty input"
+    rows -> traverse parseRow rows
   where
-    parseLine line = case splitOn "," line of
-      [name, valueStr] -> case reads valueStr of
-        [(value, "")] -> Just (name, value)
-        _ -> Nothing
-      _ -> Nothing
+    parseRow :: String -> Either String CSVRow
+    parseRow row = case splitByComma row of
+        [] -> Left "Empty row"
+        cells -> Right cells
 
-calculateAverage :: [Record] -> Double
-calculateAverage records = 
-  if null records 
-    then 0.0 
-    else total / fromIntegral (length records)
+    splitByComma :: String -> [String]
+    splitByComma = foldr splitter [""]
+      where
+        splitter ',' (current:rest) = "":current:rest
+        splitter char (current:rest) = (char:current):rest
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Left "No data to validate"
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index cannot be negative"
+    | otherwise = traverse validateRow rows
   where
-    total = sum $ map snd records
+    validateRow :: CSVRow -> Either String CSVRow
+    validateRow row
+        | colIndex >= length row = Left $ "Row has only " ++ show (length row) ++ " columns"
+        | all isDigit (row !! colIndex) = Right row
+        | otherwise = Left $ "Non-numeric value in column " ++ show colIndex ++ ": " ++ (row !! colIndex)
 
-filterAboveAverage :: [Record] -> [Record]
-filterAboveAverage records = 
-  filter (\(_, value) -> value > avg) records
-  where
-    avg = calculateAverage records
+formatCSV :: CSVData -> String
+formatCSV = intercalate "\n" . map (intercalate ",")
 
-processCSVData :: String -> [Record]
-processCSVData = filterAboveAverage . parseCSVmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, -4, 5]
-    let result = processNumbers input
-    print resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles xs = sum (processNumbers xs)
+processCSVData :: String -> Int -> Either String String
+processCSVData input colIndex = do
+    parsed <- parseCSV input
+    validated <- validateNumericColumn parsed colIndex
+    return $ formatCSV validated
