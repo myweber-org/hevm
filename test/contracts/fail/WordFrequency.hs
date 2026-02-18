@@ -80,4 +80,35 @@ analyzeText text = do
 main :: IO ()
 main = do
     let sampleText = "This is a sample text. This text contains words. Some words repeat. This is intentional."
-    analyzeText sampleText
+    analyzeText sampleTextmodule WordFrequency where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = words text
+    normalizedWords = map normalizeWord words'
+    normalizeWord = map toLower . filter isAlphaNum
+    incrementWord word acc = Map.insertWith (+) word 1 acc
+
+getTopWords :: Int -> FrequencyMap -> [(String, Int)]
+getTopWords n freqMap = take n sortedWords
+  where
+    sortedWords = sortOn (Down . snd) $ Map.toList freqMap
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqs = unlines $ map formatEntry freqs
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+processText :: String -> Int -> String
+processText text n = displayFrequencies topWords
+  where
+    freqMap = countWords text
+    topWords = getTopWords n freqMap
