@@ -84,4 +84,23 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessedData = sum . processDatamodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+    where
+        window = take n xs
+        avg = sum window / fromIntegral n
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    let padSize = windowSize `div` 2
+        padded = replicate padSize (head dataPoints) ++ dataPoints ++ replicate padSize (last dataPoints)
+    in movingAverage windowSize padded
+
+processSensorReadings :: [Double] -> [Double]
+processSensorReadings readings =
+    let cleaned = filter (\x -> x >= 0 && x <= 100) readings
+    in if null cleaned then [] else smoothData 5 cleaned
