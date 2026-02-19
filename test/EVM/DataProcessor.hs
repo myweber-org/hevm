@@ -34,4 +34,26 @@ processCSVFile :: String -> IO [Double]
 processCSVFile filename = do
   content <- readFile filename
   let parsed = parseCSV content
-  return (calculateAverages parsed)
+  return (calculateAverages parsed)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< -100) xs = Nothing
+    | any (> 100) xs = Nothing
+    | otherwise = Just xs
+
+safeDataProcessing :: [Int] -> Maybe Int
+safeDataProcessing xs = do
+    validated <- validateInput xs
+    return $ sumProcessedData validated
