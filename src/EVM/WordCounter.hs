@@ -19,4 +19,19 @@ processText :: String -> [(String, Int)]
 processText = countWords . cleanText
 
 displayResults :: [(String, Int)] -> IO ()
-displayResults = mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count)
+displayResults = mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count)module WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (groupBy)
+
+countWords :: String -> Int
+countWords = length . filter (not . all isSpace) . groupBy (\x y -> not (isSpace x && isSpace y))
+
+processText :: String -> String
+processText text = "Word count: " ++ show (countWords text) ++ "\n" ++ text
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to count words:"
+    input <- getContents
+    putStrLn $ processText input
