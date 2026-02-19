@@ -135,4 +135,13 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list (even numbers squared): " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)
+    putStrLn $ "Sum of processed list: " ++ show (sumProcessedList numbers)module DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    average ws = sum ws / fromIntegral (length ws)
+    windows n = takeWhile ((== n) . length) . map (take n) . iterate tail
