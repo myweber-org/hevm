@@ -209,4 +209,34 @@ main = do
     putStrLn "Enter text to analyze word frequency (press Ctrl+D when done):"
     content <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ processText content
+    putStrLn $ processText contentmodule WordFrequencyCounter where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFrequency = (String, Int)
+
+countWordFrequencies :: String -> [WordFrequency]
+countWordFrequencies text =
+    let words' = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countWord [] words'
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+formatResults :: [WordFrequency] -> String
+formatResults freqs =
+    "Top 10 most frequent words:\n" ++
+    unlines (map (\(word, count) -> word ++ ": " ++ show count) freqs)
+
+processText :: String -> String
+processText text =
+    let freqs = countWordFrequencies text
+    in if null freqs
+        then "No valid words found in text."
+        else formatResults freqs
