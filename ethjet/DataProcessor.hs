@@ -56,4 +56,19 @@ processDataFile path start end = do
   let filtered = filterByDateRange start end records
   let summary = summarizeRecords filtered
   putStrLn "Summary of filtered records:"
-  mapM_ (\(name, total) -> putStrLn $ name ++ ": " ++ show total) summary
+  mapM_ (\(name, total) -> putStrLn $ name ++ ": " ++ show total) summarymodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+    where
+        windows :: Int -> [a] -> [[a]]
+        windows size list = case splitAt size list of
+            (window, rest) -> if length window == size
+                then window : windows size (tail list)
+                else []
+        
+        average :: Fractional a => [a] -> a
+        average vals = sum vals / fromIntegral (length vals)
