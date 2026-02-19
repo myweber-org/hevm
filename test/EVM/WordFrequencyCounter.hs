@@ -124,4 +124,40 @@ main = do
     putStrLn "Enter text to analyze word frequency:"
     input <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByFrequency :: Int -> [WordCount] -> [WordCount]
+filterByFrequency minCount = filter ((>= minCount) . snd)
+
+topNWords :: Int -> [WordCount] -> [WordCount]
+topNWords n = take n
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+analyzeText :: String -> Int -> Int -> String
+analyzeText text minFreq topN = 
+    let counts = countWords text
+        filtered = filterByFrequency minFreq counts
+        topWords = topNWords topN filtered
+    in formatOutput topWords
+
+sampleAnalysis :: IO ()
+sampleAnalysis = do
+    let sampleText = "Hello world! Hello Haskell. World of Haskell is wonderful. Hello again."
+    putStrLn $ analyzeText sampleText 1 5
