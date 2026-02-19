@@ -64,3 +64,20 @@ unfoldr :: (b -> Maybe (a, b)) -> b -> [a]
 unfoldr f b = case f b of
     Nothing -> []
     Just (a, b') -> a : unfoldr f b'
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0) . processData
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 0, 5, -7]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)
