@@ -154,4 +154,10 @@ demoMovingAverage = do
     let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     putStrLn $ "Original series: " ++ show dataSeries
     putStrLn $ "3-period moving average: " ++ show (movingAverage 3 dataSeries)
-    putStrLn $ "5-period moving average: " ++ show (movingAverage 5 dataSeries)
+    putStrLn $ "5-period moving average: " ++ show (movingAverage 5 dataSeries)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
