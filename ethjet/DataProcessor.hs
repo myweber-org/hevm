@@ -1,13 +1,13 @@
 module DataProcessor where
 
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
-    | length xs < n = []
-    | otherwise = map average $ windows n xs
-    where
-        windows :: Int -> [a] -> [[a]]
-        windows size list = takeWhile ((== size) . length) $ map (take size) (tails list)
-        
-        average :: Fractional a => [a] -> a
-        average vals = sum vals / fromIntegral (length vals)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-5, 3, 0, 8, -2, 10]
+    let result = processNumbers numbers
+    print result
