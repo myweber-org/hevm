@@ -15,4 +15,29 @@ main = do
     let sampleData = [-3, 2, 0, 7, -1, 4]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)
+    putStrLn $ "Validation result: " ++ show (validateData sampleData)module DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+    where
+        windows :: Int -> [a] -> [[a]]
+        windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+        
+        average :: [Double] -> Double
+        average ys = sum ys / fromIntegral (length ys)
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints = movingAverage windowSize dataPoints
+
+main :: IO ()
+main = do
+    let testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    putStrLn "Original data:"
+    print testData
+    putStrLn "\nMoving average with window size 3:"
+    print $ smoothData 3 testData
+    putStrLn "\nMoving average with window size 5:"
+    print $ smoothData 5 testData
