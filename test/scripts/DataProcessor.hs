@@ -83,4 +83,11 @@ main = do
     let numbers = [1, -2, 3, 0, 5, -8]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processData numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+    putStrLn $ "First element: " ++ show (safeHead numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
