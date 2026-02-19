@@ -81,4 +81,31 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+import Data.Char (isDigit)
+import Data.Maybe (mapMaybe)
+
+-- Safely parse an integer from a string
+safeParseInt :: String -> Maybe Int
+safeParseInt str
+    | all isDigit str = Just (read str)
+    | otherwise = Nothing
+
+-- Validate and transform a list of string numbers
+processNumbers :: [String] -> [Int]
+processNumbers = mapMaybe safeParseInt
+
+-- Calculate statistics from validated numbers
+calculateStats :: [Int] -> (Double, Int, Int)
+calculateStats nums = (avg, minimum nums, maximum nums)
+  where
+    avg = fromIntegral (sum nums) / fromIntegral (length nums)
+
+-- Main processing pipeline
+processData :: [String] -> Maybe (Double, Int, Int)
+processData strs =
+    let validated = processNumbers strs
+    in if null validated
+        then Nothing
+        else Just (calculateStats validated)
