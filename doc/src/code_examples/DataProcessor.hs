@@ -48,4 +48,16 @@ processData :: BL.ByteString -> Either String (Double, Double, Int, Int)
 processData input = do
     parsed <- parseCSV input
     let records = toList parsed
-    return $ summarizeData records
+    return $ summarizeData recordsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-3, 1, 0, 5, -2, 8]
+    let result = processNumbers numbers
+    print result
