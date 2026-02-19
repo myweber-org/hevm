@@ -1,105 +1,27 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List.Split (splitOn)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+parseCSV :: String -> [[Double]]
+parseCSV csvData = map (map read . splitOn ",") $ lines csvData
 
-main :: IO ()
-main = do
-    let numbers = [-5, 3, 0, 8, -2, 10]
-    let result = processNumbers numbers
-    print resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-main :: IO ()
-main = do
-    let numbers = [-3, 2, 0, 7, -1, 4]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)module DataProcessor where
-
-import Data.Char (toUpper)
-
--- Validate that a string is not empty and contains only letters
-validateName :: String -> Maybe String
-validateName "" = Nothing
-validateName name
-    | all isLetter name = Just name
-    | otherwise = Nothing
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) $ transpose rows
   where
-    isLetter c = c `elem` ['a'..'z'] ++ ['A'..'Z']
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
 
--- Convert a string to uppercase
-toUppercase :: String -> String
-toUppercase = map toUpper
+processCSVData :: String -> [Double]
+processCSVData csvContent = 
+    let parsedData = parseCSV csvContent
+    in calculateAverages parsedData
 
--- Process a name: validate then transform
-processName :: String -> Maybe String
-processName name = do
-    validated <- validateName name
-    return $ toUppercase validated
-
--- Calculate average of a list of numbers
-calculateAverage :: [Double] -> Maybe Double
-calculateAverage [] = Nothing
-calculateAverage xs = Just (sum xs / fromIntegral (length xs))
-
--- Filter even numbers from a list
-filterEven :: [Int] -> [Int]
-filterEven = filter even
-
--- Main processing pipeline example
-processData :: [String] -> [Maybe String]
-processData = map processNamemodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -7]
-    let result = processNumbers input
-    print resultmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+validateRowLengths :: [[Double]] -> Bool
+validateRowLengths rows = 
+    case rows of
+        [] -> True
+        (first:rest) -> all ((== length first) . length) rest
