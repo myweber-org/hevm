@@ -1,29 +1,17 @@
 module WordFrequency where
 
-import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
 
-type WordCount = (String, Int)
-
-countWords :: String -> [WordCount]
+countWords :: String -> Map.Map String Int
 countWords text = 
     let wordsList = filter (not . null) $ map cleanWord $ words text
-        cleaned = filter (all isAlpha) wordsList
-        grouped = foldr countHelper [] cleaned
-    in take 10 $ sortOn (Down . snd) grouped
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
   where
-    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
-    
-    countHelper :: String -> [WordCount] -> [WordCount]
-    countHelper word [] = [(word, 1)]
-    countHelper word ((w, c):rest)
-        | w == word = (w, c + 1) : rest
-        | otherwise = (w, c) : countHelper word rest
+    cleanWord = map toLower . filter isAlpha
 
-displayFrequency :: [WordCount] -> String
-displayFrequency counts = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
-
-analyzeText :: String -> String
-analyzeText = displayFrequency . countWords
+printWordFrequencies :: String -> IO ()
+printWordFrequencies text = do
+    let freqMap = countWords text
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) 
+          (Map.toList freqMap)
