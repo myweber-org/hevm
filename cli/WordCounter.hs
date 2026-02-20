@@ -1,42 +1,18 @@
-
 module WordCounter where
 
 import Data.Char (isSpace)
-import Data.List (groupBy)
+import Data.List (group, sort)
 
-countWords :: String -> Int
-countWords = length . words
+countWords :: String -> [(String, Int)]
+countWords text = 
+    let wordsList = filter (not . all isSpace) $ splitWords text
+        wordCounts = map (\ws -> (head ws, length ws)) . group . sort $ wordsList
+    in wordCounts
 
-countUniqueWords :: String -> Int
-countUniqueWords = length . groupBy (==) . words
+splitWords :: String -> [String]
+splitWords = words
 
-wordFrequency :: String -> [(String, Int)]
-wordFrequency = map (\ws -> (head ws, length ws)) . groupBy (==) . words
-
-processText :: String -> String
-processText text = unlines
-    [ "Total words: " ++ show total
-    , "Unique words: " ++ show unique
-    , "Word frequencies:"
-    , unlines (map (\(w, c) -> "  " ++ w ++ ": " ++ show c) freq)
-    ]
-    where
-        total = countWords text
-        unique = countUniqueWords text
-        freq = wordFrequency text
-module WordCounter where
-
-import System.Environment (getArgs)
-import Data.List (words)
-
-countWords :: String -> Int
-countWords = length . words
-
-main :: IO ()
-main = do
-    args <- getArgs
-    case args of
-        [] -> putStrLn "Usage: wordcounter <text>"
-        (text:_) -> do
-            let wordCount = countWords text
-            putStrLn $ "Word count: " ++ show wordCount
+printWordCounts :: String -> IO ()
+printWordCounts text = do
+    let counts = countWords text
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
