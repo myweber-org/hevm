@@ -43,4 +43,23 @@ printFibonacciSequence :: Int -> IO ()
 printFibonacciSequence n = do
     putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
     mapM_ (\(i, val) -> putStrLn $ "F(" ++ show i ++ ") = " ++ show val) 
-          (fibonacciWithIndex n)
+          (fibonacciWithIndex n)module FibonacciSequence where
+
+import Data.Function (fix)
+
+fibonacci :: Int -> Integer
+fibonacci n = fibs !! n
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+-- Alternative implementation using explicit memoization with a list
+fibonacciMemoized :: Int -> Integer
+fibonacciMemoized = (map fib [0..] !!)
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacciMemoized (n - 1) + fibonacciMemoized (n - 2)
+
+-- Using fix for a point-free style infinite list definition
+fibonacciInfinite :: [Integer]
+fibonacciInfinite = fix $ \f -> 0 : 1 : zipWith (+) f (tail f)
