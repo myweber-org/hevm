@@ -239,4 +239,34 @@ processText text =
     let freqs = countWordFrequencies text
     in if null freqs
         then "No valid words found in text."
-        else formatResults freqs
+        else formatResults freqsimport Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: WordFrequencyCounter <filename>"
+        (filename:_) -> do
+            content <- readFile filename
+            let frequencies = countWordFrequencies content
+            printFrequencies frequencies
+
+countWordFrequencies :: String -> [(String, Int)]
+countWordFrequencies text =
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr (\word acc -> insertWord word acc) [] wordsList
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | word == w = (w, c+1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+printFrequencies :: [(String, Int)] -> IO ()
+printFrequencies freqs = do
+    putStrLn "Word frequencies:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqs
