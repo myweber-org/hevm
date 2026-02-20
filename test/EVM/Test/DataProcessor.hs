@@ -93,3 +93,27 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
     print result
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Record = (String, Double)
+
+parseCSV :: String -> [Record]
+parseCSV csv = mapMaybe parseLine (lines csv)
+  where
+    parseLine line = case splitOn "," line of
+      [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+      _ -> Nothing
+
+calculateAverage :: [Record] -> Maybe Double
+calculateAverage [] = Nothing
+calculateAverage records = Just (sum values / fromIntegral (length values))
+  where
+    values = map snd records
+
+processCSVData :: String -> Maybe Double
+processCSVData csv = calculateAverage (parseCSV csv)
