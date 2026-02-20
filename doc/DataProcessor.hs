@@ -115,3 +115,13 @@ main = do
             let result = processData dataList
             putStrLn $ "Original: " ++ show sampleData
             putStrLn $ "Processed: " ++ show result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0) . processData
