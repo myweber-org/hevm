@@ -51,4 +51,13 @@ main :: IO ()
 main = do
     let csvData = "1.0,2.0,3.0\n4.0,5.0,6.0\n7.0,8.0,9.0"
     let averages = processCSVData csvData
-    putStrLn $ "Column averages: " ++ show averages
+    putStrLn $ "Column averages: " ++ show averagesmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
