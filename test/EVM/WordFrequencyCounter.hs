@@ -160,4 +160,48 @@ analyzeText text minFreq topN =
 sampleAnalysis :: IO ()
 sampleAnalysis = do
     let sampleText = "Hello world! Hello Haskell. World of Haskell is wonderful. Hello again."
-    putStrLn $ analyzeText sampleText 1 5
+    putStrLn $ analyzeText sampleText 1 5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+    in map (\ws -> (head ws, length ws)) grouped
+
+cleanWord :: String -> String
+cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+sortByFrequency :: [WordCount] -> [WordCount]
+sortByFrequency = sortOn (Down . snd)
+
+sortAlphabetically :: [WordCount] -> [WordCount]
+sortAlphabetically = sortOn fst
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n . sortByFrequency
+
+processText :: String -> Int -> Int -> [WordCount]
+processText text minFreq topN = 
+    let counted = countWords text
+        filtered = filterByMinFrequency minFreq counted
+    in getTopNWords topN filtered
+
+displayResults :: [WordCount] -> IO ()
+displayResults counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World of Haskell."
+    putStrLn "Word frequencies (sorted by frequency, min 2 occurrences, top 5):"
+    displayResults $ processText sampleText 2 5
