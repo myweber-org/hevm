@@ -85,4 +85,16 @@ main = do
   let testData = "Name,Age,Score\nJohn,25,95.5\nAlice,thirty,88.0\nBob,30,92.3"
   case processCSVData testData 1 of
     Left err -> putStrLn $ "Error: " ++ err
-    Right data -> putStrLn $ "Valid CSV:\n" ++ formatCSVOutput data
+    Right data -> putStrLn $ "Valid CSV:\n" ++ formatCSVOutput datamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (\x -> x * x + 1)
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    let result = processData sampleData
+    print result
