@@ -1,27 +1,18 @@
 module DataProcessor where
 
-import Data.List.Split (splitOn)
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
 
-parseCSV :: String -> [[Double]]
-parseCSV csvData = map (map read . splitOn ",") $ lines csvData
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (\x -> x * 2 + 1)
 
-calculateAverages :: [[Double]] -> [Double]
-calculateAverages rows = 
-    if null rows then []
-    else map (\col -> sum col / fromIntegral (length col)) $ transpose rows
-  where
-    transpose :: [[Double]] -> [[Double]]
-    transpose [] = []
-    transpose ([]:_) = []
-    transpose xss = map head xss : transpose (map tail xss)
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
 
-processCSVData :: String -> [Double]
-processCSVData csvContent = 
-    let parsedData = parseCSV csvContent
-    in calculateAverages parsedData
-
-validateRowLengths :: [[Double]] -> Bool
-validateRowLengths rows = 
-    case rows of
-        [] -> True
-        (first:rest) -> all ((== length first) . length) rest
+main :: IO ()
+main = do
+    let numbers = [1..20]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
