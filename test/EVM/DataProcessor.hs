@@ -89,4 +89,10 @@ processInput :: String -> Either String String
 processInput input = 
     case composeValidators [validateNonEmpty, validateNoSpaces, validateMaxLength 50] input of
         Left errs -> Left (formatErrors errs)
-        Right validated -> Right (transformToUpper validated)
+        Right validated -> Right (transformToUpper validated)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
