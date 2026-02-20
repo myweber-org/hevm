@@ -120,4 +120,17 @@ formatErrors errs = intercalate "\n" $ map formatError errs
     formatError (InvalidRow row msg) = 
         "Row " ++ show row ++ ": " ++ msg
     formatError (InvalidColumn row col msg) = 
-        "Cell (" ++ show row ++ "," ++ show col ++ "): " ++ msg
+        "Cell (" ++ show row ++ "," ++ show col ++ "): " ++ msgmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+-- Example usage:
+-- movingAverage 3 [1,2,3,4,5] -> [2.0,3.0,4.0]
