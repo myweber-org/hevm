@@ -173,4 +173,7 @@ sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -1000) xs then Just xs else Nothing
+validateInput xs = if all (> -1000) xs then Just xs else Nothingmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
