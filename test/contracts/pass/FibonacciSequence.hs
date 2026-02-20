@@ -17,4 +17,9 @@ main = do
     input <- getLine
     let n = read input :: Int
     putStrLn $ "Fibonacci sequence: " ++ show (fibonacci n)
-    putStrLn $ "Sum of first " ++ show n ++ " terms: " ++ show (fibonacciSum n)
+    putStrLn $ "Sum of first " ++ show n ++ " terms: " ++ show (fibonacciSum n)module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
