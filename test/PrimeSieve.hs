@@ -126,4 +126,15 @@ nthPrime n = primes !! (n - 1)
 isPrime :: Int -> Bool
 isPrime n
     | n < 2     = False
-    | otherwise = n == head (dropWhile (< n) primes)
+    | otherwise = n == head (dropWhile (< n) primes)module PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = go [2..limit] []
+  where
+    go []     acc = reverse acc
+    go (p:xs) acc = go [x | x <- xs, x `mod` p /= 0] (p:acc)
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
