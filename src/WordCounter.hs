@@ -119,4 +119,18 @@ countWordsExplicit = fst . foldl' step (0, True)
 -- Strict foldl' helper
 foldl' :: (a -> b -> a) -> a -> [b] -> a
 foldl' f z []     = z
-foldl' f z (x:xs) = let z' = f z x in z' `seq` foldl' f z' xs
+foldl' f z (x:xs) = let z' = f z x in z' `seq` foldl' f z' xsmodule WordCounter where
+
+import Data.Char (isSpace)
+import System.IO (hFlush, stdout)
+
+wordCount :: String -> Int
+wordCount = length . words
+
+main :: IO ()
+main = do
+    putStr "Enter text: "
+    hFlush stdout
+    input <- getLine
+    let count = wordCount input
+    putStrLn $ "Word count: " ++ show count
