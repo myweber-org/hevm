@@ -85,4 +85,22 @@ nthPrime n = primes !! (n - 1)
 isPrime :: Integer -> Bool
 isPrime n
     | n < 2     = False
-    | otherwise = all (\p -> n `mod` p /= 0) (takeWhile (\p -> p * p <= n) primes)
+    | otherwise = all (\p -> n `mod` p /= 0) (takeWhile (\p -> p * p <= n) primes)module PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = sieve' [2..limit] []
+  where
+    sieve' []     acc = reverse acc
+    sieve' (p:xs) acc = sieve' (filter (\x -> x `mod` p /= 0) xs) (p:acc)
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
+
+main :: IO ()
+main = do
+    putStrLn "Enter limit:"
+    input <- getLine
+    let limit = read input :: Int
+    print $ primesUpTo limit
