@@ -181,4 +181,61 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+data ValidationError = InvalidFormat String | InvalidData String
+    deriving (Show, Eq)
+
+type CSVRow = [String]
+type ValidatedRow = Either ValidationError CSVRow
+
+validateCSVRow :: CSVRow -> ValidatedRow
+validateCSVRow row
+    | length row /= 3 = Left $ InvalidFormat "Row must have exactly 3 columns"
+    | not (all validField row) = Left $ InvalidData "All fields must be non-empty"
+    | not (validId (row !! 0)) = Left $ InvalidData "First field must be numeric ID"
+    | not (validName (row !! 1)) = Left $ InvalidData "Second field must be alphabetic name"
+    | not (validAmount (row !! 2)) = Left $ InvalidData "Third field must be positive numeric amount"
+    | otherwise = Right row
+  where
+    validField = not . null
+    validId = all isDigit
+    validName = all isAlpha
+    validAmount str = case reads str :: [(Double, String)] of
+        [(n, "")] -> n > 0
+        _ -> False
+
+processCSVData :: [CSVRow] -> [ValidatedRow]
+processCSVData = map validateCSVRow
+
+formatResults :: [ValidatedRow] -> String
+formatResults rows = intercalate "\n" $ map formatRow rows
+  where
+    formatRow (Right row) = "VALID: " ++ intercalate "," row
+    formatRow (Left err) = "ERROR: " ++ show err
+
+sampleData :: [CSVRow]
+sampleData =
+    [ ["123", "Alice", "45.50"]
+    , ["456", "Bob", "100.00"]
+    , ["789", "Charlie", "0.00"]
+    , ["abc", "David", "50.00"]
+    , ["999", "Eve123", "30.00"]
+    , ["111", "Frank", "-10.00"]
+    ]
+
+main :: IO ()
+main = do
+    let results = processCSVData sampleData
+    putStrLn $ formatResults results
+    let validCount = length $ filter isRight results
+    let errorCount = length $ filter isLeft results
+    putStrLn $ "\nSummary: " ++ show validCount ++ " valid, " ++ show errorCount ++ " errors"
+  where
+    isRight (Right _) = True
+    isRight _ = False
+    isLeft (Left _) = True
+    isLeft _ = False
