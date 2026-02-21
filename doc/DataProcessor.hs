@@ -175,4 +175,50 @@ exampleUsage = do
     let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     let ma3 = movingAverage 3 dataSeries
     putStrLn $ "Original series: " ++ show dataSeries
-    putStrLn $ "3-period moving average: " ++ show ma3
+    putStrLn $ "3-period moving average: " ++ show ma3module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV = map (splitOn ',') . lines
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper :: Char -> [String] -> [String]
+        splitHelper c (x:xs)
+          | c == delimiter = "":x:xs
+          | otherwise = (c:x):xs
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows columnIndex
+  | null validNumbers = Nothing
+  | otherwise = Just (sum validNumbers / fromIntegral (length validNumbers))
+  where
+    extractNumbers :: CSVData -> [Maybe Double]
+    extractNumbers = map (\row -> 
+      if columnIndex < length row 
+        then readMaybe (row !! columnIndex)
+        else Nothing)
+    
+    validNumbers :: [Double]
+    validNumbers = [x | Just x <- extractNumbers rows]
+
+processCSVFile :: FilePath -> Int -> IO (Maybe Double)
+processCSVFile filePath columnIndex = do
+  content <- readFile filePath
+  let parsedData = parseCSV content
+  return $ calculateColumnAverage parsedData columnIndex
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+validateCSV :: CSVData -> Bool
+validateCSV [] = True
+validateCSV (firstRow:rows) = 
+  all (\row -> length row == length firstRow) rows
