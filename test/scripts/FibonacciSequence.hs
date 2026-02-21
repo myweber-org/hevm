@@ -17,4 +17,14 @@ main = do
     let n = read input :: Int
     if n > 0
         then printFibonacci n
-        else putStrLn "Please enter a positive integer."
+        else putStrLn "Please enter a positive integer."module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+main :: IO ()
+main = do
+  putStrLn "Fibonacci sequence up to 10 terms:"
+  print $ fibonacci 10
