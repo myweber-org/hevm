@@ -198,4 +198,27 @@ isWithinDateRange start end record =
         _ -> False
 
 parseDate :: String -> Maybe Day
-parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"module DataProcessor where
+
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.Csv as Csv
+import Data.List (foldl')
+import Data.Vector (Vector, toList)
+
+type Record = (String, Double, Double, Double)
+
+parseCSV :: BL.ByteString -> Either String (Vector Record)
+parseCSV bs = Csv.decode Csv.NoHeader bs
+
+calculateAverages :: Vector Record -> (Double, Double, Double)
+calculateAverages records =
+    let (sum1, sum2, sum3, count) = foldl' accumulate (0, 0, 0, 0) (toList records)
+        accumulate (s1, s2, s3, c) (_, v1, v2, v3) = (s1 + v1, s2 + v2, s3 + v3, c + 1)
+    in if count > 0
+        then (sum1 / fromIntegral count, sum2 / fromIntegral count, sum3 / fromIntegral count)
+        else (0, 0, 0)
+
+processData :: BL.ByteString -> Either String (Double, Double, Double)
+processData bs = do
+    parsed <- parseCSV bs
+    Right $ calculateAverages parsed
