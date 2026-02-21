@@ -1,35 +1,47 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -1000) xs then Just xs else Nothing
-module DataProcessor where
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
 
-import Data.Time
-import Text.CSV
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
 
-filterCSVByDate :: String -> Day -> Day -> Either String [Record]
-filterCSVByDate csvContent startDate endDate = do
-    csv <- parseCSV "input" csvContent
-    let filtered = filter (isWithinDateRange startDate endDate) csv
-    return filtered
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
 
-isWithinDateRange :: Day -> Day -> Record -> Bool
-isWithinDateRange start end record =
-    case record of
-        (dateStr:_) -> 
-            case parseDate dateStr of
-                Just date -> date >= start && date <= end
-                Nothing   -> False
-        _ -> False
+-- Process a list of strings with validation and transformation
+processData :: [String] -> [String]
+processData = map processItem
+  where
+    processItem str
+      | validateNumeric str = "NUMERIC: " ++ normalizePhone str
+      | validateAlpha str = "ALPHA: " ++ toUppercase str
+      | otherwise = "INVALID: " ++ str
 
-parseDate :: String -> Maybe Day
-parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+-- Combine multiple processing steps
+fullPipeline :: [(String, String)] -> String
+fullPipeline names = 
+  let formatted = map (\(f, l) -> formatName f l) names
+      processed = processData formatted
+  in intercalate "\n" processed
+
+-- Example usage in a separate main function would be:
+-- main :: IO ()
+-- main = do
+--   let sampleData = [("John", "Doe"), ("123-456-7890", ""), ("test123", "")]
+--   putStrLn $ fullPipeline sampleData
