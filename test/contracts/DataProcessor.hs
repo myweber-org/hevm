@@ -143,4 +143,65 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.List (foldl')
+import Data.Maybe (catMaybes)
+
+type Record = [String]
+type CSVData = [Record]
+
+parseCSV :: String -> CSVData
+parseCSV = map (splitOn ',') . lines
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper ch (x:xs)
+          | ch == delimiter = "":x:xs
+          | otherwise = (ch:x):xs
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble s = case reads s of
+  [(val, "")] -> Just val
+  _ -> Nothing
+
+computeColumnStats :: CSVData -> Int -> Maybe (Double, Double, Double)
+computeColumnStats csvData colIndex
+  | null csvData = Nothing
+  | otherwise = do
+      let values = catMaybes $ map (safeReadDouble . (!! colIndex)) csvData
+      guard (not (null values))
+      let sumVal = foldl' (+) 0 values
+      let count = fromIntegral $ length values
+      let avg = sumVal / count
+      let maxVal = maximum values
+      let minVal = minimum values
+      return (avg, maxVal, minVal)
+
+filterByColumn :: (String -> Bool) -> Int -> CSVData -> CSVData
+filterByColumn predicate colIndex = 
+  filter (\record -> 
+    colIndex < length record && predicate (record !! colIndex))
+
+validateCSV :: CSVData -> Bool
+validateCSV [] = True
+validateCSV (firstRow:rows) = 
+  let expectedCols = length firstRow
+  in all (\row -> length row == expectedCols) rows
+
+processCSVFile :: FilePath -> IO ()
+processCSVFile filePath = do
+  content <- readFile filePath
+  let csvData = parseCSV content
+  
+  if validateCSV csvData
+    then do
+      putStrLn "CSV validation passed"
+      case computeColumnStats csvData 0 of
+        Just (avg, maxVal, minVal) -> do
+          putStrLn $ "Average: " ++ show avg
+          putStrLn $ "Maximum: " ++ show maxVal
+          putStrLn $ "Minimum: " ++ show minVal
+        Nothing -> putStrLn "Could not compute statistics for column 0"
+    else putStrLn "Invalid CSV format: inconsistent column count"
