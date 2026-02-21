@@ -116,4 +116,10 @@ calculateAverage records = Just (sum values / fromIntegral (length values))
     values = map snd records
 
 processCSVData :: String -> Maybe Double
-processCSVData csv = calculateAverage (parseCSV csv)
+processCSVData csv = calculateAverage (parseCSV csv)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
