@@ -204,4 +204,10 @@ processCSVFile filePath = do
           putStrLn $ "Maximum: " ++ show maxVal
           putStrLn $ "Minimum: " ++ show minVal
         Nothing -> putStrLn "Could not compute statistics for column 0"
-    else putStrLn "Invalid CSV format: inconsistent column count"
+    else putStrLn "Invalid CSV format: inconsistent column count"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
