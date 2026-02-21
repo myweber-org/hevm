@@ -121,4 +121,9 @@ main = do
     putStrLn "Enter limit:"
     input <- getLine
     let limit = read input :: Int
-    print $ primesUpTo limit
+    print $ primesUpTo limitmodule PrimeSieve where
+
+primes :: [Integer]
+primes = sieve [2..]
+  where
+    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
