@@ -222,3 +222,13 @@ processData :: BL.ByteString -> Either String (Double, Double, Double)
 processData bs = do
     parsed <- parseCSV bs
     Right $ calculateAverages parsed
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
