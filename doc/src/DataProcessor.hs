@@ -95,4 +95,45 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null input = Right []
+    | otherwise = mapM parseRow (lines input)
+  where
+    parseRow line = case splitOnComma line of
+        [] -> Left "Empty row"
+        cells -> Right cells
+
+splitOnComma :: String -> [String]
+splitOnComma = foldr splitHelper [""]
+  where
+    splitHelper ',' (current:rest) = "":current:rest
+    splitHelper char (current:rest) = (char:current):rest
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Right []
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index must be non-negative"
+    | otherwise = mapM validateRow rows
+  where
+    validateRow row
+        | colIndex >= length row = Left $ "Row has only " ++ show (length row) ++ " columns"
+        | all isDigit (row !! colIndex) = Right row
+        | otherwise = Left $ "Non-numeric value in column " ++ show colIndex ++ ": " ++ (row !! colIndex)
+
+formatCSV :: CSVData -> String
+formatCSV = intercalate "\n" . map (intercalate ",")
+
+processCSVFile :: String -> Either String String
+processCSVFile content = do
+    parsed <- parseCSV content
+    validated <- validateNumericColumn parsed 1
+    return $ formatCSV validated
