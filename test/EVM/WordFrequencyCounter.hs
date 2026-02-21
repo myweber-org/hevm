@@ -204,4 +204,23 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is functional. World of Haskell."
     putStrLn "Word frequencies (sorted by frequency, min 2 occurrences, top 5):"
-    displayResults $ processText sampleText 2 5
+    displayResults $ processText sampleText 2 5module WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords = Map.fromListWith (+) . map (\w -> (w, 1)) . words . map normalize
+  where
+    normalize c = if isAlphaNum c then toLower c else ' '
+
+isAlphaNum :: Char -> Bool
+isAlphaNum c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (\(_, count) -> negate count) $ Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(word, count) -> word ++ ": " ++ show count)
