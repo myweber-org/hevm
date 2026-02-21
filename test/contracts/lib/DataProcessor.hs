@@ -21,4 +21,24 @@ processData (header:rows) =
     let values = map (read . (!!1)) rows
         avg = sum values / fromIntegral (length values)
         variance = sum (map (\x -> (x - avg) ** 2) values) / fromIntegral (length values)
-    in (avg, variance)
+    in (avg, variance)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs = if all (> 0) xs then Just xs else Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [5, 12, 8, 20, 3, 15]
+    print $ processData sampleData
+    print $ sumProcessedData sampleData
+    print $ validateInput sampleData
