@@ -1,17 +1,24 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Text.CSV
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+filterCSVByDate :: Day -> Day -> CSV -> CSV
+filterCSVByDate startDate endDate (header:rows) =
+    header : filter (isWithinDateRange startDate endDate) rows
+  where
+    isWithinDateRange start end row =
+        case parseDate (head row) of
+            Just date -> date >= start && date <= end
+            Nothing   -> False
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+    parseDate :: String -> Maybe Day
+    parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
 
-main :: IO ()
-main = do
-    let sampleData = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+processData :: CSV -> (Double, Double)
+processData (header:rows) =
+    let values = map (read . (!!1)) rows
+        avg = sum values / fromIntegral (length values)
+        variance = sum (map (\x -> (x - avg) ** 2) values) / fromIntegral (length values)
+    in (avg, variance)
