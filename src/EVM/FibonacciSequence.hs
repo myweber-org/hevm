@@ -67,4 +67,16 @@ fastFib = fix (\f n -> if n < 2 then fromIntegral n else f (n - 1) + f (n - 2))m
 fibonacci :: Int -> [Integer]
 fibonacci n = take n fibs
   where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
+
+fibonacci :: Int -> Integer
+fibonacci = (map fib [0..] !!)
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+
+main :: IO ()
+main = do
+    putStrLn "First 20 Fibonacci numbers:"
+    mapM_ (print . fibonacci) [0..19]
