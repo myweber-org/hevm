@@ -270,3 +270,45 @@ printFrequencies :: [(String, Int)] -> IO ()
 printFrequencies freqs = do
     putStrLn "Word frequencies:"
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqs
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByFrequency :: Int -> [WordCount] -> [WordCount]
+filterByFrequency minCount = filter (\(_, count) -> count >= minCount)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+processText :: String -> Int -> Int -> IO ()
+processText text minFreq topN = do
+    let counts = countWords text
+    let filtered = filterByFrequency minFreq counts
+    let topWords = getTopNWords topN filtered
+    putStrLn "Word frequencies:"
+    printWordCounts topWords
+
+sampleText :: String
+sampleText = "This is a sample text. This text contains words. Some words repeat. This is just an example."
+
+main :: IO ()
+main = do
+    putStrLn "Processing sample text..."
+    processText sampleText 2 5
