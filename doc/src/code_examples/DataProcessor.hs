@@ -42,4 +42,7 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
