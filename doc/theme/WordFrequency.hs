@@ -233,4 +233,26 @@ displayWordCounts counts =
     unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
 
 processText :: String -> String
-processText = displayWordCounts . countWords
+processText = displayWordCounts . countWordsmodule WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlphaNum
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
+
+displayTopWords :: Int -> String -> IO ()
+displayTopWords n text = do
+  putStrLn $ "Top " ++ show n ++ " words:"
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) 
+        (topNWords n text)
