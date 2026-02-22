@@ -238,4 +238,69 @@ main = do
     isRight (Right _) = True
     isRight _ = False
     isLeft (Left _) = True
-    isLeft _ = False
+    isLeft _ = Falsemodule DataProcessor where
+
+import Data.List (sort, group, maximumBy)
+import Data.Ord (comparing)
+import qualified Data.Map as Map
+import Text.CSV (parseCSV)
+
+type Dataset = [[String]]
+
+parseCSVData :: String -> Either String Dataset
+parseCSVData csvString = 
+    case parseCSV "input" csvString of
+        Left err -> Left $ "CSV parsing error: " ++ err
+        Right csv -> Right csv
+
+calculateMean :: [Double] -> Double
+calculateMean xs = sum xs / fromIntegral (length xs)
+
+calculateMedian :: [Double] -> Double
+calculateMedian xs = 
+    let sorted = sort xs
+        n = length sorted
+        mid = n `div` 2
+    in if odd n 
+        then sorted !! mid
+        else ((sorted !! (mid - 1)) + (sorted !! mid)) / 2.0
+
+calculateMode :: [Double] -> [Double]
+calculateMode xs = 
+    let freqMap = Map.fromListWith (+) [(x, 1) | x <- xs]
+        maxFreq = maximum (Map.elems freqMap)
+    in Map.keys (Map.filter (== maxFreq) freqMap)
+
+filterOutliers :: [Double] -> Double -> [Double]
+filterOutliers values threshold = 
+    let meanVal = calculateMean values
+        stdDev = sqrt $ sum (map (\x -> (x - meanVal)^2) values) / fromIntegral (length values)
+    in filter (\x -> abs (x - meanVal) <= threshold * stdDev) values
+
+dataSummary :: [Double] -> (Double, Double, [Double], Int)
+dataSummary values = 
+    let cleanValues = filterOutliers values 2.0
+        meanVal = calculateMean cleanValues
+        medianVal = calculateMedian cleanValues
+        modeVals = calculateMode cleanValues
+        count = length cleanValues
+    in (meanVal, medianVal, modeVals, count)
+
+processNumericColumn :: Dataset -> Int -> Either String (Double, Double, [Double], Int)
+processNumericColumn dataset columnIndex = 
+    if null dataset 
+    then Left "Empty dataset"
+    else case mapM (safeRead . (!! columnIndex)) (tail dataset) of
+        Left err -> Left $ "Column parsing error: " ++ err
+        Right values -> Right $ dataSummary values
+    where
+        safeRead :: String -> Either String Double
+        safeRead s = case reads s of
+            [(x, "")] -> Right x
+            _ -> Left $ "Invalid number: " ++ s
+
+findMostFrequentColumn :: Dataset -> Int -> String
+findMostFrequentColumn dataset columnIndex = 
+    let columnData = map (!! columnIndex) (tail dataset)
+        freqMap = Map.fromListWith (+) [(x, 1) | x <- columnData]
+    in fst $ maximumBy (comparing snd) (Map.toList freqMap)
