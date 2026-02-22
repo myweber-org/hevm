@@ -52,4 +52,13 @@ fibMemo = (map fib [0..] !!)
     fib n = fibMemo (n - 1) + fibMemo (n - 2)
 
 fastFib :: Int -> Integer
-fastFib = fix (\f n -> if n < 2 then fromIntegral n else f (n - 1) + f (n - 2))
+fastFib = fix (\f n -> if n < 2 then fromIntegral n else f (n - 1) + f (n - 2))module FibonacciSequence where
+
+import Data.Function (fix)
+
+fibMemo :: Int -> Integer
+fibMemo = fix memo
+  where
+    memo _ 0 = 0
+    memo _ 1 = 1
+    memo f n = f (n - 1) + f (n - 2)
