@@ -1,64 +1,75 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isAlpha, isDigit, toLower)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes)
+import Text.Read (readMaybe)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-module DataProcessor where
+data UserProfile = UserProfile
+  { username :: String
+  , email :: String
+  , age :: Int
+  , tags :: [String]
+  } deriving (Show, Eq)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+validateUsername :: String -> Maybe String
+validateUsername name
+  | length name >= 3 && length name <= 20 && all isAlpha name = Just name
+  | otherwise = Nothing
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+validateEmail :: String -> Maybe String
+validateEmail emailStr
+  | '@' `elem` emailStr && '.' `elem` (dropWhile (/= '@') emailStr) = Just emailStr
+  | otherwise = Nothing
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+validateAge :: Int -> Maybe Int
+validateAge a
+  | a >= 0 && a <= 150 = Just a
+  | otherwise = Nothing
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+normalizeTags :: [String] -> [String]
+normalizeTags = map (map toLower) . filter (not . null)
 
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+createUserProfile :: String -> String -> Int -> [String] -> Maybe UserProfile
+createUserProfile name emailStr ageVal tagsList = do
+  validName <- validateUsername name
+  validEmail <- validateEmail emailStr
+  validAge <- validateAge ageVal
+  let normalizedTags = normalizeTags tagsList
+  return $ UserProfile validName validEmail validAge normalizedTags
 
-main :: IO ()
-main = do
-    let sampleData = [1, -2, 3, 0, 5, -8]
-    if validateInput sampleData
-        then print $ processData sampleData
-        else putStrLn "Input validation failed"
-module DataProcessor where
-
-import Data.Time
-import Text.CSV
-
-filterByDateRange :: Day -> Day -> [Record] -> [Record]
-filterByDateRange startDate endDate records =
-  filter (\record -> case parseDate record of
-            Just date -> date >= startDate && date <= endDate
-            Nothing   -> False) records
+parseUserFromCSV :: String -> Maybe UserProfile
+parseUserFromCSV csvLine = case splitOn ',' csvLine of
+  [name, emailStr, ageStr, tagsStr] -> do
+    ageVal <- readMaybe ageStr
+    let tags = splitOn ';' tagsStr
+    createUserProfile name emailStr ageVal tags
+  _ -> Nothing
   where
-    parseDate :: Record -> Maybe Day
-    parseDate record
-      | length record >= 2 = parseTimeM True defaultTimeLocale "%Y-%m-%d" (head (tail record))
-      | otherwise = Nothing
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper char acc
+          | char == delimiter = "" : acc
+          | otherwise = (char : head acc) : tail acc
 
-calculateDailyAverage :: [Record] -> [(Day, Double)]
-calculateDailyAverage records =
-  let grouped = foldr groupByDate [] records
-  in map (\(date, values) -> (date, sum values / fromIntegral (length values))) grouped
-  where
-    groupByDate :: Record -> [(Day, [Double])] -> [(Day, [Double])]
-    groupByDate record acc =
-      case parseDate record of
-        Just date ->
-          case lookup date acc of
-            Just existing -> (date, parseValue record : existing) : filter ((/= date) . fst) acc
-            Nothing       -> (date, [parseValue record]) : acc
-        Nothing -> acc
-    
-    parseValue :: Record -> Double
-    parseValue record
-      | length record >= 3 = read (record !! 2)
-      | otherwise = 0.0
+profileSummary :: UserProfile -> String
+profileSummary (UserProfile name emailStr ageVal tags) =
+  intercalate " | "
+    [ "User: " ++ name
+    , "Email: " ++ emailStr
+    , "Age: " ++ show ageVal
+    , "Tags: " ++ intercalate ", " tags
+    ]
+
+processUserBatch :: [String] -> [UserProfile]
+processUserBatch = catMaybes . map parseUserFromCSV
+
+averageAge :: [UserProfile] -> Double
+averageAge profiles =
+  if null profiles
+    then 0.0
+    else fromIntegral (sum (map age profiles)) / fromIntegral (length profiles)
+
+filterByTag :: String -> [UserProfile] -> [UserProfile]
+filterByTag tag = filter (\p -> map toLower tag `elem` tags p)
