@@ -17,4 +17,9 @@ fib = memoize fib'
 main :: IO ()
 main = do
     putStrLn "Fibonacci numbers:"
-    mapM_ (print . fib) [0..20]
+    mapM_ (print . fib) [0..20]module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
