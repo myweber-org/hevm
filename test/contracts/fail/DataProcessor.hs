@@ -50,4 +50,10 @@ processData content =
   let records = parseCSV content
   in if null records 
      then Nothing 
-     else Just (calculateAverages records)
+     else Just (calculateAverages records)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
