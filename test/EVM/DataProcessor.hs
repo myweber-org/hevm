@@ -81,4 +81,22 @@ main = do
         Just data' -> do
             let result = processData data'
             putStrLn $ "Original: " ++ show sampleData
-            putStrLn $ "Processed: " ++ show result
+            putStrLn $ "Processed: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Bool
+validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
+
+safeProcessData :: [Int] -> Maybe [Int]
+safeProcessData xs
+    | validateInput xs = Just (processData xs)
+    | otherwise = Nothing
