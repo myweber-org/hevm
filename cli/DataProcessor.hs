@@ -303,4 +303,10 @@ findMostFrequentColumn :: Dataset -> Int -> String
 findMostFrequentColumn dataset columnIndex = 
     let columnData = map (!! columnIndex) (tail dataset)
         freqMap = Map.fromListWith (+) [(x, 1) | x <- columnData]
-    in fst $ maximumBy (comparing snd) (Map.toList freqMap)
+    in fst $ maximumBy (comparing snd) (Map.toList freqMap)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
