@@ -71,3 +71,33 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
     print result
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Record = (String, Double)
+
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case words line of
+    [name, valStr] -> case readMaybe valStr of
+        Just val -> Just (name, val)
+        Nothing -> Nothing
+    _ -> Nothing
+
+parseCSV :: String -> [Record]
+parseCSV content = 
+    let lines' = lines content
+        parsed = map parseCSVLine lines'
+    in [r | Just r <- parsed]
+
+computeAverage :: [Record] -> Double
+computeAverage records = 
+    if null records 
+    then 0.0
+    else total / count
+  where
+    (total, count) = foldl' (\(sum, cnt) (_, val) -> (sum + val, cnt + 1)) (0.0, 0) records
+
+processData :: String -> Double
+processData = computeAverage . parseCSV
