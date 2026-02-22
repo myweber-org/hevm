@@ -1,17 +1,17 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg (take n xs) : movingAverage n (tail xs)
+  where
+    avg ys = sum ys / fromIntegral (length ys)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
-
-main :: IO ()
-main = do
-    let sampleData = [-5, 2, 0, 8, -3, 10]
-    if validateInput sampleData
-        then print $ processData sampleData
-        else putStrLn "Input validation failed"
+-- Example usage with a helper function
+exampleUsage :: IO ()
+exampleUsage = do
+    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    let windowSize = 3
+    let result = movingAverage windowSize dataSeries
+    putStrLn $ "Data series: " ++ show dataSeries
+    putStrLn $ "Moving average (window=" ++ show windowSize ++ "): " ++ show result
