@@ -61,4 +61,10 @@ validateInput xs
     | null xs = Nothing
     | any (< -100) xs = Nothing
     | any (> 100) xs = Nothing
-    | otherwise = Just xs
+    | otherwise = Just xsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
