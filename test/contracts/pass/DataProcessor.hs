@@ -100,4 +100,10 @@ computeAverage records =
     (total, count) = foldl' (\(sum, cnt) (_, val) -> (sum + val, cnt + 1)) (0.0, 0) records
 
 processData :: String -> Double
-processData = computeAverage . parseCSV
+processData = computeAverage . parseCSVmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
