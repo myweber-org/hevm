@@ -276,4 +276,73 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is fun, world is big."
     let frequencies = countWords sampleText
-    printWordFrequencies frequencies
+    printWordFrequencies frequencies{-# LANGUAGE OverloadedStrings #-}
+
+module WordFrequencyCounter where
+
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import qualified Data.Map.Strict as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+-- Common English stopwords
+stopWords :: [T.Text]
+stopWords = map T.pack ["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "will", "would", "shall", "should", "may", "might", "must", "can", "could", "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them"]
+
+-- Simple stemming: remove common suffixes
+stemWord :: T.Text -> T.Text
+stemWord word
+    | T.length word <= 3 = word
+    | T.isSuffixOf "ing" word && T.length word > 5 = T.take (T.length word - 3) word
+    | T.isSuffixOf "ed" word && T.length word > 4 = T.take (T.length word - 2) word
+    | T.isSuffixOf "s" word && T.length word > 3 = T.take (T.length word - 1) word
+    | T.isSuffixOf "ly" word && T.length word > 4 = T.take (T.length word - 2) word
+    | otherwise = word
+
+-- Clean and normalize a word
+cleanWord :: T.Text -> Maybe T.Text
+cleanWord txt = 
+    let lower = T.toLower txt
+        filtered = T.filter (\c -> isAlpha c || c == '\'') lower
+        trimmed = T.strip filtered
+    in if T.null trimmed || trimmed `elem` stopWords
+        then Nothing
+        else Just (stemWord trimmed)
+
+-- Count word frequencies in text
+countWordFrequencies :: T.Text -> Map.Map T.Text Int
+countWordFrequencies text =
+    let wordsList = T.words text
+        cleanedWords = map cleanWord wordsList
+        validWords = [w | Just w <- cleanedWords]
+    in Map.fromListWith (+) [(w, 1) | w <- validWords]
+
+-- Get top N frequent words
+topNFrequentWords :: Int -> T.Text -> [(T.Text, Int)]
+topNFrequentWords n text =
+    let freqMap = countWordFrequencies text
+        sorted = sortOn (Down . snd) (Map.toList freqMap)
+    in take n sorted
+
+-- Process a file and display top words
+processFile :: FilePath -> Int -> IO ()
+processFile filePath n = do
+    content <- TIO.readFile filePath
+    let topWords = topNFrequentWords n content
+    putStrLn $ "Top " ++ show n ++ " frequent words in " ++ filePath ++ ":"
+    mapM_ (\(word, count) -> 
+        TIO.putStrLn $ T.justifyLeft 20 ' ' word <> " : " <> T.pack (show count)) topWords
+
+-- Example usage in main
+main :: IO ()
+main = do
+    let sampleText = "The quick brown fox jumps over the lazy dog. The dog barked at the fox, but the fox kept running. Running quickly, the fox escaped from the barking dog."
+    putStrLn "Sample text analysis:"
+    let topWords = topNFrequentWords 5 (T.pack sampleText)
+    mapM_ (\(word, count) -> 
+        TIO.putStrLn $ T.justifyLeft 15 ' ' word <> " : " <> T.pack (show count)) topWords
+    
+    -- To analyze a file, uncomment:
+    -- processFile "document.txt" 10
