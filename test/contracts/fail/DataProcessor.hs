@@ -56,4 +56,27 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+calculateStats :: [Double] -> (Double, Double, Double)
+calculateStats xs = (minimum xs, maximum xs, sum xs / fromIntegral (length xs))
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize = movingAverage windowSize
+
+processDataset :: [Double] -> IO ()
+processDataset dataset = do
+    putStrLn $ "Original data: " ++ show dataset
+    putStrLn $ "Smoothed data (window=3): " ++ show (smoothData 3 dataset)
+    let (minVal, maxVal, avgVal) = calculateStats dataset
+    putStrLn $ "Statistics - Min: " ++ show minVal ++ ", Max: " ++ show maxVal ++ ", Avg: " ++ show avgVal
