@@ -100,3 +100,21 @@ safeProcessData :: [Int] -> Maybe [Int]
 safeProcessData xs
     | validateInput xs = Just (processData xs)
     | otherwise = Nothing
+module DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+    
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
+
+safeMovingAverage :: Int -> [Double] -> Maybe [Double]
+safeMovingAverage n xs
+    | n <= 0 = Nothing
+    | otherwise = Just $ movingAverage n xs
