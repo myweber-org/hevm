@@ -109,4 +109,21 @@ movingAverage n xs
 -- Helper function from Data.List
 tails :: [a] -> [[a]]
 tails [] = [[]]
-tails xs@(_:ys) = xs : tails ys
+tails xs@(_:ys) = xs : tails ysmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Bool
+validateInput = all (\x -> x >= -100 && x <= 100)
+
+safeProcessData :: [Int] -> Maybe [Int]
+safeProcessData xs
+    | validateInput xs = Just (processData xs)
+    | otherwise = Nothing
