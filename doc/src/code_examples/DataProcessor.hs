@@ -73,3 +73,24 @@ movingAverage n xs
 tails :: [a] -> [[a]]
 tails [] = [[]]
 tails (x:xs) = (x:xs) : tails xs
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+  | null xs = Nothing
+  | otherwise = Just xs
+
+main :: IO ()
+main = do
+  let sampleData = [-3, 2, 0, 7, -1, 4]
+  case validateInput sampleData of
+    Nothing -> putStrLn "Empty input list"
+    Just data' -> do
+      putStrLn $ "Original: " ++ show data'
+      putStrLn $ "Processed: " ++ show (processData data')
