@@ -14,4 +14,10 @@ preorder (Node left value right) = [value] ++ preorder left ++ preorder right
 
 postorder :: BinaryTree a -> [a]
 postorder Leaf = []
-postorder (Node left value right) = postorder left ++ postorder right ++ [value]
+postorder (Node left value right) = postorder left ++ postorder right ++ [value]data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show)
+
+inOrderTraversal :: BinaryTree a -> [a]
+inOrderTraversal tree = go tree []
+  where
+    go Leaf stack = stack
+    go (Node left val right) stack = go left (val : go right stack)
