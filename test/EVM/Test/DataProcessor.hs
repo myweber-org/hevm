@@ -79,4 +79,7 @@ exampleUsage = do
   mapM_ putStrLn testData
   putStrLn "\nProcessed data:"
   mapM_ putStrLn processed
-  putStrLn $ "\nCombined: " ++ combineWithSeparator " | " processed
+  putStrLn $ "\nCombined: " ++ combineWithSeparator " | " processedmodule DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
