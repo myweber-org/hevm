@@ -79,4 +79,13 @@ processDataset dataset = do
     putStrLn $ "Original data: " ++ show dataset
     putStrLn $ "Smoothed data (window=3): " ++ show (smoothData 3 dataset)
     let (minVal, maxVal, avgVal) = calculateStats dataset
-    putStrLn $ "Statistics - Min: " ++ show minVal ++ ", Max: " ++ show maxVal ++ ", Avg: " ++ show avgVal
+    putStrLn $ "Statistics - Min: " ++ show minVal ++ ", Max: " ++ show maxVal ++ ", Avg: " ++ show avgValmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
