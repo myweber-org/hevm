@@ -81,4 +81,30 @@ main = do
     
     putStrLn "\nEmail validation examples:"
     print $ validateEmail "test@example.com"
-    print $ validateEmail "invalid-email"
+    print $ validateEmail "invalid-email"module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
+
+calculateTrend :: Fractional a => [a] -> Maybe a
+calculateTrend [] = Nothing
+calculateTrend [_] = Nothing
+calculateTrend values =
+    let n = fromIntegral $ length values
+        xSum = sum [0..n-1]
+        ySum = sum values
+        xySum = sum $ zipWith (*) values [0..]
+        x2Sum = sum $ map (^2) [0..n-1]
+        slope = (n * xySum - xSum * ySum) / (n * x2Sum - xSum * xSum)
+    in Just slope
