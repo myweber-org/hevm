@@ -116,4 +116,18 @@ main = do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processData validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Input validation failed: values must be greater than -1000"
+        Nothing -> putStrLn "Input validation failed: values must be greater than -1000"module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
+  where
+    average ws = sum ws / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints ++ replicate (windowSize - 1) 0.0
