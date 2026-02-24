@@ -61,4 +61,10 @@ smoothData = movingAverage 3
 
 calculateTrend :: [Double] -> Maybe Double
 calculateTrend [] = Nothing
-calculateTrend xs = Just (last xs - head xs)
+calculateTrend xs = Just (last xs - head xs)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
