@@ -28,4 +28,15 @@ primeFactors n = factors n primes
     factors m (p:ps)
         | p * p > m = [m]
         | m `mod` p == 0 = p : factors (m `div` p) (p:ps)
-        | otherwise = factors m ps
+        | otherwise = factors m psmodule PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = go [2..limit] []
+  where
+    go [] primes = reverse primes
+    go (x:xs) primes = go (filter (\n -> n `mod` x /= 0) xs) (x:primes)
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
