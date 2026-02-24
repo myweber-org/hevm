@@ -40,3 +40,91 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes)
+
+type Username = String
+type Email = String
+type Age = Int
+
+data UserProfile = UserProfile
+    { username :: Username
+    , email :: Email
+    , age :: Age
+    } deriving (Show, Eq)
+
+data ValidationError
+    = InvalidUsername String
+    | InvalidEmail String
+    | InvalidAge String
+    deriving (Show, Eq)
+
+validateUsername :: Username -> Either ValidationError Username
+validateUsername name
+    | null name = Left $ InvalidUsername "Username cannot be empty"
+    | length name < 3 = Left $ InvalidUsername "Username must be at least 3 characters"
+    | length name > 20 = Left $ InvalidUsername "Username must not exceed 20 characters"
+    | not (all isAlpha name) = Left $ InvalidUsername "Username must contain only letters"
+    | otherwise = Right (map toLower name)
+
+validateEmail :: Email -> Either ValidationError Email
+validateEmail emailStr
+    | '@' `notElem` emailStr = Left $ InvalidEmail "Email must contain @ symbol"
+    | '.' `notElem` (dropWhile (/= '@') emailStr) = Left $ InvalidEmail "Email must contain domain with dot"
+    | any isSpace emailStr = Left $ InvalidEmail "Email cannot contain spaces"
+    | otherwise = Right (map toLower emailStr)
+
+validateAge :: Age -> Either ValidationError Age
+validateAge a
+    | a < 0 = Left $ InvalidAge "Age cannot be negative"
+    | a > 150 = Left $ InvalidAge "Age must be realistic (≤150)"
+    | otherwise = Right a
+
+createUserProfile :: Username -> Email -> Age -> Either [ValidationError] UserProfile
+createUserProfile name emailStr ageVal = case results of
+    [] -> Right UserProfile
+        { username = validatedName
+        , email = validatedEmail
+        , age = validatedAge
+        }
+    errs -> Left errs
+  where
+    nameResult = validateUsername name
+    emailResult = validateEmail emailStr
+    ageResult = validateAge ageVal
+    
+    (validatedName, validatedEmail, validatedAge) = case (nameResult, emailResult, ageResult) of
+        (Right n, Right e, Right a) -> (n, e, a)
+        _ -> ("", "", 0)
+    
+    results = catMaybes
+        [ either (Just . InvalidUsername) (const Nothing) nameResult
+        , either (Just . InvalidEmail) (const Nothing) emailResult
+        , either (Just . InvalidAge) (const Nothing) ageResult
+        ]
+
+formatErrors :: [ValidationError] -> String
+formatErrors errs = "Validation failed:\n" ++ intercalate "\n" (map show errs)
+
+sanitizeInput :: String -> String
+sanitizeInput = unwords . words
+
+processUserData :: String -> String -> String -> IO ()
+processUserData rawName rawEmail rawAge = do
+    let cleanName = sanitizeInput rawName
+    let cleanEmail = sanitizeInput rawEmail
+    case reads rawAge of
+        [(ageNum, "")] -> case createUserProfile cleanName cleanEmail ageNum of
+            Right profile -> putStrLn $ "Successfully created profile: " ++ show profile
+            Left errs -> putStrLn $ formatErrors errs
+        _ -> putStrLn "Invalid age format. Please provide a number."
+
+sampleUsers :: [UserProfile]
+sampleUsers =
+    [ UserProfile "alice" "alice@example.com" 30
+    , UserProfile "bob" "bob@test.org" 25
+    , UserProfile "charlie" "charlie@domain.net" 35
+    ]
