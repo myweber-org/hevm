@@ -35,4 +35,33 @@ analyzeText text =
 -- main :: IO ()
 -- main = do
 --     let sampleText = "Hello world hello haskell world programming haskell functional programming"
---     putStrLn $ analyzeText sampleText
+--     putStrLn $ analyzeText sampleTextmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import System.Environment
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+formatResults :: FrequencyMap -> String
+formatResults = unlines . map formatEntry . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <text>"
+        textPieces -> do
+            let text = unwords textPieces
+                freqMap = countWords text
+            putStrLn "Word frequencies:"
+            putStr $ formatResults freqMap
