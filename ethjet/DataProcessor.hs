@@ -155,4 +155,28 @@ exampleUsage = do
   mapM_ putStrLn validEntriesmodule DataProcessor where
 
 processData :: [Int] -> [Int]
-processData xs = map (^2) (filter even xs)
+processData xs = map (^2) (filter even xs)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats xs = (minimum xs, maximum xs, average)
+  where
+    average = fromIntegral (sum xs) / fromIntegral (length xs)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+processData :: [Int] -> Maybe (Int, Int, Double)
+processData xs = do
+    first <- safeHead xs
+    let processed = processEvenSquares xs
+    if null processed
+        then Nothing
+        else Just (first, length processed, sum processed)
