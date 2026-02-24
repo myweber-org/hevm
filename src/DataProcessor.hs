@@ -127,4 +127,17 @@ sampleUsers =
     [ UserProfile "alice" "alice@example.com" 30
     , UserProfile "bob" "bob@test.org" 25
     , UserProfile "charlie" "charlie@domain.net" 35
-    ]
+    ]module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, 0, 5, -8]
+    let result = processNumbers input
+    putStrLn $ "Input: " ++ show input
+    putStrLn $ "Result: " ++ show result
