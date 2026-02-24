@@ -124,4 +124,22 @@ movingAverage n xs
     | otherwise = map average $ windows n xs
   where
     windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)
+    average zs = sum zs / fromIntegral (length zs)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ filter (\window -> length window == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize = movingAverage windowSize
+
+calculateTrend :: [Double] -> Maybe Double
+calculateTrend [] = Nothing
+calculateTrend xs = Just (last xs - head xs)
