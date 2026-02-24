@@ -142,4 +142,7 @@ smoothData windowSize = movingAverage windowSize
 
 calculateTrend :: [Double] -> Maybe Double
 calculateTrend [] = Nothing
-calculateTrend xs = Just (last xs - head xs)
+calculateTrend xs = Just (last xs - head xs)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
