@@ -133,4 +133,15 @@ main = do
     hFlush stdout
     input <- getLine
     let count = wordCount input
-    putStrLn $ "Word count: " ++ show count
+    putStrLn $ "Word count: " ++ show count{-# LANGUAGE OverloadedStrings #-}
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+countWords :: T.Text -> Int
+countWords text = length $ T.words text
+
+main :: IO ()
+main = do
+    content <- TIO.readFile "input.txt"
+    let wordCount = countWords content
+    TIO.putStrLn $ T.pack ("Word count: " ++ show wordCount)
