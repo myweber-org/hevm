@@ -179,4 +179,43 @@ processData xs = do
     let processed = processEvenSquares xs
     if null processed
         then Nothing
-        else Just (first, length processed, sum processed)
+        else Just (first, length processed, sum processed)module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+
+-- Validate that a string contains only alphanumeric characters
+validateAlphanumeric :: String -> Bool
+validateAlphanumeric = all (\c -> isAlpha c || isDigit c)
+
+-- Convert a string to uppercase and filter out non-alphabetic characters
+cleanAndUppercase :: String -> String
+cleanAndUppercase = map toUpper . filter isAlpha
+
+-- Process a list of strings: validate, clean, and keep only valid entries
+processData :: [String] -> [String]
+processData = map cleanAndUppercase . filter validateAlphanumeric
+
+-- Calculate statistics on processed data
+calculateStats :: [String] -> (Int, Int, Double)
+calculateStats xs = (total, avgLength, variance)
+  where
+    total = length xs
+    lengths = map length xs
+    avgLength = if total > 0 then fromIntegral (sum lengths) / fromIntegral total else 0.0
+    variance = if total > 0 then sum (map (\l -> (fromIntegral l - avgLength) ^ 2) lengths) / fromIntegral total else 0.0
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let rawData = ["Hello123", "Invalid!", "World456", "Test789", "Bad@Data"]
+    let processed = processData rawData
+    let (count, avgLen, var) = calculateStats processed
+    
+    putStrLn "Raw data:"
+    print rawData
+    putStrLn "\nProcessed data (alphanumeric only, uppercase):"
+    print processed
+    putStrLn "\nStatistics:"
+    putStrLn $ "Count: " ++ show count
+    putStrLn $ "Average length: " ++ show avgLen
+    putStrLn $ "Variance: " ++ show var
