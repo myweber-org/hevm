@@ -152,4 +152,7 @@ exampleUsage = do
   mapM_ print processed
   
   putStrLn "\nValid transformed entries:"
-  mapM_ putStrLn validEntries
+  mapM_ putStrLn validEntriesmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
