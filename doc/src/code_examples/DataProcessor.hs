@@ -145,4 +145,16 @@ calculateTrend [] = Nothing
 calculateTrend xs = Just (last xs - head xs)module DataProcessor where
 
 processData :: [Int] -> [Int]
-processData = map (^2) . filter even
+processData = map (^2) . filter evenmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
+
+combineProcessors :: [Int] -> [Int]
+combineProcessors xs = if validateData xs then processData xs else []
