@@ -22,4 +22,7 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessedData = sum . processDatamodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
