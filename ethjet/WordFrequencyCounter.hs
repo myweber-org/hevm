@@ -57,4 +57,35 @@ topWords n text = take n $ countWords text
 -- | Pretty print word frequencies
 printFrequencies :: [WordCount] -> IO ()
 printFrequencies counts = 
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) countsmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type WordCount = Map.Map T.Text Int
+
+countWords :: T.Text -> WordCount
+countWords = Map.fromListWith (+) . map (\w -> (w, 1)) . filter (not . T.null) . map normalize . T.words
+  where
+    normalize = T.filter Char.isLetter . T.toLower
+
+sortByFrequency :: WordCount -> [(T.Text, Int)]
+sortByFrequency = List.sortBy (\(_, cnt1) (_, cnt2) -> compare cnt2 cnt1) . Map.toList
+
+filterByMinFrequency :: Int -> WordCount -> WordCount
+filterByMinFrequency minFreq = Map.filter (>= minFreq)
+
+processText :: T.Text -> Int -> [(T.Text, Int)]
+processText text minFreq = sortByFrequency $ filterByMinFrequency minFreq $ countWords text
+
+printResults :: [(T.Text, Int)] -> IO ()
+printResults = mapM_ (\(word, count) -> TIO.putStrLn $ T.pack (show count) <> " " <> word)
+
+main :: IO ()
+main = do
+    content <- TIO.readFile "input.txt"
+    let results = processText content 3
+    printResults results
