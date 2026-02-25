@@ -68,4 +68,16 @@ main = do
     putStrLn "\nMoving average with window size 3:"
     print $ movingAverage 3 sampleData
     putStrLn "\nSmoothed data with window size 5:"
-    print $ smoothData 5 sampleData
+    print $ smoothData 5 sampleDatamodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
