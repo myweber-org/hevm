@@ -112,3 +112,20 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0) . processData
+
+main :: IO ()
+main = do
+    let sampleData = [-3, 1, 0, 4, -2, 5]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Validation result: " ++ show (validateData sampleData)
