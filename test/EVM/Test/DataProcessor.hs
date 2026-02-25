@@ -29,4 +29,22 @@ exampleUsage = do
     let inputData = ["123", "abc", "456", "def", "789"]
     let processed = processPipeline inputData
     putStrLn $ "Input: " ++ show inputData
-    putStrLn $ "Output: " ++ processed
+    putStrLn $ "Output: " ++ processedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
+main :: IO ()
+main = do
+    let inputData = [1, -2, 3, 0, 5, -8]
+    if validateInput inputData
+        then do
+            let result = processData inputData
+            putStrLn $ "Processed data: " ++ show result
+        else putStrLn "Invalid input data detected"
