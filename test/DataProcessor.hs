@@ -111,4 +111,13 @@ main = do
     let sampleData = [1..10]
     putStrLn $ "Original: " ++ show sampleData
     putStrLn $ "Processed: " ++ show (processEvenNumbers sampleData)
-    putStrLn $ "Sum: " ++ show (sumProcessedNumbers sampleData)
+    putStrLn $ "Sum: " ++ show (sumProcessedNumbers sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
