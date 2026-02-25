@@ -1,26 +1,7 @@
+
 module BinarySearchTree where
 
-data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show, Eq)
-
-insert :: Ord a => a -> Tree a -> Tree a
-insert x Empty = Node x Empty Empty
-insert x (Node y left right)
-    | x < y     = Node y (insert x left) right
-    | x > y     = Node y left (insert x right)
-    | otherwise = Node y left right
-
-lookup :: Ord a => a -> Tree a -> Bool
-lookup _ Empty = False
-lookup x (Node y left right)
-    | x < y     = BinarySearchTree.lookup x left
-    | x > y     = BinarySearchTree.lookup x right
-    | otherwise = True
-
-inorder :: Tree a -> [a]
-inorder Empty = []
-inorder (Node x left right) = inorder left ++ [x] ++ inorder rightmodule BinarySearchTree where
-
-data BST a = Empty | Node (BST a) a (BST a) deriving (Show, Eq)
+data BST a = Empty | Node (BST a) a (BST a) deriving (Show)
 
 insert :: Ord a => a -> BST a -> BST a
 insert x Empty = Node Empty x Empty
@@ -33,8 +14,12 @@ inOrder :: BST a -> [a]
 inOrder Empty = []
 inOrder (Node left val right) = inOrder left ++ [val] ++ inOrder right
 
-fromList :: Ord a => [a] -> BST a
-fromList = foldr insert Empty
+buildTree :: Ord a => [a] -> BST a
+buildTree = foldr insert Empty
 
-toSortedList :: BST a -> [a]
-toSortedList = inOrder
+main :: IO ()
+main = do
+    let tree = buildTree [5, 3, 7, 1, 4, 6, 8]
+    print tree
+    putStrLn "In-order traversal:"
+    print $ inOrder tree
