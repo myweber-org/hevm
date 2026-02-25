@@ -12,4 +12,10 @@ movingAverage n xs
     average ws = sum ws / fromIntegral (length ws)
 
 -- Example usage:
--- movingAverage 3 [1.0, 2.0, 3.0, 4.0, 5.0] -> [2.0, 3.0, 4.0]
+-- movingAverage 3 [1.0, 2.0, 3.0, 4.0, 5.0] -> [2.0, 3.0, 4.0]module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
