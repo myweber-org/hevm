@@ -154,3 +154,73 @@ demoProcessing = do
             ProcessingError err -> 
                 putStrLn $ "Error: " ++ err
         ) testCases
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, listToMaybe)
+import Text.Read (readMaybe)
+
+-- | Validates if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
+
+-- | Parses a string into an integer safely
+safeParseInt :: String -> Maybe Int
+safeParseInt s = 
+    if validateDigits s then readMaybe s else Nothing
+
+-- | Trims leading and trailing whitespace
+trim :: String -> String
+trim = f . f
+    where f = reverse . dropWhile isSpace
+
+-- | Normalizes a string by trimming and converting to lowercase
+normalizeString :: String -> String
+normalizeString = map toLower . trim
+    where toLower c = if c >= 'A' && c <= 'Z' then toEnum (fromEnum c + 32) else c
+
+-- | Validates email format (simple version)
+validateEmail :: String -> Bool
+validateEmail email =
+    let trimmed = trim email
+        parts = splitOn '@' trimmed
+    in length parts == 2 
+       && not (null (head parts)) 
+       && '.' `elem` (last parts)
+    where splitOn :: Char -> String -> [String]
+          splitOn delimiter = foldr (\c acc -> 
+              if c == delimiter 
+              then []:acc 
+              else (c:head acc):tail acc) [[]]
+
+-- | Transforms a list of strings into a CSV row
+toCSVRow :: [String] -> String
+toCSVRow = intercalate "," . map escapeCSV
+    where escapeCSV s = if ',' `elem` s || '"' `elem` s 
+                        then '"' : concatMap escapeChar s ++ "\""
+                        else s
+          escapeChar '"' = "\"\""
+          escapeChar c   = [c]
+
+-- | Processes a list of optional values, keeping only successful ones
+processValidData :: [Maybe a] -> [a]
+processValidData = catMaybes
+
+-- | Extracts the first valid value from a list of maybes
+firstValid :: [Maybe a] -> Maybe a
+firstValid = listToMaybe . catMaybes
+
+-- | Validates and transforms user input data
+processUserInput :: String -> Either String (Int, String)
+processUserInput input =
+    case words input of
+        [numStr, nameStr] ->
+            case safeParseInt numStr of
+                Just num -> 
+                    let normalizedName = normalizeString nameStr
+                    in if length normalizedName >= 2
+                       then Right (num, normalizedName)
+                       else Left "Name must be at least 2 characters"
+                Nothing -> Left "Invalid number format"
+        _ -> Left "Expected format: <number> <name>"
