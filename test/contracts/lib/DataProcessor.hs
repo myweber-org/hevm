@@ -52,4 +52,20 @@ main = do
     let input = [1..10]
     let result = processData input
     putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Result: " ++ show resultmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows
+    | null rows = []
+    | otherwise = map avg $ transpose rows
+  where
+    avg xs = sum xs / fromIntegral (length xs)
+    transpose = foldr (zipWith (:)) (repeat [])
+
+processCSVData :: String -> [Double]
+processCSVData = calculateAverages . parseCSV
