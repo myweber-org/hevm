@@ -76,4 +76,22 @@ sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+validateInput xs = if all (> -100) xs then Just xs else Nothingmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints = movingAverage windowSize dataPoints
+
+calculateTrend :: [Double] -> Double
+calculateTrend values
+    | null values = 0.0
+    | otherwise = (last values - head values) / fromIntegral (length values - 1)
