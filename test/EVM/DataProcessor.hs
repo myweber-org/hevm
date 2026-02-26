@@ -57,4 +57,25 @@ main :: IO ()
 main = do
     let numbers = [1..10]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs
+  | validateInput xs = Just $ processData xs
+  | otherwise = Nothing
+
+exampleUsage :: IO ()
+exampleUsage = do
+  let input = [-5, 2, 0, 8, -3, 10]
+  case safeProcess input of
+    Just result -> putStrLn $ "Processed result: " ++ show result
+    Nothing -> putStrLn "Invalid input detected"
