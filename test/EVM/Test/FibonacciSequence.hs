@@ -1,18 +1,12 @@
+
 module FibonacciSequence where
 
-import Data.Function (fix)
-
-fibonacci :: Int -> Integer
-fibonacci = (map fib [0..] !!)
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
   where
-    fib 0 = 0
-    fib 1 = 1
-    fib n = fibonacci (n - 1) + fibonacci (n - 2)
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
 
--- Alternative implementation using fix for memoization
-fibonacciMemoized :: Int -> Integer
-fibonacciMemoized = fix memo
-  where
-    memo _ 0 = 0
-    memo _ 1 = 1
-    memo f n = f (n - 1) + f (n - 2)
+main :: IO ()
+main = do
+  putStrLn "Fibonacci sequence up to 10 terms:"
+  print $ fibonacci 10
