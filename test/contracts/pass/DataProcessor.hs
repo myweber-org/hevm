@@ -117,4 +117,23 @@ safeHead [] = Nothing
 safeHead (x:_) = Just x
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+  where
+    window = take n xs
+    avg = sum window / fromIntegral n
+
+-- Example usage with a helper function
+demoMovingAverage :: IO ()
+demoMovingAverage = do
+    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    putStrLn "Original series:"
+    print dataSeries
+    putStrLn "\n3-period moving average:"
+    print $ movingAverage 3 dataSeries
+    putStrLn "\n5-period moving average:"
+    print $ movingAverage 5 dataSeries
