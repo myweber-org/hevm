@@ -24,4 +24,27 @@ sumProcessed = sum . processNumbers
 
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
-safeHead (x:_) = Just x
+safeHead (x:_) = Just xmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+    
+    avg :: [Double] -> Double
+    avg ys = sum ys / fromIntegral (length ys)
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints = 
+    movingAverage windowSize dataPoints
+
+validateData :: [Double] -> Maybe [Double]
+validateData [] = Nothing
+validateData xs
+    | any isNaN xs = Nothing
+    | any isInfinite xs = Nothing
+    | otherwise = Just xs
