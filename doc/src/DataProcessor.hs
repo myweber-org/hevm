@@ -58,4 +58,10 @@ validateCSV (header:rows)
     | length header == 0 = Just "Empty header"
     | any null header = Just "Empty column names in header"
     | any (\row -> length row /= length header) rows = Just "Inconsistent row lengths"
-    | otherwise = Nothing
+    | otherwise = Nothingmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
