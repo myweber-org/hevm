@@ -79,3 +79,78 @@ exampleUsage = do
   case safeProcess input of
     Just result -> putStrLn $ "Processed result: " ++ show result
     Nothing -> putStrLn "Invalid input detected"
+module DataProcessor where
+
+import Data.Char (isDigit, toUpper)
+import Data.List (intercalate)
+import Data.Maybe (fromMaybe)
+
+-- Safe string to integer conversion
+safeReadInt :: String -> Maybe Int
+safeReadInt str
+    | all isDigit str = Just (read str)
+    | otherwise = Nothing
+
+-- Normalize string by trimming and converting to uppercase
+normalizeString :: String -> String
+normalizeString = map toUpper . trim
+  where
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+-- Validate email format (basic validation)
+validateEmail :: String -> Bool
+validateEmail email =
+    let (local, rest) = break (== '@') email
+        domain = drop 1 rest
+    in '@' `elem` email &&
+       not (null local) &&
+       '.' `elem` domain &&
+       not (null (takeWhile (/= '.') domain))
+
+-- Process a list of strings into a formatted CSV line
+formatAsCSV :: [String] -> String
+formatAsCSV = intercalate "," . map escapeCSV
+  where
+    escapeCSV s
+        | ',' `elem` s || '"' `elem` s = "\"" ++ replace '"' "\"\"" s ++ "\""
+        | otherwise = s
+    replace old new = intercalate new . splitOn old
+    splitOn delim = foldr splitHelper [[]]
+      where
+        splitHelper c acc@(x:xs)
+            | c == delim = []:acc
+            | otherwise = (c:x):xs
+
+-- Type-safe data transformation pipeline
+data ProcessResult a = Success a | ValidationError String | ProcessingError String
+
+instance Functor ProcessResult where
+    fmap f (Success x) = Success (f x)
+    fmap _ (ValidationError e) = ValidationError e
+    fmap _ (ProcessingError e) = ProcessingError e
+
+processUserData :: String -> String -> ProcessResult (Int, String)
+processUserData idStr nameStr = do
+    userId <- case safeReadInt idStr of
+        Just n -> Success n
+        Nothing -> ValidationError "Invalid user ID format"
+    
+    let normalizedName = normalizeString nameStr
+    if null normalizedName
+        then ValidationError "Name cannot be empty"
+        else Success (userId, normalizedName)
+
+-- Utility function to demonstrate usage
+demoProcessing :: IO ()
+demoProcessing = do
+    let testCases = [("123", "john doe"), ("abc", "jane smith"), ("456", "")]
+    
+    mapM_ (\(idStr, name) -> 
+        case processUserData idStr name of
+            Success (uid, normName) -> 
+                putStrLn $ "Valid: User " ++ show uid ++ " -> " ++ normName
+            ValidationError err -> 
+                putStrLn $ "Invalid: " ++ err
+            ProcessingError err -> 
+                putStrLn $ "Error: " ++ err
+        ) testCases
