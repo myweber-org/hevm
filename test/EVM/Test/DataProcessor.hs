@@ -106,4 +106,43 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+import Data.Char (isDigit, toUpper)
+import Data.List (intercalate)
+
+data ValidationResult = Valid | Invalid String
+    deriving (Show, Eq)
+
+validateEmail :: String -> ValidationResult
+validateEmail email
+    | '@' `elem` email && '.' `elem` (dropWhile (/= '@') email) = Valid
+    | otherwise = Invalid "Invalid email format"
+
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+capitalizeWords :: String -> String
+capitalizeWords = unwords . map capitalize . words
+    where capitalize [] = []
+          capitalize (x:xs) = toUpper x : xs
+
+processUserData :: String -> String -> (ValidationResult, String, String)
+processUserData email phone =
+    let emailResult = validateEmail email
+        normalizedPhone = normalizePhone phone
+        capitalizedEmail = capitalizeWords email
+    in (emailResult, normalizedPhone, capitalizedEmail)
+
+formatOutput :: (ValidationResult, String, String) -> String
+formatOutput (valid, phone, email) =
+    intercalate "\n" 
+        [ "Validation: " ++ show valid
+        , "Normalized Phone: " ++ phone
+        , "Capitalized Email: " ++ email
+        ]
+
+sampleData :: IO ()
+sampleData = do
+    let result = processUserData "john.doe@example.com" "+1 (234) 567-8900"
+    putStrLn $ formatOutput result
