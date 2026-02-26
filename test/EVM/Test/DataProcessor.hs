@@ -82,4 +82,16 @@ main = do
     let sampleData = [1..10]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
