@@ -3,11 +3,11 @@ module DataProcessor where
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+combineProcessors :: [Int] -> [Int]
+combineProcessors xs = if validateData xs then processData xs else []
