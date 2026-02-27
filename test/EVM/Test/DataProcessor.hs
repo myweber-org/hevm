@@ -145,4 +145,16 @@ formatOutput (valid, phone, email) =
 sampleData :: IO ()
 sampleData = do
     let result = processUserData "john.doe@example.com" "+1 (234) 567-8900"
-    putStrLn $ formatOutput result
+    putStrLn $ formatOutput resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
