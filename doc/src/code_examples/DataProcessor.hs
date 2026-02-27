@@ -94,4 +94,27 @@ tails xs@(_:ys) = xs : tails ys
 module DataProcessor where
 
 processNumbers :: [Int] -> [Int]
-processNumbers = map (^2) . filter (>0)
+processNumbers = map (^2) . filter (>0)module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows 
+    then []
+    else map (\col -> sum col / fromIntegral (length col)) $ transpose rows
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose xss = map head xss : transpose (map tail xss)
+
+processCSVData :: String -> Maybe [Double]
+processCSVData content = 
+    let parsed = parseCSV content
+    in if all (not . null) parsed
+       then Just $ calculateAverages parsed
+       else Nothing
