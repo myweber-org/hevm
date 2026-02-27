@@ -99,3 +99,50 @@ main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
     print result
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
+
+-- Process a list of strings with validation and transformation
+processData :: [String] -> [String]
+processData = map (\s -> if validateAlpha s then toUppercase s else s)
+
+-- Combine multiple validation checks
+validateInput :: String -> (Bool, Bool, Bool)
+validateInput s = (validateNumeric s, validateAlpha s, not (null s))
+
+-- Generate a report from validation results
+generateReport :: String -> String
+generateReport input = 
+    let (isNum, isAlpha, notEmpty) = validateInput input
+        checks = ["Numeric: " ++ show isNum,
+                  "Alphabetic: " ++ show isAlpha,
+                  "Non-empty: " ++ show notEmpty]
+    in intercalate "\n" checks
+
+-- Safe string processing with default value
+safeProcess :: (String -> String) -> String -> String -> String
+safeProcess f defaultVal input
+    | null input = defaultVal
+    | otherwise = f input
