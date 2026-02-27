@@ -4,25 +4,10 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processDatamodule DataProcessor where
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
 
-processData :: [Int] -> [Int]
-processData = map (^2) . filter even
+combineResults :: [Int] -> [Int] -> [Int]
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)
