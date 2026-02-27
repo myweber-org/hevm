@@ -140,4 +140,33 @@ sampleAnalysis :: IO ()
 sampleAnalysis = do
     let sampleText = "This is a sample text. This text contains words. Some words repeat. This is intentional."
     let frequencies = countWordFrequency sampleText
-    printWordFrequency frequencies
+    printWordFrequency frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let words' = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) words'
+    in sortOn (Down . snd) $ map (\w -> (w, length $ filter (== w) cleaned)) (nub cleaned)
+    where
+        cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+    in unlines $
+        "Total unique words: " ++ show (length counts) :
+        "Total word occurrences: " ++ show totalWords :
+        "" :
+        "Top 10 most frequent words:" :
+        map (\(w, c) -> w ++ ": " ++ show c) (take 10 counts)
+
+nub :: Eq a => [a] -> [a]
+nub [] = []
+nub (x:xs) = x : nub (filter (/= x) xs)
