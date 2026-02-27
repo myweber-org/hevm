@@ -91,3 +91,7 @@ movingAverage n xs
 tails :: [a] -> [[a]]
 tails [] = [[]]
 tails xs@(_:ys) = xs : tails ys
+module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (^2) . filter (>0)
