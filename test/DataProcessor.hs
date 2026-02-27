@@ -50,4 +50,28 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | all (> -1000) xs = Just xs
+    | otherwise = Nothing
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 0, 5, -8]
+    case validateInput sampleData of
+        Just validData -> do
+            let result = sumProcessedData validData
+            putStrLn $ "Sum of processed data: " ++ show result
+        Nothing -> putStrLn "Invalid input detected"
