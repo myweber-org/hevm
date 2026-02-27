@@ -102,4 +102,53 @@ processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+sumProcessedData = sum . processDatamodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+numericColumns :: CSVData -> [Int]
+numericColumns [] = []
+numericColumns (header:_) = 
+    [i | (i, col) <- zip [0..] header, all isNumeric (drop 1 (column i))]
+  where
+    column idx = map (!! idx) (drop 1 rows)
+    rows = parseCSV content
+    isNumeric str = case reads str :: [(Double, String)] of
+        [(_, "")] -> True
+        _ -> False
+
+calculateAverages :: CSVData -> [(String, Double)]
+calculateAverages csvData = 
+    let header = head csvData
+        numericIndices = numericColumns csvData
+    in [(header !! idx, avgColumn idx) | idx <- numericIndices]
+  where
+    avgColumn idx = 
+        let values = map (read . (!! idx)) (drop 1 csvData) :: [Double]
+        in sum values / fromIntegral (length values)
+
+processCSVFile :: FilePath -> IO ()
+processCSVFile filepath = do
+    content <- readFile filepath
+    let csvData = parseCSV content
+    let averages = calculateAverages csvData
+    mapM_ (\(col, avg) -> putStrLn $ col ++ ": " ++ show avg) averages
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble str = 
+    case reads str :: [(Double, String)] of
+        [(val, "")] -> Just val
+        _ -> Nothing
+
+filterValidRows :: CSVData -> CSVData
+filterValidRows csvData =
+    let header = head csvData
+        numericIndices = numericColumns csvData
+    in header : [row | row <- drop 1 csvData, 
+                      all (\idx -> isJust $ safeReadDouble (row !! idx)) numericIndices]
