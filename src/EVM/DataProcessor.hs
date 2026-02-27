@@ -167,4 +167,27 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, 0, 5, -8]
     let result = processNumbers input
-    print result
+    print resultmodule DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+    
+    avg :: [Double] -> Double
+    avg ys = sum ys / fromIntegral (length ys)
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints = 
+    movingAverage windowSize dataPoints
+
+validateData :: [Double] -> Maybe [Double]
+validateData [] = Nothing
+validateData xs
+    | any isNaN xs = Nothing
+    | any isInfinite xs = Nothing
+    | otherwise = Just xs
