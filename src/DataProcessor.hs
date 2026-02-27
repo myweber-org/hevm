@@ -48,4 +48,16 @@ validateData xs
 processDataStream :: Int -> [Double] -> Maybe [Double]
 processDataStream windowSize rawData = do
     validated <- validateData rawData
-    return $ smoothData windowSize validated
+    return $ smoothData windowSize validatedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [-5, 3, 0, 8, -2, 10]
+    let result = processNumbers numbers
+    print result
