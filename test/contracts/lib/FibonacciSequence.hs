@@ -87,4 +87,9 @@ main = do
     putStr "Enter number of terms: "
     input <- getLine
     let n = read input :: Int
-    printFibonacci n
+    printFibonacci nmodule FibonacciSequence where
+
+fibonacci :: Integer -> [Integer]
+fibonacci n = takeWhile (<= n) fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
