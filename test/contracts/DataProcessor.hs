@@ -66,4 +66,10 @@ movingAverage n xs
     | otherwise = map average $ filter (\window -> length window == n) $ tails xs
   where
     average :: [Double] -> Double
-    average ys = sum ys / fromIntegral (length ys)
+    average ys = sum ys / fromIntegral (length ys)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
