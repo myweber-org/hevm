@@ -20,4 +20,32 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+analyzeText n = displayFrequencies . topNWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        grouped = foldr countHelper [] cleaned
+    in take 10 $ sortOn (Down . snd) grouped
+  where
+    cleanWord = filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | word == w = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+displayFrequency :: [WordCount] -> String
+displayFrequency counts = 
+    unlines $ "Top 10 most frequent words:" : map formatCount counts
+  where
+    formatCount (word, count) = word ++ ": " ++ show count
+
+analyzeText :: String -> String
+analyzeText = displayFrequency . countWords
