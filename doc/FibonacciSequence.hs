@@ -29,4 +29,10 @@ fastFibonacci n
         | even n = (a * (2 * b - a), a * a + b * b)
         | otherwise = (a * a + b * b, b * (2 * a + b))
       where
-        (a, b) = fibPair (n `div` 2)
+        (a, b) = fibPair (n `div` 2)module FibonacciSequence where
+
+fibonacci :: [Integer]
+fibonacci = 0 : 1 : zipWith (+) fibonacci (tail fibonacci)
+
+takeFibonacci :: Int -> [Integer]
+takeFibonacci n = take n fibonacci
