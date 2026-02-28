@@ -64,3 +64,53 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.List (foldl')
+import Data.List.Split (splitOn)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+safeReadDouble :: String -> Maybe Double
+safeReadDouble s = case reads s of
+    [(x, "")] -> Just x
+    _ -> Nothing
+
+computeColumnStats :: CSVData -> Int -> Maybe (Double, Double, Double)
+computeColumnStats [] _ = Nothing
+computeColumnStats (header:rows) colIndex
+    | colIndex < 0 || colIndex >= length header = Nothing
+    | otherwise = processRows rows
+  where
+    processRows [] = Nothing
+    processRows rs = case mapM (safeReadDouble . (!! colIndex)) rs of
+        Nothing -> Nothing
+        Just values -> let
+            count = fromIntegral (length values)
+            sumVal = foldl' (+) 0 values
+            avg = sumVal / count
+            minVal = minimum values
+            maxVal = maximum values
+            in Just (avg, minVal, maxVal)
+
+filterRowsByColumn :: CSVData -> Int -> (Double -> Bool) -> CSVData
+filterRowsByColumn [] _ _ = []
+filterRowsByColumn (header:rows) colIndex predicate =
+    header : filter (rowPredicate predicate) rows
+  where
+    rowPredicate pred row
+        | colIndex >= length row = False
+        | otherwise = case safeReadDouble (row !! colIndex) of
+            Just val -> pred val
+            Nothing -> False
+
+formatStats :: Maybe (Double, Double, Double) -> String
+formatStats Nothing = "Invalid column index or data"
+formatStats (Just (avg, minVal, maxVal)) =
+    "Average: " ++ show avg ++
+    ", Min: " ++ show minVal ++
+    ", Max: " ++ show maxVal
