@@ -134,4 +134,20 @@ processExample = do
     putStrLn "Validated Persons:"
     mapM_ (putStrLn . formatPerson) persons
     putStrLn $ "Average age: " ++ show (averageAge persons)
-    putStrLn $ "Persons aged 20-40: " ++ show (length (filterByAgeRange 20 40 persons))
+    putStrLn $ "Persons aged 20-40: " ++ show (length (filterByAgeRange 20 40 persons))module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< -1000) xs = Nothing
+    | any (> 1000) xs = Nothing
+    | otherwise = Just xs
