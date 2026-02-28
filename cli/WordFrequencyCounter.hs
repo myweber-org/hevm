@@ -311,4 +311,28 @@ sampleText = "This is a sample text. This text contains words. Some words repeat
 main :: IO ()
 main = do
     putStrLn "Processing sample text..."
-    processText sampleText 2 5
+    processText sampleText 2 5module WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+sortByFrequency :: WordCount -> [(String, Int)]
+sortByFrequency = List.sortOn (negate . snd) . Map.toList
+
+formatOutput :: [(String, Int)] -> String
+formatOutput = unlines . map (\(word, count) -> word ++ ": " ++ show count)
+
+main :: IO ()
+main = do
+    input <- getContents
+    let frequencies = sortByFrequency $ countWords input
+    putStr $ formatOutput frequencies
