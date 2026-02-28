@@ -113,4 +113,46 @@ formatStats Nothing = "Invalid column index or data"
 formatStats (Just (avg, minVal, maxVal)) =
     "Average: " ++ show avg ++
     ", Min: " ++ show minVal ++
-    ", Max: " ++ show maxVal
+    ", Max: " ++ show maxValmodule DataProcessor where
+
+import Data.List (transpose)
+import Data.Maybe (isJust, fromJust)
+
+type CSV = [[String]]
+
+parseCSV :: String -> Maybe CSV
+parseCSV content = if allRowsValid rows then Just rows else Nothing
+  where
+    rows = map (splitOn ',') (lines content)
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr (\c acc -> if c == delimiter then []:acc else (c:head acc):tail acc) [[]]
+    allRowsValid :: [[String]] -> Bool
+    allRowsValid [] = True
+    allRowsValid (x:xs) = all (\row -> length row == length x) xs
+
+validateCSV :: CSV -> Either String CSV
+validateCSV [] = Left "CSV data is empty"
+validateCSV rows@(firstRow:_)
+  | any null rows = Left "CSV contains empty rows"
+  | not (allEqualLength rows) = Left "Rows have inconsistent column counts"
+  | otherwise = Right rows
+  where
+    allEqualLength :: [[a]] -> Bool
+    allEqualLength [] = True
+    allEqualLength (x:xs) = all (\row -> length row == length x) xs
+
+getColumn :: Int -> CSV -> Maybe [String]
+getColumn index csv
+  | null csv = Nothing
+  | index < 0 || index >= length (head csv) = Nothing
+  | otherwise = Just (map (!! index) csv)
+
+transposeCSV :: CSV -> CSV
+transposeCSV = transpose
+
+countRows :: CSV -> Int
+countRows = length
+
+countColumns :: CSV -> Int
+countColumns [] = 0
+countColumns (row:_) = length row
