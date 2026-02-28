@@ -27,4 +27,21 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, 0, 5, -7]
     let result = processNumbers input
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg :: [Double] -> Double
+    avg window = sum window / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize = movingAverage windowSize
+
+calculateTrend :: [Double] -> Double
+calculateTrend values = (last values - head values) / fromIntegral (length values - 1)
