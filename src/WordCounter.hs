@@ -144,4 +144,18 @@ main :: IO ()
 main = do
     content <- TIO.readFile "input.txt"
     let wordCount = countWords content
-    TIO.putStrLn $ T.pack ("Word count: " ++ show wordCount)
+    TIO.putStrLn $ T.pack ("Word count: " ++ show wordCount)module WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (group, sort)
+
+countWords :: String -> [(String, Int)]
+countWords = map (\xs -> (head xs, length xs)) . group . sort . words
+
+countUniqueWords :: String -> Int
+countUniqueWords = length . countWords
+
+mostFrequentWords :: String -> [(String, Int)]
+mostFrequentWords = take 5 . reverse . sortOn snd . countWords
+  where sortOn f = sortBy (comparing f)
+        comparing f x y = compare (f x) (f y)
