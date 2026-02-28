@@ -238,4 +238,50 @@ sampleProfiles =
     , UserProfile 2 "JaneSmith" "jane@test.org" 30
     , UserProfile 3 "ab" "invalid@email" 20
     , UserProfile 4 "user123" "valid.email@domain.com" 35
-    ]
+    ]module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null input = Left "Empty input"
+    | otherwise = Right $ map parseRow (lines input)
+  where
+    parseRow line = splitByComma line 0 [] ""
+    
+    splitByComma :: String -> Int -> [String] -> String -> [String]
+    splitByComma [] _ acc current = reverse (reverse current : acc)
+    splitByComma (c:cs) quoteDepth acc current
+        | c == '"' = splitByComma cs (1 - quoteDepth) acc (c:current)
+        | c == ',' && quoteDepth == 0 = splitByComma cs 0 (reverse current : acc) ""
+        | otherwise = splitByComma cs quoteDepth acc (c:current)
+
+validateRow :: CSVRow -> Either String CSVRow
+validateRow row
+    | length row < 2 = Left "Row must have at least 2 columns"
+    | not (all validField row) = Left "Invalid characters in fields"
+    | otherwise = Right row
+  where
+    validField field = all (\c -> isAlpha c || isDigit c || c `elem` ".-_ ") field
+
+processCSV :: String -> Either String CSVData
+processCSV input = do
+    parsed <- parseCSV input
+    mapM validateRow parsed
+
+formatOutput :: CSVData -> String
+formatOutput rows = intercalate "\n" (map formatRow rows)
+  where
+    formatRow = intercalate " | " . map padField
+    padField field = field ++ replicate (10 - length field) ' '
+
+main :: IO ()
+main = do
+    let testData = "Name,Age,City\nJohn,25,New York\nAlice,30,London"
+    case processCSV testData of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right data' -> putStrLn $ "Processed data:\n" ++ formatOutput data'
