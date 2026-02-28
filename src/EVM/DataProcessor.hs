@@ -45,3 +45,50 @@ smoothData windowSize = movingAverage windowSize
 
 calculateTrend :: [Double] -> Double
 calculateTrend values = (last values - head values) / fromIntegral (length values - 1)
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = 
+    if null input 
+    then Left "Empty input"
+    else Right $ map parseRow (lines input)
+  where
+    parseRow line = splitByComma line
+    splitByComma = foldr f [""]
+      where
+        f ',' acc = "":acc
+        f c (s:ss) = (c:s):ss
+        f _ [] = error "Unexpected empty list"
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Left "Empty CSV data"
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index cannot be negative"
+    | any (\row -> length row <= colIndex) rows = 
+        Left $ "Column index " ++ show colIndex ++ " out of bounds"
+    | not (all (isNumeric . (!! colIndex)) rows) =
+        Left $ "Column " ++ show colIndex ++ " contains non-numeric values"
+    | otherwise = Right rows
+  where
+    isNumeric str = not (null str) && all isDigit str
+
+summarizeColumn :: CSVData -> Int -> Either String Double
+summarizeColumn rows colIndex = do
+    validated <- validateNumericColumn rows colIndex
+    let values = map (read . (!! colIndex)) validated
+    return $ sum values / fromIntegral (length values)
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate ",")
+
+processCSVData :: String -> Int -> Either String (String, Double)
+processCSVData csvContent colIndex = do
+    parsed <- parseCSV csvContent
+    avg <- summarizeColumn parsed colIndex
+    return (formatCSVOutput parsed, avg)
