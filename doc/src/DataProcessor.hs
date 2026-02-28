@@ -83,3 +83,18 @@ processCSVData csvContent =
 filterRecordsByThreshold :: [Record] -> Double -> [Record]
 filterRecordsByThreshold records threshold =
     filter (\(_, v1, v2) -> v1 > threshold || v2 > threshold) records
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+  | null xs = Nothing
+  | otherwise = Just xs
