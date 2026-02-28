@@ -32,4 +32,26 @@ processNumericStream :: Fractional a => Int -> [a] -> [a]
 processNumericStream windowSize stream =
     if null stream
         then []
-        else smoothData windowSize stream
+        else smoothData windowSize streammodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> [[Double]]
+parseCSV content = map (map read . splitOn ",") $ lines content
+
+calculateAverages :: [[Double]] -> [Double]
+calculateAverages rows = 
+    if null rows then []
+    else map (\col -> sum col / fromIntegral (length col)) $ transpose rows
+  where
+    transpose :: [[Double]] -> [[Double]]
+    transpose [] = []
+    transpose ([]:_) = []
+    transpose x = map head x : transpose (map tail x)
+
+processCSVData :: String -> Maybe [Double]
+processCSVData content = 
+    let parsed = parseCSV content
+    in if all (\row -> length row == length (head parsed)) parsed
+       then Just $ calculateAverages parsed
+       else Nothing
