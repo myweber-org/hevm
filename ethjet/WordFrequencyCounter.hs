@@ -88,4 +88,30 @@ main :: IO ()
 main = do
     content <- TIO.readFile "input.txt"
     let results = processText content 3
-    printResults results
+    printResults resultsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+
+printHistogram :: [WordFreq] -> IO ()
+printHistogram freqs = do
+    putStrLn "Word Frequency Histogram:"
+    putStrLn "=========================="
+    mapM_ (\(word, count) -> 
+        putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")") freqs
+    putStrLn "=========================="
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world hello haskell world world functional programming haskell"
+    let frequencies = countWords sampleText
+    printHistogram frequencies
