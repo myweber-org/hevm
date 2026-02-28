@@ -27,4 +27,38 @@ group (x:xs) =
 exampleUsage :: IO ()
 exampleUsage = do
     let sampleText = "Hello world hello haskell world programming haskell hello"
-    print $ countWords sampleText
+    print $ countWords sampleTextmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFrequency = Map String Int
+
+countWords :: String -> WordFrequency
+countWords text = foldr incrementWord Map.empty (words processedText)
+  where
+    processedText = map normalizeChar text
+    normalizeChar c
+        | isAlpha c = toLower c
+        | otherwise = ' '
+
+incrementWord :: String -> WordFrequency -> WordFrequency
+incrementWord word freqMap = Map.insertWith (+) word 1 freqMap
+
+getTopWords :: Int -> WordFrequency -> [(String, Int)]
+getTopWords n freqMap = take n $ sortOn (\(_, count) -> negate count) (Map.toList freqMap)
+
+processText :: String -> Int -> [(String, Int)]
+processText text n = getTopWords n (countWords text)
+
+displayResults :: [(String, Int)] -> String
+displayResults results = unlines $ map (\(word, count) -> word ++ ": " ++ show count) results
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again, world!"
+    let topWords = processText sampleText 3
+    putStrLn "Top words:"
+    putStrLn $ displayResults topWords
