@@ -172,4 +172,70 @@ main = do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processData validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: contains numbers less than -100"
+        Nothing -> putStrLn "Invalid input: contains numbers less than -100"module DataProcessor where
+
+import Data.Char (isAlpha, isDigit, toLower)
+import Data.List (intercalate)
+import Data.Maybe (fromMaybe)
+
+type Username = String
+type Email = String
+type UserID = Int
+
+data UserProfile = UserProfile
+    { userId :: UserID
+    , username :: Username
+    , email :: Email
+    , age :: Int
+    } deriving (Show, Eq)
+
+validateUsername :: Username -> Maybe Username
+validateUsername name
+    | length name < 3 = Nothing
+    | length name > 20 = Nothing
+    | not (all isValidUsernameChar name) = Nothing
+    | otherwise = Just name
+    where
+        isValidUsernameChar c = isAlpha c || isDigit c || c `elem` "_-"
+
+validateEmail :: Email -> Maybe Email
+validateEmail emailStr
+    | '@' `notElem` emailStr = Nothing
+    | '.' `notElem` localPart = Nothing
+    | any (== ' ') emailStr = Nothing
+    | otherwise = Just emailStr
+    where
+        (localPart, _) = break (== '@') emailStr
+
+normalizeUsername :: Username -> Username
+normalizeUsername = map toLower
+
+sanitizeProfile :: UserProfile -> Maybe UserProfile
+sanitizeProfile profile = do
+    validName <- validateUsername (username profile)
+    validEmail <- validateEmail (email profile)
+    let normalizedName = normalizeUsername validName
+    return $ profile { username = normalizedName }
+
+transformProfiles :: [UserProfile] -> [UserProfile]
+transformProfiles = mapMaybe sanitizeProfile
+    where
+        mapMaybe f = foldr (\x acc -> case f x of
+            Just val -> val : acc
+            Nothing -> acc) []
+
+generateReport :: [UserProfile] -> String
+generateReport profiles =
+    "Total profiles processed: " ++ show (length profiles) ++ "\n" ++
+    "Valid profiles: " ++ show (length validProfiles) ++ "\n" ++
+    "Usernames: " ++ intercalate ", " (map username validProfiles)
+    where
+        validProfiles = transformProfiles profiles
+
+sampleProfiles :: [UserProfile]
+sampleProfiles =
+    [ UserProfile 1 "john_doe" "john@example.com" 25
+    , UserProfile 2 "JaneSmith" "jane@test.org" 30
+    , UserProfile 3 "ab" "invalid@email" 20
+    , UserProfile 4 "user123" "valid.email@domain.com" 35
+    ]
