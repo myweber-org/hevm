@@ -52,3 +52,34 @@ safeHead (x:_) = Just x
 
 sumPositiveDoubles :: [Int] -> Int
 sumPositiveDoubles = sum . processNumbers
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Record = (String, Double, Double)
+
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case splitOn "," line of
+    [name, val1Str, val2Str] -> 
+        case (reads val1Str, reads val2Str) of
+            ([(val1, "")], [(val2, "")]) -> Just (name, val1, val2)
+            _ -> Nothing
+    _ -> Nothing
+
+calculateAverages :: [Record] -> (Double, Double)
+calculateAverages records =
+    let (sum1, sum2, count) = foldr (\(_, v1, v2) (s1, s2, c) -> (s1 + v1, s2 + v2, c + 1)) (0, 0, 0) records
+    in if count > 0 
+        then (sum1 / fromIntegral count, sum2 / fromIntegral count)
+        else (0, 0)
+
+processCSVData :: String -> (Double, Double)
+processCSVData csvContent =
+    let lines' = filter (not . null) $ lines csvContent
+        records = mapMaybe parseCSVLine lines'
+    in calculateAverages records
+
+filterRecordsByThreshold :: [Record] -> Double -> [Record]
+filterRecordsByThreshold records threshold =
+    filter (\(_, v1, v2) -> v1 > threshold || v2 > threshold) records
