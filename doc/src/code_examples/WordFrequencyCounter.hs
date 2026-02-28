@@ -62,4 +62,31 @@ wordFrequencyReport text =
         , "Unique words: " ++ show uniqueWords
         , ""
         , "Top 10 words:"
-        ] ++ map (\(w, c) -> w ++ ": " ++ show c) (topNWords 10 text)
+        ] ++ map (\(w, c) -> w ++ ": " ++ show c) (topNWords 10 text)module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlphaNum
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (negate . snd) $ Map.toList (countWords text)
+
+displayFrequencies :: String -> IO ()
+displayFrequencies text = do
+  putStrLn "Word frequencies:"
+  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) topWords
+  where topWords = getTopWords 10 text
+
+main :: IO ()
+main = do
+  let sampleText = "Hello world! This is a test. Hello again, world!"
+  displayFrequencies sampleText
