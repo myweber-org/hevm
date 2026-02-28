@@ -16,3 +16,9 @@ fibonacciMemoized = fix memoFib
     memoFib _ 0 = 0
     memoFib _ 1 = 1
     memoFib f n = f (n - 1) + f (n - 2)
+module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
