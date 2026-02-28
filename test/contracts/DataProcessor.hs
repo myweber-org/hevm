@@ -72,4 +72,21 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original: " ++ show sampleData
+    putStrLn $ "Processed: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum: " ++ show (sumProcessed sampleData)
