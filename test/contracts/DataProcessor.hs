@@ -6,9 +6,5 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -8]
-    let result = processNumbers input
-    putStrLn $ "Input: " ++ show input
-    putStrLn $ "Result: " ++ show result
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
