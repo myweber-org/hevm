@@ -138,3 +138,38 @@ exampleUsage = do
     case processDataStream 3 testData of
         Just result -> putStrLn $ "Processed: " ++ show result
         Nothing -> putStrLn "Invalid input data"
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Text.Read (readMaybe)
+
+type Record = (Day, String, Double)
+
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+
+parseRecord :: String -> Maybe Record
+parseRecord line = case words line of
+    [dateStr, label, valueStr] -> do
+        day <- parseDate dateStr
+        value <- readMaybe valueStr
+        return (day, label, value)
+    _ -> Nothing
+
+filterByDateRange :: Day -> Day -> [Record] -> [Record]
+filterByDateRange start end = filter (\(d, _, _) -> d >= start && d <= end)
+
+loadRecords :: FilePath -> IO [Record]
+loadRecords path = do
+    content <- readFile path
+    return $ mapMaybe parseRecord (lines content)
+
+summarizeRecords :: [Record] -> [(String, Double)]
+summarizeRecords records =
+    let grouped = groupBy (\(_, l1, _) (_, l2, _) -> l1 == l2) $
+                  sortOn (\(_, label, _) -> label) records
+    in map (\group -> let (_, label, _) = head group
+                          total = sum $ map (\(_, _, v) -> v) group
+                      in (label, total)) grouped
