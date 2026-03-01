@@ -34,3 +34,38 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Data.Maybe (mapMaybe)
+
+type Record = (String, Double)
+
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case splitOn "," line of
+    [name, valueStr] -> case reads valueStr of
+        [(value, "")] -> Just (name, value)
+        _ -> Nothing
+    _ -> Nothing
+
+parseCSV :: String -> [Record]
+parseCSV content = mapMaybe parseCSVLine (lines content)
+
+calculateAverage :: [Record] -> Double
+calculateAverage records = 
+    if null records 
+    then 0.0 
+    else total / fromIntegral (length records)
+  where
+    total = sum (map snd records)
+
+filterByThreshold :: Double -> [Record] -> [Record]
+filterByThreshold threshold = 
+    filter (\(_, value) -> value >= threshold)
+
+processCSVData :: String -> Double -> (Double, [Record])
+processCSVData csvContent threshold = 
+    let records = parseCSV csvContent
+        average = calculateAverage records
+        filtered = filterByThreshold threshold records
+    in (average, filtered)
