@@ -13,4 +13,16 @@ main = do
     print resultmodule DataProcessor where
 
 processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)
+processData = map (^2) . filter (>0)module DataProcessor where
+
+processNumbers :: [Int] -> [Int]
+processNumbers = map (*2) . filter (>0)
+
+sampleData :: [Int]
+sampleData = [1, -5, 3, 0, -2, 8]
+
+main :: IO ()
+main = do
+    let result = processNumbers sampleData
+    putStrLn $ "Original list: " ++ show sampleData
+    putStrLn $ "Processed list: " ++ show result
