@@ -25,4 +25,10 @@ main :: IO ()
 main = do
     let result = processNumbers sampleData
     putStrLn $ "Original list: " ++ show sampleData
-    putStrLn $ "Processed list: " ++ show result
+    putStrLn $ "Processed list: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
