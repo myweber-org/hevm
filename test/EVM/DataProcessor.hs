@@ -284,4 +284,10 @@ main = do
     let testData = "Name,Age,City\nJohn,25,New York\nAlice,30,London"
     case processCSV testData of
         Left err -> putStrLn $ "Error: " ++ err
-        Right data' -> putStrLn $ "Processed data:\n" ++ formatOutput data'
+        Right data' -> putStrLn $ "Processed data:\n" ++ formatOutput data'module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
