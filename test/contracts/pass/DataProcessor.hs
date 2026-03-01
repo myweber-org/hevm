@@ -39,4 +39,33 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    let avg = movingAverage windowSize dataPoints
+        padding = replicate (windowSize `div` 2) (head dataPoints)
+    in padding ++ avg ++ padding
+
+calculateTrend :: (Fractional a, Ord a) => [a] -> String
+calculateTrend values
+    | null values = "No data"
+    | last values > head values = "Increasing trend"
+    | last values < head values = "Decreasing trend"
+    | otherwise = "Stable trend"
+
+processDataset :: Fractional a => Int -> [a] -> ([a], String)
+processDataset windowSize dataset =
+    let smoothed = smoothData windowSize dataset
+        trend = calculateTrend smoothed
+    in (smoothed, trend)
