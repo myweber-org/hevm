@@ -203,4 +203,56 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+type Row = [String]
+type CSV = [Row]
+
+validateRow :: Row -> Bool
+validateRow row = length row == 3 && all validField row
+  where
+    validField field = not (null field) && length field <= 50
+
+transformPhone :: String -> String
+transformPhone phone
+  | all isDigit phone && length phone == 10 = 
+      "(" ++ take 3 phone ++ ") " ++ drop 3 (take 6 phone) ++ "-" ++ drop 6 phone
+  | otherwise = phone
+
+normalizeName :: String -> String
+normalizeName = unwords . map capitalize . words
+  where
+    capitalize [] = []
+    capitalize (x:xs) = toUpper x : map toLower xs
+    toUpper = toEnum . subtract 32 . fromEnum
+    toLower c = if c >= 'A' && c <= 'Z' then toEnum (fromEnum c + 32) else c
+
+processCSV :: CSV -> Either String CSV
+processCSV [] = Left "Empty CSV data"
+processCSV (header:rows)
+  | length header /= 3 = Left "Invalid header format"
+  | otherwise = 
+      case filter (not . validateRow) rows of
+        [] -> Right $ header : map processRow rows
+        invalidRows -> Left $ "Invalid rows at positions: " ++ show (findInvalidPositions rows invalidRows)
+  where
+    processRow [name, email, phone] = 
+      [normalizeName name, email, transformPhone phone]
+    processRow row = row
+    
+    findInvalidPositions allRows invalidRows =
+      [i | (i, row) <- zip [1..] allRows, row `elem` invalidRows]
+
+formatCSV :: CSV -> String
+formatCSV = intercalate "\n" . map (intercalate ",")
+
+sampleData :: CSV
+sampleData =
+  [ ["Name", "Email", "Phone"]
+  , ["john doe", "john@example.com", "1234567890"]
+  , ["JANE SMITH", "jane@test.org", "555-1234"]
+  , ["", "invalid@test.com", "9876543210"]
+  ]
