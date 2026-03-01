@@ -48,4 +48,10 @@ processOddCubes :: [Int] -> [Int]
 processOddCubes = filterAndTransform odd (\x -> x * x * x)
 
 sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
+sumProcessedData predicate transformer = sum . filterAndTransform predicate transformermodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
