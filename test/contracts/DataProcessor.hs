@@ -57,4 +57,16 @@ processData input =
         numbers = processNumbers cleaned
         (total, count, avg) = calculateStats numbers
     in "Processed " ++ show count ++ " numbers. Total: " ++ show total ++ 
-       ", Average: " ++ show avg
+       ", Average: " ++ show avgmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform even (\x -> x * x + 1)
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    let result = processData sampleData
+    print result
