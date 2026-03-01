@@ -20,4 +20,14 @@ main = do
             putStrLn $ "Original: " ++ show validData
             putStrLn $ "Processed: " ++ show (processNumbers validData)
             putStrLn $ "Sum: " ++ show (sumProcessed validData)
-        Nothing -> putStrLn "Invalid input: contains numbers <= -100"
+        Nothing -> putStrLn "Invalid input: contains numbers <= -100"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
