@@ -103,4 +103,38 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
+  where
+    average :: [Double] -> Double
+    average ws = sum ws / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
+
+validateData :: [Double] -> Maybe [Double]
+validateData [] = Nothing
+validateData xs
+    | any isNaN xs = Nothing
+    | any isInfinite xs = Nothing
+    | otherwise = Just xs
+
+processDataStream :: Int -> [Double] -> Maybe [Double]
+processDataStream windowSize rawData = do
+    validated <- validateData rawData
+    return $ smoothData windowSize validated
+
+exampleUsage :: IO ()
+exampleUsage = do
+    let testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    case processDataStream 3 testData of
+        Just result -> putStrLn $ "Processed: " ++ show result
+        Nothing -> putStrLn "Invalid input data"
