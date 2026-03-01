@@ -45,4 +45,27 @@ fibonacci' = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n
 main :: IO ()
 main = do
     putStrLn "First 20 Fibonacci numbers:"
-    mapM_ (print . fibonacci) [0..19]
+    mapM_ (print . fibonacci) [0..19]module FibonacciSequence where
+
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+fib :: Int -> Integer
+fib n = fibMemo n Map.empty
+  where
+    fibMemo :: Int -> Map Int Integer -> (Integer, Map Int Integer)
+    fibMemo 0 memo = (0, memo)
+    fibMemo 1 memo = (1, memo)
+    fibMemo x memo =
+      case Map.lookup x memo of
+        Just result -> (result, memo)
+        Nothing ->
+          let (a, memo1) = fibMemo (x - 1) memo
+              (b, memo2) = fibMemo (x - 2) memo1
+              result = a + b
+          in (result, Map.insert x result memo2)
+
+main :: IO ()
+main = do
+  putStrLn "First 20 Fibonacci numbers:"
+  mapM_ (print . fib) [0..19]
