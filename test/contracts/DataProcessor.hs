@@ -92,4 +92,17 @@ main = do
             putStrLn $ "Original data: " ++ show validData
             putStrLn $ "Processed data: " ++ show (processEvenSquares validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
-        Nothing -> putStrLn "Invalid input: all numbers must be positive"
+        Nothing -> putStrLn "Invalid input: all numbers must be positive"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
