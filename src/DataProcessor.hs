@@ -39,4 +39,10 @@ calculateTrend values =
         sumXY = sum $ zipWith (*) indices values
         sumX2 = sum $ map (^2) indices
         slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
-    in slope
+    in slopemodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
