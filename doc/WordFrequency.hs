@@ -115,4 +115,44 @@ main = do
     case args of
         [] -> interact processText
         [filename] -> readFile filename >>= putStr . processText
-        _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no file given)"
+        _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no file given)"module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map clean $ words text
+        cleaned = map toLower <$> wordsList
+        counts = foldr (\word acc -> 
+            case lookup word acc of
+                Just n -> (word, n+1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc) [] cleaned
+    in sortOn (Down . snd) counts
+  where
+    clean = filter isAlpha
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    let maxWordLength = maximum $ map (length . fst) counts
+        maxCountLength = maximum $ map (length . show . snd) counts
+        formatLine (word, count) = 
+            padRight maxWordLength word ++ " | " ++ 
+            padLeft maxCountLength (show count)
+        padRight n s = s ++ replicate (n - length s) ' '
+        padLeft n s = replicate (n - length s) ' ' ++ s
+    in unlines $ map formatLine counts
+
+processText :: String -> String
+processText = formatResults . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    putStrLn "\nWord frequency analysis:"
+    putStrLn "========================"
+    putStrLn $ processText input
