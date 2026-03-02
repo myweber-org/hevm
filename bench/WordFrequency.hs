@@ -122,3 +122,48 @@ analyzeText text = do
   mapM_ printWord (topNWords 10 text)
   where
     printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+module WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = filter isAlpha
+
+filterByMinimum :: Int -> [WordCount] -> [WordCount]
+filterByMinimum minCount = filter (\(_, count) -> count >= minCount)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> Int -> Int -> IO ()
+analyzeText text minCount topN = do
+    putStrLn $ "Analyzing text with " ++ show (length (words text)) ++ " total words"
+    let allCounts = countWords text
+    let filtered = filterByMinimum minCount allCounts
+    let topWords = getTopNWords topN filtered
+    
+    putStrLn $ "\nTop " ++ show topN ++ " words (minimum " ++ show minCount ++ " occurrences):"
+    printWordCounts topWords
+    
+    putStrLn $ "\nTotal unique words: " ++ show (length allCounts)
+    putStrLn $ "Words meeting minimum count: " ++ show (length filtered)
+
+sampleAnalysis :: IO ()
+sampleAnalysis = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
+    analyzeText sampleText 2 5
