@@ -20,4 +20,22 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+analyzeText n = displayFrequencies . topNWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortBy, group, sort)
+import Data.Ord (comparing)
+
+countWords :: String -> [(String, Int)]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        sortedWords = sort wordsList
+        grouped = group sortedWords
+    in sortBy (flip $ comparing snd) $ map (\ws -> (head ws, length ws)) grouped
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqList = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqList
+
+processText :: String -> String
+processText = displayFrequencies . countWords
