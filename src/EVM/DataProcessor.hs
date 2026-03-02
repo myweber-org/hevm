@@ -91,3 +91,13 @@ filterCSVByDate csvContent startDate endDate = do
             Just date -> (name, date, read valueStr)
             Nothing   -> error $ "Invalid date: " ++ dateStr
     parseRow _ = error "Invalid row format"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
