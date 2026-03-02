@@ -68,4 +68,20 @@ processCSVData csvContent threshold =
     let records = parseCSV csvContent
         average = calculateAverage records
         filtered = filterByThreshold threshold records
-    in (average, filtered)
+    in (average, filtered)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData = all (> 0)
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 0, 5, -8]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processData sampleData)
+    putStrLn $ "Data validation: " ++ show (validateData sampleData)
