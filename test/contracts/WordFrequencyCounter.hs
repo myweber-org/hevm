@@ -88,4 +88,31 @@ processText = formatOutput . sortByFrequency . countWords
 main :: IO ()
 main = do
     input <- TIO.getContents
-    TIO.putStr $ processText input
+    TIO.putStr $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = words text
+        lowerWords = map (map toLower) wordsList
+        sortedWords = sort lowerWords
+        grouped = group sortedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ processText input
