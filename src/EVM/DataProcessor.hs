@@ -74,3 +74,20 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [(String, Day, Double)]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (\(_, date, _) -> date >= startDate && date <= endDate) $
+                  map parseRow (tail csv)  -- Skip header
+    Right filtered
+  where
+    parseRow [name, dateStr, valueStr] = 
+        case parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr of
+            Just date -> (name, date, read valueStr)
+            Nothing   -> error $ "Invalid date: " ++ dateStr
+    parseRow _ = error "Invalid row format"
