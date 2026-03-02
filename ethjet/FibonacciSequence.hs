@@ -68,4 +68,9 @@ fib n = fibMemo n Map.empty
 main :: IO ()
 main = do
   putStrLn "First 20 Fibonacci numbers:"
-  mapM_ (print . fib) [0..19]
+  mapM_ (print . fib) [0..19]module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
