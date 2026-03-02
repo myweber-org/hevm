@@ -152,4 +152,33 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.List (sort, nub)
+
+type Record = (String, Int, Double)
+
+filterByAge :: Int -> [Record] -> [Record]
+filterByAge minAge = filter (\(_, age, _) -> age >= minAge)
+
+sortByScore :: [Record] -> [Record]
+sortByScore = sortBy (\(_, _, score1) (_, _, score2) -> compare score2 score1)
+
+getUniqueNames :: [Record] -> [String]
+getUniqueNames = nub . map (\(name, _, _) -> name)
+
+calculateAverageScore :: [Record] -> Double
+calculateAverageScore records =
+    if null records
+        then 0.0
+        else total / fromIntegral (length records)
+  where
+    total = sum (map (\(_, _, score) -> score) records)
+
+processRecords :: Int -> [Record] -> ([Record], [String], Double)
+processRecords minAge records =
+    let filtered = filterByAge minAge records
+        sorted = sortByScore filtered
+        names = getUniqueNames sorted
+        avgScore = calculateAverageScore sorted
+    in (sorted, names, avgScore)
