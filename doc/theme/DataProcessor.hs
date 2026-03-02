@@ -2,51 +2,17 @@
 module DataProcessor where
 
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
-
-processData :: [Int] -> [Int]
-processData = map (^2) . filter (>0)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
+sumProcessed :: (Int -> Int) -> [Int] -> Int
+sumProcessed processor = sum . map processor
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
-
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothingmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
-
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-    | validateInput xs = Just $ processData xs
-    | otherwise = Nothing
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of doubled values: " ++ show (sumProcessed (*2) numbers)
