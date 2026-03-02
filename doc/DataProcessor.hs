@@ -255,4 +255,21 @@ sampleData =
   , ["john doe", "john@example.com", "1234567890"]
   , ["JANE SMITH", "jane@test.org", "555-1234"]
   , ["", "invalid@test.com", "9876543210"]
-  ]
+  ]module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
+
+main :: IO ()
+main = do
+    let testData = [-3, 2, 0, 5, -1, 8]
+    putStrLn $ "Original data: " ++ show testData
+    putStrLn $ "Processed data: " ++ show (processData testData)
+    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles testData)
