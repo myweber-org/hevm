@@ -86,4 +86,33 @@ displayFrequency counts =
     unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
 
 analyzeText :: String -> String
-analyzeText = displayFrequency . countWords
+analyzeText = displayFrequency . countWordsmodule WordFrequency where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified System.Environment as Env
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+formatResults :: FrequencyMap -> String
+formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+processText :: String -> String
+processText = formatResults . countWords
+
+main :: IO ()
+main = do
+    args <- Env.getArgs
+    case args of
+        [] -> interact processText
+        [filename] -> readFile filename >>= putStr . processText
+        _ -> putStrLn "Usage: wordfreq [filename] (reads from stdin if no file given)"
