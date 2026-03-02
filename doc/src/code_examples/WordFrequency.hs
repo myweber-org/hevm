@@ -153,4 +153,31 @@ displayResults counts = unlines $ map formatEntry counts
     formatEntry (word, count) = word ++ ": " ++ show count
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayResults . topNWords n
+analyzeText n = displayResults . topNWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map toLower <$> wordsList
+        counts = foldr countWord [] cleaned
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = filter isAlpha
+    countWord w [] = [(w, 1)]
+    countWord w ((x, n):xs)
+        | w == x = (x, n+1):xs
+        | otherwise = (x, n):countWord w xs
+
+formatResults :: [WordCount] -> String
+formatResults counts = unlines $ map formatLine counts
+  where
+    formatLine (word, count) = word ++ ": " ++ show count
+
+processText :: String -> String
+processText = formatResults . countWords
