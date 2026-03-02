@@ -67,4 +67,10 @@ exampleProfile :: Either String UserProfile
 exampleProfile = createUserProfile "JohnDoe" "john@example.com" 25
 
 exampleInvalidProfile :: Either String UserProfile
-exampleInvalidProfile = createUserProfile "J0hn" "invalid-email" 10
+exampleInvalidProfile = createUserProfile "J0hn" "invalid-email" 10module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
