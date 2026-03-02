@@ -173,3 +173,13 @@ summarizeRecords records =
     in map (\group -> let (_, label, _) = head group
                           total = sum $ map (\(_, _, v) -> v) group
                       in (label, total)) grouped
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
