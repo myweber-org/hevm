@@ -107,3 +107,25 @@ sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
 validateInput xs = if all (> -100) xs then Just xs else Nothing
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    putStrLn $ "Original list: " ++ show sampleData
+    putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed sampleData)
+    putStrLn $ "Head of processed: " ++ show (safeHead $ processEvenSquares sampleData)
