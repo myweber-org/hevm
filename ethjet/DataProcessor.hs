@@ -1,24 +1,35 @@
 module DataProcessor where
 
-processData :: [Int] -> [Int]
-processData = map (^2) . filter evenmodule DataProcessor where
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+type CSVRow = [String]
+type ValidationError = String
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
+validateCSVRow :: CSVRow -> Either ValidationError CSVRow
+validateCSVRow [] = Left "Empty row"
+validateCSVRow row
+    | length row < 2 = Left "Row must have at least 2 columns"
+    | not (isValidId (head row)) = Left "Invalid ID format"
+    | not (isValidName (row !! 1)) = Left "Invalid name format"
+    | otherwise = Right row
+  where
+    isValidId :: String -> Bool
+    isValidId = all isDigit
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+    isValidName :: String -> Bool
+    isValidName name = length name >= 2 && all isAlpha name
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processCSVData :: [CSVRow] -> Either ValidationError [CSVRow]
+processCSVData rows = traverse validateCSVRow rows
 
-validateInput :: [Int] -> Bool
-validateInput xs = not (null xs) && all (>= -100) xs && all (<= 100) xs
+formatValidRows :: [CSVRow] -> String
+formatValidRows rows = intercalate "\n" (map formatRow rows)
+  where
+    formatRow :: CSVRow -> String
+    formatRow = intercalate ","
 
-safeProcessData :: [Int] -> Maybe [Int]
-safeProcessData xs
-    | validateInput xs = Just (processData xs)
-    | otherwise = Nothing
+safeCSVProcessor :: [CSVRow] -> Either ValidationError String
+safeCSVProcessor rows = do
+    validated <- processCSVData rows
+    return $ formatValidRows validated
