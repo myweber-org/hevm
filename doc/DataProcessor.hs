@@ -272,4 +272,10 @@ main = do
     let testData = [-3, 2, 0, 5, -1, 8]
     putStrLn $ "Original data: " ++ show testData
     putStrLn $ "Processed data: " ++ show (processData testData)
-    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles testData)
+    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles testData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
