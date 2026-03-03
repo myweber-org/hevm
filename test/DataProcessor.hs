@@ -126,4 +126,16 @@ main = do
     let csvContent = "Name,Value\nAlice,25\nBob,30\nCharlie,invalid"
     case parseCSV csvContent >>= processCSVData of
         Left err -> putStrLn $ "Error: " ++ err
-        Right result -> putStrLn $ formatOutput result
+        Right result -> putStrLn $ formatOutput resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
