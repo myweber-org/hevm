@@ -69,4 +69,61 @@ smoothData :: [Double] -> [Double]
 smoothData = movingAverage 3
 
 testData :: [Double]
-testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null input = Left "Empty input"
+    | otherwise = Right $ map parseRow (lines input)
+  where
+    parseRow line = splitOnComma line
+
+splitOnComma :: String -> CSVRow
+splitOnComma [] = []
+splitOnComma line = 
+    let (cell, rest) = break (== ',') line
+    in trim cell : case rest of
+        ',' : xs -> splitOnComma xs
+        _ -> []
+
+trim :: String -> String
+trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+validateNumericField :: String -> Either String Int
+validateNumericField str
+    | all isDigit trimmed = Right (read trimmed)
+    | otherwise = Left $ "Invalid numeric value: " ++ str
+  where
+    trimmed = trim str
+
+processCSVData :: CSVData -> Either String [(String, Int)]
+processCSVData rows = case rows of
+    [] -> Left "No data rows"
+    header:dataRows -> 
+        if length header >= 2
+        then mapM processRow dataRows
+        else Left "Invalid header format"
+  where
+    processRow row = case row of
+        [name, valueStr] -> do
+            value <- validateNumericField valueStr
+            return (trim name, value)
+        _ -> Left $ "Invalid row format: " ++ show row
+
+formatOutput :: [(String, Int)] -> String
+formatOutput dataPairs = 
+    "Processed Data:\n" ++ 
+    intercalate "\n" (map (\(name, val) -> name ++ ": " ++ show val) dataPairs)
+
+main :: IO ()
+main = do
+    let csvContent = "Name,Value\nAlice,25\nBob,30\nCharlie,invalid"
+    case parseCSV csvContent >>= processCSVData of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right result -> putStrLn $ formatOutput result
