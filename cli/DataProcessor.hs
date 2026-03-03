@@ -4,37 +4,15 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = 
     map transformer . filter predicate
 
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (^2)
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
 
-calculateStats :: [Int] -> (Int, Int, Double)
-calculateStats [] = (0, 0, 0.0)
-calculateStats xs = 
-    let total = sum xs
-        count = length xs
-        average = fromIntegral total / fromIntegral count
-    in (total, count, average)
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
 
 main :: IO ()
 main = do
-    let numbers = [1..10]
-    putStrLn "Original list:"
-    print numbers
-    
-    putStrLn "\nEven numbers squared:"
-    let processed = processEvenSquares numbers
-    print processed
-    
-    putStrLn "\nStatistics for processed list:"
-    let (total, count, avg) = calculateStats processed
-    putStrLn $ "Total: " ++ show total
-    putStrLn $ "Count: " ++ show count
-    putStrLn $ "Average: " ++ show avgmodule DataProcessor where
-
-processNumbers :: [Int] -> [Int]
-processNumbers = map (^2) . filter (>0)
-
-validateAndProcess :: [Int] -> Maybe [Int]
-validateAndProcess xs
-    | null xs   = Nothing
-    | otherwise = Just (processNumbers xs)
+    let numbers = [-3, 1, 4, -1, 5, 9, -2, 6]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
