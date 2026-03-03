@@ -1,66 +1,27 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData xs = all (> 0) xs && length xs > 3
-
-combineResults :: [Int] -> [Int] -> [Int]
-combineResults xs ys = zipWith (+) (processData xs) (processData ys)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processDatamodule DataProcessor where
-
 movingAverage :: Fractional a => Int -> [a] -> [a]
 movingAverage n xs
-    | n <= 0 = error "Window size must be positive"
     | length xs < n = []
-    | otherwise = map average $ windows n xs
+    | otherwise = avg (take n xs) : movingAverage n (tail xs)
   where
-    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
-    average zs = sum zs / fromIntegral (length zs)module DataProcessor where
+    avg ys = sum ys / fromIntegral (length ys)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    let avg = movingAverage windowSize dataPoints
+        padding = replicate (windowSize `div` 2) (head dataPoints)
+    in padding ++ avg ++ padding
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-module DataProcessor where
+calculateTrend :: (Fractional a, Ord a) => [a] -> String
+calculateTrend values
+    | null values = "No data"
+    | last values > head values = "Increasing trend"
+    | last values < head values = "Decreasing trend"
+    | otherwise = "Stable trend"
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-processOddCubes :: [Int] -> [Int]
-processOddCubes = filterAndTransform odd (\x -> x * x * x)
-
-sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = sum . filterAndTransform predicate transformermodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+processDataset :: Fractional a => Int -> [a] -> ([a], String)
+processDataset window dataset =
+    let smoothed = smoothData window dataset
+        trend = calculateTrend smoothed
+    in (smoothed, trend)
