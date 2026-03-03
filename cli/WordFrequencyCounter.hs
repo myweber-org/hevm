@@ -335,4 +335,24 @@ main :: IO ()
 main = do
     input <- getContents
     let frequencies = sortByFrequency $ countWords input
-    putStr $ formatOutput frequencies
+    putStr $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortBy, group, sort)
+import Data.Ord (comparing)
+
+countWordFrequencies :: String -> [(String, Int)]
+countWordFrequencies text =
+    let wordsList = words text
+        lowerWords = map (map toLower) wordsList
+        sortedWords = sort lowerWords
+        grouped = group sortedWords
+        frequencies = map (\ws -> (head ws, length ws)) grouped
+    in sortBy (comparing (negate . snd)) frequencies
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies freqList =
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqList
+
+processText :: String -> String
+processText = displayFrequencies . countWordFrequencies
