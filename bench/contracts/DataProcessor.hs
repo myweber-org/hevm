@@ -1,27 +1,41 @@
 module DataProcessor where
 
-movingAverage :: Fractional a => Int -> [a] -> [a]
-movingAverage n xs
-    | length xs < n = []
-    | otherwise = avg (take n xs) : movingAverage n (tail xs)
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
   where
-    avg ys = sum ys / fromIntegral (length ys)
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitter [[]]
+      where
+        splitter char acc@(x:xs)
+          | char == delimiter = []:acc
+          | otherwise = (char:x):xs
 
-smoothData :: Fractional a => Int -> [a] -> [a]
-smoothData windowSize dataPoints =
-    let avg = movingAverage windowSize dataPoints
-        padding = replicate (windowSize `div` 2) (head dataPoints)
-    in padding ++ avg ++ padding
+safeReadDouble :: String -> Maybe Double
+safeReadDouble = readMaybe
 
-calculateTrend :: (Fractional a, Ord a) => [a] -> String
-calculateTrend values
-    | null values = "No data"
-    | last values > head values = "Increasing trend"
-    | last values < head values = "Decreasing trend"
-    | otherwise = "Stable trend"
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage [] _ = Nothing
+calculateColumnAverage rows columnIndex
+  | columnIndex < 0 = Nothing
+  | otherwise = case validValues of
+      [] -> Nothing
+      vs -> Just (sum vs / fromIntegral (length vs))
+  where
+    extractValue :: Row -> Maybe Double
+    extractValue row
+      | columnIndex < length row = safeReadDouble (row !! columnIndex)
+      | otherwise = Nothing
+    
+    validValues = [v | Just v <- map extractValue rows]
 
-processDataset :: Fractional a => Int -> [a] -> ([a], String)
-processDataset window dataset =
-    let smoothed = smoothData window dataset
-        trend = calculateTrend smoothed
-    in (smoothed, trend)
+processCSVFile :: String -> Int -> IO (Maybe Double)
+processCSVFile filePath column = do
+  content <- readFile filePath
+  let parsed = parseCSV content
+  return $ calculateColumnAverage parsed column
