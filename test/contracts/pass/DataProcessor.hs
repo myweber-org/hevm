@@ -128,4 +128,14 @@ main = do
     putStrLn $ "Original list: " ++ show sampleData
     putStrLn $ "Processed list: " ++ show (processEvenSquares sampleData)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed sampleData)
-    putStrLn $ "Head of processed: " ++ show (safeHead $ processEvenSquares sampleData)
+    putStrLn $ "Head of processed: " ++ show (safeHead $ processEvenSquares sampleData)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
