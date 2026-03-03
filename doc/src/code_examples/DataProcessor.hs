@@ -96,4 +96,7 @@ main = do
     let sampleData = [1, -2, 3, 4, -5, 6]
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Validation result: " ++ show (validateData sampleData)
+    putStrLn $ "Validation result: " ++ show (validateData sampleData)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
