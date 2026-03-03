@@ -25,4 +25,27 @@ displayResults counts = do
     mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
 
 analyzeText :: String -> IO ()
-analyzeText text = displayResults $ countWords text
+analyzeText text = displayResults $ countWords textmodule WordFrequency where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Ord (Down(..))
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord w m = Map.insertWith (+) (normalize w) 1 m
+    normalize = map toLower . filter isAlpha
+
+topWords :: Int -> String -> [(String, Int)]
+topWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
+
+displayFrequency :: [(String, Int)] -> String
+displayFrequency = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequency . topWords n
