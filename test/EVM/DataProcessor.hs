@@ -1,65 +1,21 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Text.CSV
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+filterCSVByDate :: Day -> Day -> CSV -> CSV
+filterCSVByDate startDate endDate csv = 
+    filter (isWithinDateRange startDate endDate) csv
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-module DataProcessor where
+isWithinDateRange :: Day -> Day -> Record -> Bool
+isWithinDateRange startDate endDate record =
+    case parseDateFromRecord record of
+        Just date -> date >= startDate && date <= endDate
+        Nothing -> False
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessed :: (Int -> Int) -> [Int] -> Int
-sumProcessed processor = sum . map processor
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
-    putStrLn $ "Sum of doubled values: " ++ show (sumProcessed (*2) numbers)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-
-validateInput :: [Int] -> Bool
-validateInput = all (\x -> x >= -100 && x <= 100)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processEvenSquares :: [Int] -> [Int]
-processEvenSquares = filterAndTransform even (\x -> x * x)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
-
-main :: IO ()
-main = do
-    let sampleData = [1..10]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processEvenSquares sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+parseDateFromRecord :: Record -> Maybe Day
+parseDateFromRecord record =
+    case record of
+        (dateStr:_) -> parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr
+        _ -> Nothing
