@@ -1,16 +1,14 @@
+
 module PrimeSieve where
 
-primes :: [Int]
-primes = sieve [2..]
-  where
-    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = sieveHelper [2..limit] []
 
--- Function to get the first n prime numbers
-firstNPrimes :: Int -> [Int]
-firstNPrimes n = take n primes
+sieveHelper :: [Int] -> [Int] -> [Int]
+sieveHelper [] primes = reverse primes
+sieveHelper (x:xs) primes = sieveHelper (filter (\n -> n `mod` x /= 0) xs) (x:primes)
 
--- Example usage in main
-main :: IO ()
-main = do
-    putStrLn "First 20 prime numbers:"
-    print (firstNPrimes 20)
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
