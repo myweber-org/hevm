@@ -115,4 +115,43 @@ processText = formatOutput . countWords
 main :: IO ()
 main = do
     input <- getContents
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+    in sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+    where
+        cleanWord = filter isAlpha
+
+filterByFrequency :: Int -> [WordCount] -> [WordCount]
+filterByFrequency minCount = filter ((>= minCount) . snd)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+displayResults :: [WordCount] -> IO ()
+displayResults counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+processText :: String -> Int -> Int -> IO ()
+processText text minFreq topN = do
+    putStrLn "Word frequencies:"
+    let frequencies = countWords text
+    let filtered = filterByFrequency minFreq frequencies
+    let topWords = getTopNWords topN filtered
+    displayResults topWords
+
+exampleUsage :: IO ()
+exampleUsage = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
+    putStrLn "Processing sample text..."
+    processText sampleText 1 5
