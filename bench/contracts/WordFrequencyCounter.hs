@@ -29,4 +29,50 @@ wordFrequency targetWord text =
     lookup (map toLower targetWord) $ countWords text
 
 totalUniqueWords :: String -> Int
-totalUniqueWords = length . countWords
+totalUniqueWords = length . countWordsmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWordFrequencies :: String -> [WordFreq]
+countWordFrequencies text =
+  let wordsList = filter (not . null) $ map cleanWord $ words text
+      cleanedWords = map (map toLower) wordsList
+      grouped = group $ sort cleanedWords
+      frequencies = map (\ws -> (head ws, length ws)) grouped
+  in sortOn (Down . snd) frequencies
+  where
+    cleanWord = filter isAlpha
+
+filterByFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n
+
+printFrequencies :: [WordFreq] -> IO ()
+printFrequencies freqs =
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqs
+
+processText :: String -> Int -> Int -> IO ()
+processText text minFreq topN = do
+  let allFreqs = countWordFrequencies text
+      filtered = filterByFrequency minFreq allFreqs
+      topWords = getTopNWords topN filtered
+  
+  putStrLn $ "Total unique words: " ++ show (length allFreqs)
+  putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered)
+  putStrLn "Top words:"
+  printFrequencies topWords
+
+sampleText :: String
+sampleText = "The quick brown fox jumps over the lazy dog. The dog barked at the fox."
+
+main :: IO ()
+main = do
+  putStrLn "Word Frequency Counter"
+  putStrLn "======================"
+  processText sampleText 2 5
