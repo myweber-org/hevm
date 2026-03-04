@@ -151,4 +151,32 @@ processText text minFreq topN =
     let freqList = countWords text
         filtered = filterByFrequency minFreq freqList
         topWords = topNWords topN filtered
-    in formatOutput topWords
+    in formatOutput topWordsmodule WordFrequency where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text = foldr incrementWord Map.empty words
+  where
+    words' = words text
+    cleanWord = filter isAlphaNum . map toLower
+    words = map cleanWord words'
+    incrementWord word acc = Map.insertWith (+) word 1 acc
+
+getTopWords :: Int -> FrequencyMap -> [(String, Int)]
+getTopWords n freqMap = take n sortedWords
+  where
+    sortedWords = sortOn (Down . snd) (Map.toList freqMap)
+
+processTextFile :: FilePath -> IO ()
+processTextFile filePath = do
+  content <- readFile filePath
+  let freqMap = countWords content
+      topWords = getTopWords 10 freqMap
+  putStrLn "Top 10 most frequent words:"
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
