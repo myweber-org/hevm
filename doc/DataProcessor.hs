@@ -21,3 +21,13 @@ main = do
             putStrLn $ "Processed data: " ++ show (processData validData)
             putStrLn $ "Sum of processed data: " ++ show (sumProcessedData validData)
         Nothing -> putStrLn "Invalid input detected"
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
