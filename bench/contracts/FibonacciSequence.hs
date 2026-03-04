@@ -48,4 +48,9 @@ fibMemo n cache
 printFibonacciSequence :: Int -> IO ()
 printFibonacciSequence n = do
     putStrLn $ "First " ++ show n ++ " Fibonacci numbers:"
-    mapM_ (putStrLn . show . fib) [0..n-1]
+    mapM_ (putStrLn . show . fib) [0..n-1]module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
