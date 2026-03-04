@@ -164,4 +164,16 @@ calculateTrend values =
         sumX2 = sum $ map (^2) indices
         numerator = n * sumXY - sumX * sumY
         denominator = n * sumX2 - sumX * sumX
-    in if denominator == 0 then 0 else numerator / denominator
+    in if denominator == 0 then 0 else numerator / denominatormodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
+
+combineProcessors :: [Int] -> [Int]
+combineProcessors xs = if validateData xs then processData xs else []
