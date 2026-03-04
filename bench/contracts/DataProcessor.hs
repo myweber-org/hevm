@@ -86,4 +86,7 @@ main = do
   let testData = [" 123 ", "456", "  TEST  "]
   case processCSVRow testData of
     Left err -> putStrLn $ "Error: " ++ err
-    Right processed -> putStrLn $ "Processed: " ++ formatOutput processed
+    Right processed -> putStrLn $ "Processed: " ++ formatOutput processedmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter even
