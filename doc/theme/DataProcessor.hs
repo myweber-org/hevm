@@ -99,4 +99,13 @@ safeHead [] = Nothing
 safeHead (x:_) = Just x
 
 sumPositive :: [Int] -> Int
-sumPositive = sum . filter (> 0)
+sumPositive = sum . filter (> 0)module DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    windows n = takeWhile ((== n) . length) . map (take n) . iterate tail
+    average = (/ fromIntegral windowSize) . sum
