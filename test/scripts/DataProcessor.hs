@@ -1,13 +1,28 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (tails)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
+  where
+    average ws = sum ws / fromIntegral n
 
-validateData :: [Int] -> Bool
-validateData xs = all (> 0) xs && length xs > 3
+smoothData :: Int -> [Double] -> [Double]
+smoothData windowSize dataPoints = 
+    movingAverage windowSize dataPoints ++ 
+    replicate (windowSize - 1) (last dataPoints)
 
-combineResults :: [Int] -> [Int] -> [Int]
-combineResults xs ys = zipWith (+) (processData xs) (processData ys)
+validateData :: [Double] -> Maybe [Double]
+validateData [] = Nothing
+validateData xs
+    | any isNaN xs = Nothing
+    | any isInfinite xs = Nothing
+    | otherwise = Just xs
+
+processDataStream :: Int -> [Double] -> Maybe [Double]
+processDataStream windowSize rawData = do
+    validData <- validateData rawData
+    return $ smoothData windowSize validData
