@@ -44,4 +44,14 @@ fibMemo = fix memoize
   where
     memoize _ 0 = 0
     memoize _ 1 = 1
-    memoize f n = f (n - 1) + f (n - 2)
+    memoize f n = f (n - 1) + f (n - 2)module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+printFibonacci :: Int -> IO ()
+printFibonacci n = do
+    putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
+    mapM_ (putStrLn . show) (fibonacci n)
