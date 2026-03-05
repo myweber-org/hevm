@@ -137,3 +137,30 @@ main = do
     putStrLn $ "Original data: " ++ show sampleData
     putStrLn $ "Processed data: " ++ show (processData sampleData)
     putStrLn $ "Validation result: " ++ show (validateData sampleData)
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: String -> Day -> Day -> Either String [(String, Day, Double)]
+filterCSVByDate csvStr startDate endDate = do
+    csv <- parseCSV "input" csvStr
+    let filtered = filter (\(_, dateStr, _) -> 
+            case parseTimeM True defaultTimeLocale "%Y-%m-%d" dateStr of
+                Just date -> date >= startDate && date <= endDate
+                Nothing -> False) 
+            (map toTriple (tail csv))  -- Skip header
+    Right filtered
+  where
+    toTriple [name, dateStr, amountStr] = 
+        (name, read dateStr, read amountStr)
+    toTriple _ = error "Invalid CSV format"
+
+processFinancialData :: FilePath -> Day -> Day -> IO ()
+processFinancialData filePath start end = do
+    contents <- readFile filePath
+    case filterCSVByDate contents start end of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right results -> 
+            mapM_ (\(name, date, amount) -> 
+                putStrLn $ name ++ " on " ++ show date ++ ": $" ++ show amount) results
