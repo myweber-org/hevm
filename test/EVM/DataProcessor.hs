@@ -28,4 +28,25 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processNumbers
+sumPositiveDoubles = sum . processNumbersmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
+main :: IO ()
+main = do
+    let sampleData = [1, -2, 3, 0, 5, -10]
+    if validateInput sampleData
+        then do
+            putStrLn "Processing valid data..."
+            let result = processData sampleData
+            putStrLn $ "Input: " ++ show sampleData
+            putStrLn $ "Result: " ++ show result
+        else
+            putStrLn "Invalid input data detected"
