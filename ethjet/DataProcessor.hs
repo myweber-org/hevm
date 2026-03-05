@@ -34,3 +34,51 @@ main = do
             putStrLn $ "Processed: " ++ show (processNumbers validData)
             putStrLn $ "Sum: " ++ show (sumProcessed validData)
         Nothing -> putStrLn "Invalid input detected"
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV = map (splitOn ',') . lines
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delim = foldr splitHelper [""]
+      where
+        splitHelper ch (x:xs)
+          | ch == delim = "":x:xs
+          | otherwise = (ch:x):xs
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage [] _ = Nothing
+calculateColumnAverage rows colIndex
+  | colIndex < 0 = Nothing
+  | otherwise = case validNumbers of
+      [] -> Nothing
+      nums -> Just (sum nums / fromIntegral (length nums))
+  where
+    extractNumbers = mapMaybe (\row -> 
+      if colIndex < length row 
+        then readMaybe (row !! colIndex) :: Maybe Double
+        else Nothing) rows
+    
+    validNumbers = filter (not . isNaN) extractNumbers
+
+processCSVFile :: FilePath -> Int -> IO (Maybe Double)
+processCSVFile filePath column = do
+  content <- readFile filePath
+  let parsed = parseCSV content
+  return $ calculateColumnAverage parsed column
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+validateCSV :: CSVData -> Bool
+validateCSV [] = True
+validateCSV (row:rows) = 
+  let rowLength = length row
+  in all ((== rowLength) . length) rows
