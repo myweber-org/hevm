@@ -89,4 +89,20 @@ main = do
     Right processed -> putStrLn $ "Processed: " ++ formatOutput processedmodule DataProcessor where
 
 processData :: [Int] -> [Int]
-processData = map (^2) . filter even
+processData = map (^2) . filter evenmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
+
+main :: IO ()
+main = do
+    let numbers = [-3, 1, 0, 5, -2, 8]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
+    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
