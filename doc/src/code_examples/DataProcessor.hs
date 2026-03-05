@@ -22,4 +22,7 @@ sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+validateInput xs = if all (> -100) xs then Just xs else Nothingmodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
