@@ -123,4 +123,34 @@ exampleUsage = do
     let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
     let results = analyzeText sampleText 1 5
     putStrLn "Top 5 most frequent words (minimum frequency: 1):"
-    printWordCounts results
+    printWordCounts resultsmodule WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+sortByFrequency :: WordCount -> [(String, Int)]
+sortByFrequency = List.sortOn (negate . snd) . Map.toList
+
+formatOutput :: [(String, Int)] -> String
+formatOutput = unlines . map formatRow
+  where
+    formatRow (word, count) = word ++ ": " ++ show count
+
+analyzeText :: String -> String
+analyzeText = formatOutput . sortByFrequency . countWords
+
+main :: IO ()
+main = do
+  putStrLn "Enter text to analyze (press Ctrl+D when done):"
+  input <- getContents
+  putStrLn "\nWord frequencies:"
+  putStrLn $ analyzeText input
