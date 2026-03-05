@@ -25,4 +25,41 @@ printWordFrequencies freqs = unlines [word ++ ": " ++ show count | (word, count)
 
 -- | Process a text and return top N words
 analyzeText :: Int -> String -> String
-analyzeText n text = printWordFrequencies $ topNWords n (countWords text)
+analyzeText n text = printWordFrequencies $ topNWords n (countWords text)module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+-- | Count frequency of each word in a text string
+countWordFrequencies :: String -> [WordFreq]
+countWordFrequencies text =
+    let wordsList = filter (not . null) $ map normalizeWord $ words text
+        freqMap = foldr (\word acc -> insertWord word acc) [] wordsList
+    in sortOn (Down . snd) freqMap
+  where
+    normalizeWord = map toLower . filter isAlpha
+    
+    insertWord :: String -> [WordFreq] -> [WordFreq]
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+-- | Get top N most frequent words
+topNWords :: Int -> String -> [WordFreq]
+topNWords n text = take n $ countWordFrequencies text
+
+-- | Calculate word frequency distribution as percentages
+frequencyDistribution :: String -> [(String, Double)]
+frequencyDistribution text =
+    let freqs = countWordFrequencies text
+        total = fromIntegral $ sum $ map snd freqs
+    in map (\(w, c) -> (w, (fromIntegral c / total) * 100)) freqs
+
+-- | Filter words by minimum frequency threshold
+filterByMinFrequency :: Int -> String -> [WordFreq]
+filterByMinFrequency minFreq text =
+    filter (\(_, count) -> count >= minFreq) $ countWordFrequencies text
