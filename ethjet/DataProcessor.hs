@@ -1,84 +1,47 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)module DataProcessor where
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
-
-main :: IO ()
-main = do
-    let sampleData = [1, -5, 3, 0, 8, -2]
-    case validateInput sampleData of
-        Just validData -> do
-            putStrLn $ "Original: " ++ show validData
-            putStrLn $ "Processed: " ++ show (processNumbers validData)
-            putStrLn $ "Sum: " ++ show (sumProcessed validData)
-        Nothing -> putStrLn "Invalid input detected"
-module DataProcessor where
-
-import Data.List (foldl')
-import Text.Read (readMaybe)
-
-type Row = [String]
-type CSVData = [Row]
-
-parseCSV :: String -> CSVData
-parseCSV = map (splitOn ',') . lines
+-- Process a list of strings with validation and transformation
+processData :: [String] -> [String]
+processData = map processItem
   where
-    splitOn :: Char -> String -> [String]
-    splitOn delim = foldr splitHelper [""]
-      where
-        splitHelper ch (x:xs)
-          | ch == delim = "":x:xs
-          | otherwise = (ch:x):xs
+    processItem str
+      | validateNumeric str = "NUMERIC: " ++ normalizePhone str
+      | validateAlpha str = "ALPHA: " ++ toUppercase str
+      | otherwise = "INVALID: " ++ str
 
-calculateColumnAverage :: CSVData -> Int -> Maybe Double
-calculateColumnAverage [] _ = Nothing
-calculateColumnAverage rows colIndex
-  | colIndex < 0 = Nothing
-  | otherwise = case validNumbers of
-      [] -> Nothing
-      nums -> Just (sum nums / fromIntegral (length nums))
-  where
-    extractNumbers = mapMaybe (\row -> 
-      if colIndex < length row 
-        then readMaybe (row !! colIndex) :: Maybe Double
-        else Nothing) rows
-    
-    validNumbers = filter (not . isNaN) extractNumbers
+-- Combine multiple processing steps
+pipeline :: [String] -> String
+pipeline items = 
+  let processed = processData items
+      result = intercalate " | " processed
+  in "Result: " ++ result
 
-processCSVFile :: FilePath -> Int -> IO (Maybe Double)
-processCSVFile filePath column = do
-  content <- readFile filePath
-  let parsed = parseCSV content
-  return $ calculateColumnAverage parsed column
-
-safeHead :: [a] -> Maybe a
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-validateCSV :: CSVData -> Bool
-validateCSV [] = True
-validateCSV (row:rows) = 
-  let rowLength = length row
-  in all ((== rowLength) . length) rows
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let testData = ["John", "123-456-7890", "Doe", "invalid123", "TEST"]
+  putStrLn $ pipeline testData
