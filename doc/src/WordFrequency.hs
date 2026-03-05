@@ -399,4 +399,47 @@ displayFrequency counts = unlines $
     map (\(word, count) -> word ++ ": " ++ show count) counts
 
 analyzeText :: String -> String
-analyzeText = displayFrequency . countWords
+analyzeText = displayFrequency . countWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map clean $ words text
+        cleaned = map toLower <$> wordsList
+        counts = foldr (\word acc -> 
+            case lookup word acc of
+                Just n -> (word, n+1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc) [] cleaned
+    in sortOn (Down . snd) counts
+  where
+    clean = filter isAlpha
+
+formatResults :: [WordCount] -> String
+formatResults counts = 
+    let maxWordLength = maximum $ map (length . fst) counts
+        maxCountLength = maximum $ map (length . show . snd) counts
+        formatLine (word, count) = 
+            padRight maxWordLength word ++ " | " ++ 
+            padLeft maxCountLength (show count)
+        padRight n s = s ++ replicate (n - length s) ' '
+        padLeft n s = replicate (n - length s) ' ' ++ s
+    in unlines $ map formatLine counts
+
+analyzeText :: String -> String
+analyzeText text = 
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+    in "Total words: " ++ show totalWords ++ "\n" ++
+       "Unique words: " ++ show uniqueWords ++ "\n\n" ++
+       "Word frequency:\n" ++ formatResults counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello."
+    putStrLn $ analyzeText sampleText
