@@ -82,4 +82,20 @@ primesUpTo n
     | otherwise = sieve [2..n]
     where
         sieve [] = []
-        sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+        sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]module PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = sieveHelper [2..limit] []
+
+sieveHelper :: [Int] -> [Int] -> [Int]
+sieveHelper [] primes = reverse primes
+sieveHelper (x:xs) primes =
+    let newPrimes = x : primes
+        multiples = [x*x, x*x+x .. last (x:xs)]
+        remaining = filter (`notElem` multiples) xs
+    in sieveHelper remaining newPrimes
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
