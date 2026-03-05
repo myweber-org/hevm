@@ -60,4 +60,18 @@ main = do
     let processed = processData sampleData
     putStrLn $ "Processed data: " ++ show processed
     
-    putStrLn $ "Data validation: " ++ show (validateData processed)
+    putStrLn $ "Data validation: " ++ show (validateData processed)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 10) (* 2)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositive :: [Int] -> Int
+sumPositive = sum . filter (> 0)
