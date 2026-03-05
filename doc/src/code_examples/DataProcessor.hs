@@ -26,3 +26,13 @@ validateInput xs = if all (> -100) xs then Just xs else Nothingmodule DataProces
 
 processData :: [Int] -> [Int]
 processData xs = map (^2) (filter even xs)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessedList :: [Int] -> Int
+sumProcessedList = sum . processEvenSquares
