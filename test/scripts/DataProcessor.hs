@@ -1,112 +1,26 @@
-
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothingmodule DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -1000) xs then Just xs else Nothingmodule DataProcessor where
+import Data.List (tails)
 
 movingAverage :: Fractional a => Int -> [a] -> [a]
 movingAverage n xs
-    | length xs < n = []
-    | otherwise = avg : movingAverage n (tail xs)
-  where
-    window = take n xs
-    avg = sum window / fromIntegral n
-
--- Example usage with a helper function
-exampleUsage :: IO ()
-exampleUsage = do
-    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-    putStrLn "Original series:"
-    print dataSeries
-    putStrLn "Moving average (window size 3):"
-    print $ movingAverage 3 dataSeries
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-validateData :: [Int] -> Bool
-validateData = all (> 0)
-
-main :: IO ()
-main = do
-    let sampleData = [-3, 1, 0, 5, -2, 8]
-    putStrLn $ "Original data: " ++ show sampleData
-    
-    let processed = processData sampleData
-    putStrLn $ "Processed data: " ++ show processed
-    
-    putStrLn $ "Data validation: " ++ show (validateData processed)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-sumPositive :: [Int] -> Int
-sumPositive = sum . filter (> 0)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show result
-module DataProcessor where
-
-movingAverage :: Int -> [Double] -> [Double]
-movingAverage n xs
     | n <= 0 = error "Window size must be positive"
     | length xs < n = []
-    | otherwise = map average $ windows n xs
+    | otherwise = map avg $ filter (\window -> length window == n) $ tails xs
   where
-    windows :: Int -> [a] -> [[a]]
-    windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
-    
-    average :: [Double] -> Double
-    average ys = sum ys / fromIntegral (length ys)
+    avg window = sum window / fromIntegral n
 
-safeMovingAverage :: Int -> [Double] -> Maybe [Double]
-safeMovingAverage n xs
-    | n <= 0 = Nothing
-    | otherwise = Just $ movingAverage n xs
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
 
-testData :: [Double]
-testData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+calculateTrend :: Fractional a => [a] -> a
+calculateTrend values =
+    let n = fromIntegral $ length values
+        indices = [0..n-1]
+        sumX = sum indices
+        sumY = sum values
+        sumXY = sum $ zipWith (*) indices values
+        sumX2 = sum $ map (^2) indices
+        slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
+    in slope
