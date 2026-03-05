@@ -119,3 +119,43 @@ calculateTrend values = Just slope
     sumXY = sum $ zipWith (*) indices values
     sumX2 = sum $ map (^2) indices
     slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Process a list of strings: validate and transform
+processStrings :: [String] -> [String]
+processStrings = map processSingle
+  where
+    processSingle str
+      | validateNumeric str = "NUMERIC: " ++ str
+      | validateAlpha str = "ALPHA: " ++ toUppercase str
+      | otherwise = "MIXED: " ++ str
+
+-- Join processed strings with a separator
+joinProcessed :: String -> [String] -> String
+joinProcessed separator = intercalate separator . processStrings
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let testData = ["123", "abc", "a1b2c3", "XYZ"]
+  putStrLn "Original data:"
+  mapM_ putStrLn testData
+  putStrLn "\nProcessed data:"
+  mapM_ putStrLn (processStrings testData)
+  putStrLn "\nJoined with comma:"
+  putStrLn (joinProcessed ", " testData)
