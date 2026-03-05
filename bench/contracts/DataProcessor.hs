@@ -105,4 +105,9 @@ main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)
+    putStrLn $ "Sum of positive doubles: " ++ show (sumPositiveDoubles numbers)module DataProcessor where
+
+import Data.Char (toUpper)
+
+processData :: [(String, Int)] -> [(String, Int)]
+processData = map (\(name, val) -> (map toUpper name, val * 2)) . filter (\(_, val) -> val > 0)
