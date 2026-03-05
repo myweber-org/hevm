@@ -66,4 +66,15 @@ main = do
     putStrLn "First 20 prime numbers:"
     print $ take 20 primes
     putStrLn "\nThe 100th prime number is:"
-    print $ nthPrime 100
+    print $ nthPrime 100module PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = go [2..limit] []
+  where
+    go [] primes = reverse primes
+    go (p:xs) primes = go (filter (\x -> x `mod` p /= 0) xs) (p:primes)
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
