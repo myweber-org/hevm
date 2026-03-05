@@ -49,4 +49,26 @@ analyzeText text = do
   putStrLn "Top 10 most frequent words:"
   mapM_ printWord (topWords 10 text)
   where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (\(_, freq) -> -freq) $ Map.toList (countWords text)
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(word, freq) -> word ++ ": " ++ show freq)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequencies . topNWords n
