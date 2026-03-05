@@ -171,4 +171,17 @@ main = do
     input <- getLine
     let limit = read input :: Int
     let result = primesUpTo limit
-    putStrLn $ "Prime numbers up to " ++ show limit ++ ": " ++ show result
+    putStrLn $ "Prime numbers up to " ++ show limit ++ ": " ++ show resultmodule PrimeSieve where
+
+primes :: [Integer]
+primes = sieve [2..]
+  where
+    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p /= 0]
+
+nthPrime :: Int -> Integer
+nthPrime n = primes !! (n - 1)
+
+isPrime :: Integer -> Bool
+isPrime n
+    | n < 2     = False
+    | otherwise = all (\p -> n `mod` p /= 0) (takeWhile (\p -> p * p <= n) primes)
