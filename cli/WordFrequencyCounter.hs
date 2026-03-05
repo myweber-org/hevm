@@ -382,4 +382,25 @@ processText = formatOutput . sortWordCounts . countWords
 main :: IO ()
 main = do
     input <- TIO.getContents
-    TIO.putStrLn $ processText input
+    TIO.putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (map toLower word) 1
+
+sortByFrequency :: Map String Int -> [(String, Int)]
+sortByFrequency = sortOn (negate . snd) . Map.toList
+
+wordFrequency :: String -> [(String, Int)]
+wordFrequency = sortByFrequency . countWords
+
+main :: IO ()
+main = do
+  let text = "Hello world hello Haskell World haskell HELLO"
+  print $ wordFrequency text
