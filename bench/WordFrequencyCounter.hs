@@ -125,4 +125,29 @@ main = do
     [] -> putStrLn "Usage: WordFrequencyCounter <text>"
     input -> do
       let frequencies = countWords $ unwords input
-      mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequencies
+      mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWordFrequencies :: String -> [WordFreq]
+countWordFrequencies text = 
+    let normalized = map toLower text
+        wordsList = words normalized
+        cleanWords = filter (all isAlpha) wordsList
+        freqMap = foldr (\word acc -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] cleanWords
+    in sortOn (Down . snd) freqMap
+
+displayFrequencies :: [WordFreq] -> String
+displayFrequencies freqs = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+processText :: String -> String
+processText = displayFrequencies . countWordFrequencies
