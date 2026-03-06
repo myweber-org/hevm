@@ -65,4 +65,13 @@ processCSVFile filename = do
                         " (" ++ header !! col ++ "): " ++ show avg
                     Nothing -> putStrLn $
                         "No numeric data in column " ++ show col
-                ) numCols
+                ) numColsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
