@@ -81,4 +81,17 @@ exampleUsage = do
     putStrLn "Original series:"
     print dataSeries
     putStrLn "Moving average (window size 3):"
-    print $ movingAverage 3 dataSeries
+    print $ movingAverage 3 dataSeriesmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
