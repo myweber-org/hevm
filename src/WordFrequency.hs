@@ -71,4 +71,28 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(word, freq) -> word ++ ": " ++ show freq)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+analyzeText n = displayFrequencies . topNWords nmodule WordFrequency where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords text =
+    let wordsList = filter (not . null) $ map normalize $ words text
+    in List.foldl' (\acc w -> Map.insertWith (+) w 1 acc) Map.empty wordsList
+  where
+    normalize = map Char.toLower . filter Char.isAlphaNum
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text =
+    take n $ List.sortBy (\(_, a) (_, b) -> compare b a) $ Map.toList $ countWords text
+
+displayFrequency :: [(String, Int)] -> String
+displayFrequency freqList =
+    unlines $ map (\(w, c) -> w ++ ": " ++ show c) freqList
+
+processText :: Int -> String -> String
+processText n = displayFrequency . topNWords n
