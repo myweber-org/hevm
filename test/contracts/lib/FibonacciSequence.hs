@@ -104,4 +104,14 @@ fibMemo = (map fib [0..] !!)
     fib n = fibMemo (n - 1) + fibMemo (n - 2)
 
 fastFib :: Int -> Integer
-fastFib = fix (\f n -> if n < 2 then fromIntegral n else f (n - 1) + f (n - 2))
+fastFib = fix (\f n -> if n < 2 then fromIntegral n else f (n - 1) + f (n - 2))module FibonacciSequence where
+
+fibonacci :: Int -> [Integer]
+fibonacci n = take n fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
+main :: IO ()
+main = do
+  putStrLn "Fibonacci sequence up to 10 terms:"
+  print (fibonacci 10)
