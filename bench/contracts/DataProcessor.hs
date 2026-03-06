@@ -140,4 +140,11 @@ processDataset :: Int -> [Double] -> (Double, [Double])
 processDataset windowSize dataset =
     let smoothed = smoothData windowSize dataset
         trend = calculateTrend smoothed
-    in (trend, smoothed)
+    in (trend, smoothed)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
