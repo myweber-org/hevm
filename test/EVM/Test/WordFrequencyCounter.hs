@@ -63,3 +63,42 @@ frequencyDistribution text =
 filterByMinFrequency :: Int -> String -> [WordFreq]
 filterByMinFrequency minFreq text =
     filter (\(_, count) -> count >= minFreq) $ countWordFrequencies text
+module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = map (map toLower) wordsList
+        grouped = group $ sort cleanedWords
+        frequencies = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) frequencies
+  where
+    cleanWord = filter isAlpha
+
+filterByFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByFrequency minCount = filter (\(_, count) -> count >= minCount)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n
+
+formatOutput :: [WordFreq] -> String
+formatOutput freqs = unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqs
+
+processText :: String -> Int -> Int -> String
+processText text minFreq topN = 
+    let freqs = countWords text
+        filtered = filterByFrequency minFreq freqs
+        topWords = getTopNWords topN filtered
+    in formatOutput topWords
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello to Haskell."
+    putStrLn "Word Frequency Analysis:"
+    putStrLn $ processText sampleText 1 5
