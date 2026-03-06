@@ -403,4 +403,35 @@ wordFrequency = sortByFrequency . countWords
 main :: IO ()
 main = do
   let text = "Hello world hello Haskell World haskell HELLO"
-  print $ wordFrequency text
+  print $ wordFrequency textmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = words text
+        lowerWords = map (map toLower) wordsList
+        grouped = foldr (\word acc -> 
+            case lookup word acc of
+                Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                Nothing -> (word, 1) : acc
+            ) [] lowerWords
+    in sortOn (Down . snd) grouped
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = 
+    unlines $ map (\(word, count) -> word ++ ": " ++ show count) counts
+
+processText :: String -> String
+processText = formatOutput . countWords
+
+main :: IO ()
+main = do
+    putStrLn "Enter text to analyze word frequency:"
+    input <- getContents
+    putStrLn "\nWord frequencies:"
+    putStrLn $ processText input
