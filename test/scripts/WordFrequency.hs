@@ -89,4 +89,34 @@ analyzeText text = do
   putStrLn "Top 10 most frequent words:"
   mapM_ printWord (topWords 10 text)
   where
-    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show countmodule WordFrequency where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+import qualified System.Environment as Env
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = filter Char.isAlpha . map Char.toLower
+
+formatResults :: FrequencyMap -> String
+formatResults = unlines . map formatEntry . List.sortOn snd . Map.toList
+  where
+    formatEntry (word, count) = word ++ ": " ++ show count
+
+processFile :: FilePath -> IO ()
+processFile path = do
+    content <- readFile path
+    putStrLn $ formatResults $ countWords content
+
+main :: IO ()
+main = do
+    args <- Env.getArgs
+    case args of
+        [] -> putStrLn "Usage: wordfreq <filename>"
+        (filename:_) -> processFile filename
