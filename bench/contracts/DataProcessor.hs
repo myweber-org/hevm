@@ -110,4 +110,10 @@ main = do
 import Data.Char (toUpper)
 
 processData :: [(String, Int)] -> [(String, Int)]
-processData = map (\(name, val) -> (map toUpper name, val * 2)) . filter (\(_, val) -> val > 0)
+processData = map (\(name, val) -> (map toUpper name, val * 2)) . filter (\(_, val) -> val > 0)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
