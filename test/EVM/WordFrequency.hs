@@ -73,4 +73,33 @@ displayFrequency freqList =
     unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqList
 
 processText :: Int -> String -> String
-processText n = displayFrequency . topNWords n
+processText n = displayFrequency . topNWords nmodule WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+type FrequencyMap = Map.Map T.Text Int
+
+countWords :: T.Text -> FrequencyMap
+countWords = foldr (\word -> Map.insertWith (+) word 1) Map.empty . words
+  where
+    words = filter (not . T.null) . map (T.filter isAlpha . T.toLower) . T.split (not . isAlpha)
+
+readFileAndCount :: FilePath -> IO FrequencyMap
+readFileAndCount path = countWords <$> TIO.readFile path
+
+printFrequencies :: FrequencyMap -> IO ()
+printFrequencies freqMap = mapM_ printEntry sorted
+  where
+    sorted = sortOn (negate . snd) $ Map.toList freqMap
+    printEntry (word, count) = TIO.putStrLn $ T.pack (show count) <> " " <> word
+
+main :: IO ()
+main = do
+  putStrLn "Enter file path:"
+  path <- getLine
+  freqMap <- readFileAndCount path
+  printFrequencies freqMap
