@@ -1,14 +1,35 @@
+module BinaryTreeTraversal where
 
-data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a)
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
 
-inorder :: BinaryTree a -> [a]
-inorder Empty = []
-inorder (Node x left right) = inorder left ++ [x] ++ inorder right
+morrisInOrder :: BinaryTree a -> [a]
+morrisInOrder Empty = []
+morrisInOrder root = go root []
+  where
+    go Empty acc = acc
+    go (Node val left right) acc =
+      let current = left
+      in case findPredecessor current val of
+           Nothing -> val : go right acc
+           Just predNode ->
+             if rightChild predNode == Nothing
+               then let predNode' = setRightChild predNode (Node val left right)
+                    in go left (val : go right acc)
+               else setRightChild predNode Empty
+                 >> go right acc
 
-preorder :: BinaryTree a -> [a]
-preorder Empty = []
-preorder (Node x left right) = [x] ++ preorder left ++ preorder right
+findPredecessor :: BinaryTree a -> a -> Maybe (BinaryTree a)
+findPredecessor Empty _ = Nothing
+findPredecessor (Node v l r) target
+  | v == target = Just (Node v l r)
+  | otherwise = case findPredecessor l target of
+                  Just found -> Just found
+                  Nothing -> findPredecessor r target
 
-postorder :: BinaryTree a -> [a]
-postorder Empty = []
-postorder (Node x left right) = postorder left ++ postorder right ++ [x]
+rightChild :: BinaryTree a -> Maybe (BinaryTree a)
+rightChild Empty = Nothing
+rightChild (Node _ _ r) = Just r
+
+setRightChild :: BinaryTree a -> BinaryTree a -> BinaryTree a
+setRightChild Empty _ = Empty
+setRightChild (Node v l _) newRight = Node v l newRight
