@@ -123,4 +123,16 @@ processData input = case parseIntList input of
     Nothing -> Left "Invalid input format"
     Just numbers -> case calculateStats numbers of
         Nothing -> Left "Empty data after parsing"
-        Just stats -> Right stats
+        Just stats -> Right statsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+main :: IO ()
+main = do
+    let input = [1, -2, 3, -4, 5]
+    let result = processData input
+    print result
