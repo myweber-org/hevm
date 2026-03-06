@@ -1,23 +1,15 @@
-
 module BinaryTreeTraversal where
 
-data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
-    deriving (Show, Eq)
+data BinaryTree a = Empty | Node a (BinaryTree a) (BinaryTree a) deriving (Show)
 
 inorder :: BinaryTree a -> [a]
-inorder Leaf = []
-inorder (Node left value right) = inorder left ++ [value] ++ inorder right
+inorder Empty = []
+inorder (Node val left right) = inorder left ++ [val] ++ inorder right
 
 preorder :: BinaryTree a -> [a]
-preorder Leaf = []
-preorder (Node left value right) = [value] ++ preorder left ++ preorder right
+preorder Empty = []
+preorder (Node val left right) = [val] ++ preorder left ++ preorder right
 
 postorder :: BinaryTree a -> [a]
-postorder Leaf = []
-postorder (Node left value right) = postorder left ++ postorder right ++ [value]data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show)
-
-inOrderTraversal :: BinaryTree a -> [a]
-inOrderTraversal tree = go tree []
-  where
-    go Leaf stack = stack
-    go (Node left val right) stack = go left (val : go right stack)
+postorder Empty = []
+postorder (Node val left right) = postorder left ++ postorder right ++ [val]
