@@ -49,3 +49,78 @@ sumProcessed = sum . processNumbers
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
 safeHead (x:_) = Just x
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, fromMaybe)
+
+-- | Safely parse an integer from a string, returning Nothing on failure
+safeParseInt :: String -> Maybe Int
+safeParseInt s = case reads s of
+    [(n, "")] -> Just n
+    _         -> Nothing
+
+-- | Validate that a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
+
+-- | Trim leading and trailing whitespace
+trim :: String -> String
+trim = f . f
+    where f = reverse . dropWhile isSpace
+
+-- | Parse a comma-separated list of integers
+parseIntList :: String -> Maybe [Int]
+parseIntList input = 
+    let trimmed = trim input
+        parts = splitOn ',' trimmed
+        parsed = map safeParseInt parts
+    in if all isJust parsed
+        then Just (catMaybes parsed)
+        else Nothing
+    where
+        splitOn :: Char -> String -> [String]
+        splitOn delimiter = foldr splitHelper [""]
+            where
+                splitHelper char acc@(current:rest)
+                    | char == delimiter = "":acc
+                    | otherwise = (char:current):rest
+
+        isJust :: Maybe a -> Bool
+        isJust (Just _) = True
+        isJust Nothing  = False
+
+-- | Transform a list of integers by applying a function and filtering
+transformData :: (Int -> Int) -> (Int -> Bool) -> [Int] -> [Int]
+transformData f predicate = map f . filter predicate
+
+-- | Calculate statistics from a list of integers
+data Stats = Stats
+    { sumTotal :: Int
+    , average  :: Double
+    , minVal   :: Int
+    , maxVal   :: Int
+    } deriving (Show, Eq)
+
+calculateStats :: [Int] -> Maybe Stats
+calculateStats [] = Nothing
+calculateStats xs = Just Stats
+    { sumTotal = sum xs
+    , average  = fromIntegral (sum xs) / fromIntegral (length xs)
+    , minVal   = minimum xs
+    , maxVal   = maxVal
+    }
+    where maxVal = maximum xs
+
+-- | Format a list of integers as a string with custom separator
+formatList :: String -> [Int] -> String
+formatList separator = intercalate separator . map show
+
+-- | Main processing pipeline
+processData :: String -> Either String Stats
+processData input = case parseIntList input of
+    Nothing -> Left "Invalid input format"
+    Just numbers -> case calculateStats numbers of
+        Nothing -> Left "Empty data after parsing"
+        Just stats -> Right stats
