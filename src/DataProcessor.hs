@@ -42,4 +42,17 @@ movingAverage n xs
 -- Helper function from Data.List
 tails :: [a] -> [[a]]
 tails [] = [[]]
-tails xs@(_:ys) = xs : tails ys
+tails xs@(_:ys) = xs : tails ysmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (\x -> x * x + 1)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
