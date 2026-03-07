@@ -22,3 +22,61 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Char
+import System.Locale
+
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+
+data Record = Record
+    { recordId :: Int
+    , recordDate :: Day
+    , recordValue :: Double
+    , recordCategory :: String
+    } deriving (Show, Eq)
+
+parseRecord :: [String] -> Maybe Record
+parseRecord [idStr, dateStr, valueStr, category]
+    | all isDigit idStr
+    , Just date <- parseDate dateStr
+    , all (\c -> isDigit c || c == '.') valueStr
+    , not (null category) =
+        Just $ Record (read idStr) date (read valueStr) category
+parseRecord _ = Nothing
+
+filterRecordsByDate :: Day -> Day -> [Record] -> [Record]
+filterRecordsByDate startDate endDate =
+    filter (\r -> recordDate r >= startDate && recordDate r <= endDate)
+
+calculateTotalByCategory :: [Record] -> [(String, Double)]
+calculateTotalByCategory records =
+    map (\cat -> (cat, sum [v | r <- records, recordCategory r == cat, let v = recordValue r]))
+    $ nub $ map recordCategory records
+
+processCSVData :: String -> Day -> Day -> Either String [(String, Double)]
+processCSVData csvContent startDate endDate = do
+    let lines' = drop 1 $ lines csvContent
+    let records = map (parseRecord . splitByComma) lines'
+    
+    if any isNothing records
+        then Left "Invalid CSV format"
+        else Right $ calculateTotalByCategory $
+             filterRecordsByDate startDate endDate $
+             catMaybes records
+
+splitByComma :: String -> [String]
+splitByComma = foldr f [""]
+  where
+    f ',' (x:xs) = "":x:xs
+    f c (x:xs) = (c:x):xs
+    f _ [] = []
+
+catMaybes :: [Maybe a] -> [a]
+catMaybes = foldr (\x acc -> case x of
+    Just val -> val : acc
+    Nothing -> acc) []
