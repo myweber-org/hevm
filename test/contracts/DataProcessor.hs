@@ -159,4 +159,13 @@ splitOn delimiter = foldr splitHelper [""]
   where
     splitHelper char acc@(x:xs)
         | char == delimiter = "":acc
-        | otherwise = (char:x):xs
+        | otherwise = (char:x):xsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
