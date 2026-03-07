@@ -244,3 +244,21 @@ safeMovingAverage n xs
     | n <= 0 = Nothing
     | n > length xs = Nothing
     | otherwise = Just $ movingAverage n xs
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats xs = (minimum xs, maximum xs, average)
+  where
+    total = sum xs
+    count = length xs
+    average = fromIntegral total / fromIntegral count
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
