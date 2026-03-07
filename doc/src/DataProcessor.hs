@@ -158,4 +158,30 @@ exampleUsage = do
   putStrLn "\nProcessed data:"
   mapM_ putStrLn (processStrings testData)
   putStrLn "\nJoined with comma:"
-  putStrLn (joinProcessed ", " testData)
+  putStrLn (joinProcessed ", " testData)module DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map average $ filter (\w -> length w == n) $ tails xs
+  where
+    average ws = sum ws / fromIntegral n
+
+smoothData :: Int -> [Double] -> [Double]
+smoothData window dataPoints =
+    movingAverage window dataPoints
+
+validateData :: [Double] -> Maybe [Double]
+validateData [] = Nothing
+validateData xs
+    | any isNaN xs = Nothing
+    | any isInfinite xs = Nothing
+    | otherwise = Just xs
+
+processDataStream :: Int -> [Double] -> Maybe [Double]
+processDataStream window rawData = do
+    validated <- validateData rawData
+    return $ smoothData window validated
