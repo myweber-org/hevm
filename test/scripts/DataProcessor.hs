@@ -153,4 +153,20 @@ movingAverage n xs
 -- Helper function from Data.List
 tails :: [a] -> [[a]]
 tails [] = [[]]
-tails xs@(_:ys) = xs : tails ys
+tails xs@(_:ys) = xs : tails ysmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenSquares
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Even squares: " ++ show (processEvenSquares numbers)
+    putStrLn $ "Sum of even squares: " ++ show (sumProcessed numbers)
