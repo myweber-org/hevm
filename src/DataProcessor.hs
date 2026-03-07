@@ -56,3 +56,15 @@ main = do
     let result = processNumbers numbers
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show result
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+validateAndProcess :: [Int] -> Maybe [Int]
+validateAndProcess xs
+  | null xs = Nothing
+  | otherwise = Just $ processData xs
