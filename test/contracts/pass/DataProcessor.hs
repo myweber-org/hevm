@@ -1,16 +1,41 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+-- Validate if string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+-- Validate if string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
 
-processEvenNumbers :: [Int] -> [Int]
-processEvenNumbers = filterAndTransform even (* 2)
+-- Convert string to standardized uppercase format
+standardizeText :: String -> String
+standardizeText = map toUpper
 
-processOddNumbers :: [Int] -> [Int]
-processOddNumbers = filterAndTransform odd (+ 1)
+-- Process a list of strings with validation and transformation
+processData :: [String] -> (Int, Int, [String])
+processData items = 
+    let numericCount = length $ filter validateNumeric items
+        alphaCount = length $ filter validateAlpha items
+        processed = map standardizeText items
+    in (numericCount, alphaCount, processed)
+
+-- Generate a summary report from processed data
+generateReport :: (Int, Int, [String]) -> String
+generateReport (numCount, alphaCount, items) =
+    "Data Processing Report\n" ++
+    "=====================\n" ++
+    "Numeric entries: " ++ show numCount ++ "\n" ++
+    "Alphabetic entries: " ++ show alphaCount ++ "\n" ++
+    "Total entries: " ++ show (length items) ++ "\n" ++
+    "Processed items: " ++ intercalate ", " items
+
+-- Main processing pipeline
+runDataProcessor :: [String] -> String
+runDataProcessor input = 
+    let processed = processData input
+    in generateReport processed
