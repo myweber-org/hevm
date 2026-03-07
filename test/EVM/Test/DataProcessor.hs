@@ -1,14 +1,18 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows :: Int -> [a] -> [[a]]
+    windows m = takeWhile ((== m) . length) . map (take m) . tails
+    
+    average :: [Double] -> Double
+    average ys = sum ys / fromIntegral (length ys)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform even (\x -> x * x + 1)
-
-main :: IO ()
-main = do
-    let input = [1..10]
-    let result = processData input
-    putStrLn $ "Original list: " ++ show input
-    putStrLn $ "Processed list: " ++ show result
+-- Helper function from Data.List
+tails :: [a] -> [[a]]
+tails [] = [[]]
+tails xs@(_:ys) = xs : tails ys
