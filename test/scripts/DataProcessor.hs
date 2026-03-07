@@ -220,4 +220,24 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform isEven square
+    where
+        isEven x = x `mod` 2 == 0
+        square x = x * x
+
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats xs = (minimum xs, maximum xs, average xs)
+    where
+        average [] = 0.0
+        average ys = fromIntegral (sum ys) / fromIntegral (length ys)
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
