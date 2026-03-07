@@ -1,45 +1,41 @@
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+type Username = String
+type Email = String
+type UserProfile = (Username, Email, Int)
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
-module DataProcessor where
+validateUsername :: Username -> Maybe Username
+validateUsername username
+    | length username < 3 = Nothing
+    | length username > 20 = Nothing
+    | not (all isAlpha username) = Nothing
+    | otherwise = Just (map toLower username)
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+validateEmail :: Email -> Maybe Email
+validateEmail email
+    | '@' `notElem` email = Nothing
+    | '.' `notElem` (dropWhile (/= '@') email) = Nothing
+    | any isSpace email = Nothing
+    | otherwise = Just (map toLower email)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+normalizeProfile :: UserProfile -> Maybe UserProfile
+normalizeProfile (username, email, age) = do
+    validUsername <- validateUsername username
+    validEmail <- validateEmail email
+    if age >= 0 && age <= 150
+        then Just (validUsername, validEmail, age)
+        else Nothing
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbersmodule DataProcessor where
+formatProfile :: UserProfile -> String
+formatProfile (username, email, age) =
+    intercalate " | " ["Username: " ++ username, "Email: " ++ email, "Age: " ++ show age]
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform even (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed numbers: " ++ show (sumProcessed numbers)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
-
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+processProfiles :: [UserProfile] -> [String]
+processProfiles profiles =
+    map formatProfile $ filter (/= Nothing) (map normalizeProfile profiles) >>= maybeToList
+  where
+    maybeToList (Just x) = [x]
+    maybeToList Nothing = []
