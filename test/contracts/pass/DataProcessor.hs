@@ -59,4 +59,13 @@ main = do
             print validData
             putStrLn "Processed data (values > 10 doubled):"
             print $ processData validData
-        Nothing -> putStrLn "Invalid input: all values must be positive"
+        Nothing -> putStrLn "Invalid input: all values must be positive"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processData
