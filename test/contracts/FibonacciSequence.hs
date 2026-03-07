@@ -22,4 +22,9 @@ fibMemo = fix memoize
 main :: IO ()
 main = do
     putStrLn "Fibonacci numbers from 0 to 20:"
-    mapM_ (print . fibMemo) [0..20]
+    mapM_ (print . fibMemo) [0..20]module FibonacciSequence where
+
+fibonacci :: Integer -> [Integer]
+fibonacci n = takeWhile (<= n) fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
