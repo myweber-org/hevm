@@ -65,4 +65,40 @@ processText = formatOutput . sortByFrequency . countWords
 main :: IO ()
 main = do
     input <- TIO.getContents
-    TIO.putStr $ processText input
+    TIO.putStr $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Ord (Down(..))
+
+type WordCount = Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower
+
+filterByMinFrequency :: Int -> WordCount -> WordCount
+filterByMinFrequency minFreq = Map.filter (>= minFreq)
+
+getTopNWords :: Int -> WordCount -> [(String, Int)]
+getTopNWords n = take n . sortOn (Down . snd) . Map.toList
+
+analyzeText :: String -> Int -> Int -> [(String, Int)]
+analyzeText text minFreq topN = 
+    getTopNWords topN $ filterByMinFrequency minFreq $ countWords text
+
+displayAnalysis :: String -> Int -> Int -> IO ()
+displayAnalysis text minFreq topN = do
+    let results = analyzeText text minFreq topN
+    putStrLn "Top words by frequency:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) results
+
+sampleText :: String
+sampleText = "The quick brown fox jumps over the lazy dog. The dog barks at the fox."
+
+main :: IO ()
+main = displayAnalysis sampleText 2 5
