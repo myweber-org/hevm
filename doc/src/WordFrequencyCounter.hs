@@ -134,4 +134,38 @@ main = do
     input <- getLine
     let frequencies = countWords input
     putStrLn "\nWord frequencies (sorted by count):"
-    putStrLn $ formatOutput frequencies
+    putStrLn $ formatOutput frequenciesmodule WordFrequencyCounter where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+-- | Count frequency of each word in a string
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countHelper [] wordsList
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+-- | Get top N most frequent words
+topWords :: Int -> String -> [WordCount]
+topWords n text = take n $ countWords text
+
+-- | Calculate word frequency statistics
+wordStats :: String -> (Int, Int, Double)
+wordStats text =
+    let counts = countWords text
+        totalWords = sum $ map snd counts
+        uniqueWords = length counts
+        avgFrequency = if uniqueWords > 0 
+                      then fromIntegral totalWords / fromIntegral uniqueWords 
+                      else 0.0
+    in (totalWords, uniqueWords, avgFrequency)
