@@ -345,4 +345,48 @@ main = do
         TIO.putStrLn $ T.justifyLeft 15 ' ' word <> " : " <> T.pack (show count)) topWords
     
     -- To analyze a file, uncomment:
-    -- processFile "document.txt" 10
+    -- processFile "document.txt" 10module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+getTopNWords :: Int -> [WordCount] -> [WordCount]
+getTopNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+processText :: String -> Int -> Int -> IO ()
+processText text minFreq topN = do
+    let allCounts = countWords text
+        filtered = filterByMinFrequency minFreq allCounts
+        topWords = getTopNWords topN filtered
+    
+    putStrLn "Top words by frequency:"
+    printWordCounts topWords
+
+sampleText :: String
+sampleText = "This is a sample text. This text contains words. Some words repeat. Repeat is important."
+
+main :: IO ()
+main = do
+    putStrLn "Word Frequency Counter"
+    putStrLn "======================"
+    processText sampleText 2 5
