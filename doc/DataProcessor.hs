@@ -152,3 +152,24 @@ processData = filterAndTransform (> 0) (* 2)
 
 validateData :: [Int] -> Bool
 validateData xs = all (> 0) xs && length xs > 3
+module DataProcessor where
+
+import Data.Time
+import Text.CSV
+
+filterCSVByDate :: Day -> Day -> CSV -> CSV
+filterCSVByDate startDate endDate csv = 
+    filter (isWithinDateRange . parseDateFromRecord) csv
+    where
+        isWithinDateRange date = date >= startDate && date <= endDate
+        parseDateFromRecord record = 
+            parseTimeOrError True defaultTimeLocale "%Y-%m-%d" (record !! 0) :: Day
+
+processData :: FilePath -> Day -> Day -> IO ()
+processData filePath startDate endDate = do
+    csvData <- parseCSVFromFile filePath
+    case csvData of
+        Left err -> putStrLn $ "Error parsing CSV: " ++ err
+        Right csv -> 
+            let filtered = filterCSVByDate startDate endDate csv
+            in writeFile "filtered_output.csv" (printCSV filtered)
