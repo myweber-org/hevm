@@ -125,3 +125,38 @@ main = do
     if validateInput sampleData
         then print $ processData sampleData
         else putStrLn "Invalid input data"
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Char
+
+type CSVRow = [String]
+type DateRange = (Day, Day)
+
+parseDate :: String -> Maybe Day
+parseDate str = parseTimeM True defaultTimeLocale "%Y-%m-%d" str
+
+filterByDateRange :: DateRange -> [CSVRow] -> [CSVRow]
+filterByDateRange (start, end) rows = 
+    filter (isWithinRange start end) rows
+
+isWithinRange :: Day -> Day -> CSVRow -> Bool
+isWithinRange start end row =
+    case parseDate (head row) of
+        Just date -> date >= start && date <= end
+        Nothing   -> False
+
+processCSVData :: String -> DateRange -> [CSVRow]
+processCSVData csvData dateRange =
+    let rows = map (splitOn ',') (lines csvData)
+        filtered = filterByDateRange dateRange rows
+    in filtered
+
+splitOn :: Char -> String -> [String]
+splitOn delimiter = foldr splitHelper [""]
+  where
+    splitHelper char acc@(x:xs)
+        | char == delimiter = "":acc
+        | otherwise = (char:x):xs
