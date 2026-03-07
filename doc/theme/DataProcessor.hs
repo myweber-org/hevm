@@ -36,4 +36,21 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenNumbers
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processEvenNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
