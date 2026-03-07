@@ -169,4 +169,27 @@ wordFrequencyReport text =
 
 nub :: Eq a => [a] -> [a]
 nub [] = []
-nub (x:xs) = x : nub (filter (/= x) xs)
+nub (x:xs) = x : nub (filter (/= x) xs)module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = take n $ sortOn (negate . snd) $ Map.toList (countWords text)
+
+analyzeText :: String -> IO ()
+analyzeText text = do
+  putStrLn "Top 10 most frequent words:"
+  mapM_ printWord (getTopWords 10 text)
+  where
+    printWord (word, count) = putStrLn $ word ++ ": " ++ show count
