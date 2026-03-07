@@ -160,4 +160,57 @@ processOddCubes :: [Int] -> [Int]
 processOddCubes = filterAndTransform odd (\x -> x * x * x)
 
 sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
-sumProcessedData predicate transformer = sum . filterAndTransform predicate transformer
+sumProcessedData predicate transformer = sum . filterAndTransform predicate transformermodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = mapM parseRow (lines input)
+  where
+    parseRow line = case splitOnComma line of
+        [] -> Left "Empty row"
+        cells -> Right (map trim cells)
+
+    splitOnComma :: String -> [String]
+    splitOnComma [] = []
+    splitOnComma str = 
+        let (cell, rest) = break (== ',') str
+        in cell : case rest of
+                    ',' : xs -> splitOnComma xs
+                    _        -> []
+
+    trim :: String -> String
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Right []
+validateNumericColumn (row:rows) colIndex
+    | colIndex < 0 = Left "Column index cannot be negative"
+    | colIndex >= length row = Left "Column index out of bounds"
+    | all isNumeric (row !! colIndex) = do
+        rest <- validateNumericColumn rows colIndex
+        Right (row : rest)
+    | otherwise = Left $ "Non-numeric value in column " ++ show colIndex
+  where
+    isNumeric = all isDigit
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage rows colIndex = do
+    validated <- validateNumericColumn rows colIndex
+    let values = map (read . (!! colIndex)) validated
+    if null values 
+        then Left "No data to calculate average"
+        else Right (sum values / fromIntegral (length values))
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate ",")
+
+processCSVFile :: String -> Int -> Either String (String, Double)
+processCSVFile content colIndex = do
+    parsed <- parseCSV content
+    average <- calculateColumnAverage parsed colIndex
+    Right (formatCSVOutput parsed, average)
