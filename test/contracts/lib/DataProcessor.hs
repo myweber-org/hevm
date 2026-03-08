@@ -1,59 +1,17 @@
 module DataProcessor where
 
-import Data.Char (toLower, isAlpha, isSpace)
-import Data.List (intercalate)
-
-type Username = String
-type Email = String
-type UserProfile = (Username, Email, Int)
-
-validateUsername :: Username -> Maybe Username
-validateUsername username
-    | length username < 3 = Nothing
-    | length username > 20 = Nothing
-    | not (all isAlpha username) = Nothing
-    | otherwise = Just (map toLower username)
-
-validateEmail :: Email -> Maybe Email
-validateEmail email
-    | '@' `notElem` email = Nothing
-    | '.' `notElem` (dropWhile (/= '@') email) = Nothing
-    | any isSpace email = Nothing
-    | otherwise = Just (map toLower email)
-
-normalizeProfile :: UserProfile -> Maybe UserProfile
-normalizeProfile (username, email, age) = do
-    validUsername <- validateUsername username
-    validEmail <- validateEmail email
-    if age >= 0 && age <= 150
-        then Just (validUsername, validEmail, age)
-        else Nothing
-
-formatProfile :: UserProfile -> String
-formatProfile (username, email, age) =
-    intercalate " | " ["Username: " ++ username, "Email: " ++ email, "Age: " ++ show age]
-
-processProfiles :: [UserProfile] -> [String]
-processProfiles profiles =
-    map formatProfile $ filter (/= Nothing) (map normalizeProfile profiles) >>= maybeToList
-  where
-    maybeToList (Just x) = [x]
-    maybeToList Nothing = []
-module DataProcessor where
-
 filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (\x -> x * x)
 
-validateData :: [Int] -> Bool
-validateData = all (> 0)
+sumProcessedData :: [Int] -> Int
+sumProcessedData = sum . processEvenSquares
 
 main :: IO ()
 main = do
-    let inputData = [1, -2, 3, 0, 5, -8]
-    let processed = processData inputData
-    putStrLn $ "Original data: " ++ show inputData
-    putStrLn $ "Processed data: " ++ show processed
-    putStrLn $ "Data validation: " ++ show (validateData processed)
+    let sampleData = [1..10]
+    putStrLn $ "Original data: " ++ show sampleData
+    putStrLn $ "Processed data: " ++ show (processEvenSquares sampleData)
+    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)
