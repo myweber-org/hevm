@@ -91,3 +91,55 @@ processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isSpace)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null input = Left "Empty input"
+    | otherwise = Right $ map parseRow $ lines input
+  where
+    parseRow :: String -> CSVRow
+    parseRow = splitByComma . trim
+    
+    splitByComma :: String -> CSVRow
+    splitByComma [] = []
+    splitByComma str = 
+        let (cell, rest) = break (== ',') str
+        in trim cell : if null rest then [] else splitByComma (drop 1 rest)
+    
+    trim :: String -> String
+    trim = reverse . dropWhile isSpace . reverse . dropWhile isSpace
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Left "Empty data"
+validateNumericColumn rows colIndex
+    | colIndex < 0 = Left "Column index must be non-negative"
+    | any (\row -> length row <= colIndex) rows = 
+        Left $ "Column index " ++ show colIndex ++ " out of bounds"
+    | not (all (isNumeric . (!! colIndex)) rows) =
+        Left $ "Column " ++ show colIndex ++ " contains non-numeric values"
+    | otherwise = Right rows
+  where
+    isNumeric :: String -> Bool
+    isNumeric str = not (null str) && all isDigit (filter (/= '.') str)
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage rows colIndex = do
+    validated <- validateNumericColumn rows colIndex
+    let values = map (read . (!! colIndex)) validated
+    return $ sum values / fromIntegral (length values)
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate ",")
+
+processCSVData :: String -> Int -> Either String (String, Double)
+processCSVData csvString colIndex = do
+    parsed <- parseCSV csvString
+    avg <- calculateColumnAverage parsed colIndex
+    return (formatCSVOutput parsed, avg)
