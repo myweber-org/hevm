@@ -442,4 +442,26 @@ analyzeText text =
 main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello."
-    putStrLn $ analyzeText sampleText
+    putStrLn $ analyzeText sampleTextmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+type WordFreq = Map String Int
+
+countWords :: String -> WordFreq
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter isAlpha
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (negate . snd) $ Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequencies . topNWords n
