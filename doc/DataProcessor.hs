@@ -172,4 +172,7 @@ processData filePath startDate endDate = do
         Left err -> putStrLn $ "Error parsing CSV: " ++ err
         Right csv -> 
             let filtered = filterCSVByDate startDate endDate csv
-            in writeFile "filtered_output.csv" (printCSV filtered)
+            in writeFile "filtered_output.csv" (printCSV filtered)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
