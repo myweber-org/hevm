@@ -50,4 +50,26 @@ main = do
     input <- getContents
     let topWords = countWords input
     putStrLn "\nTop 10 most frequent words:"
-    putStrLn $ displayResults topWords
+    putStrLn $ displayResults topWordsmodule WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord w m = Map.insertWith (+) (normalize w) 1 m
+    normalize = map toLower . filter isAlpha
+
+topNWords :: Int -> String -> [(String, Int)]
+topNWords n text = take n $ sortOn (Down . snd) $ Map.toList $ countWords text
+
+displayFrequencies :: [(String, Int)] -> String
+displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
+
+analyzeText :: Int -> String -> String
+analyzeText n = displayFrequencies . topNWords n
