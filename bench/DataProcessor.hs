@@ -80,4 +80,10 @@ main = do
     let input = [1..10]
     let result = processData input
     putStrLn $ "Original list: " ++ show input
-    putStrLn $ "Processed list: " ++ show result
+    putStrLn $ "Processed list: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
