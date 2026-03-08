@@ -108,4 +108,10 @@ processCSVFile :: String -> Int -> Either String (String, Double)
 processCSVFile content colIndex = do
     parsed <- parseCSV content
     average <- calculateColumnAverage parsed colIndex
-    return (formatCSVOutput parsed, average)
+    return (formatCSVOutput parsed, average)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
