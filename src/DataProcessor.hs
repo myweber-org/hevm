@@ -1,31 +1,50 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Char
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
 
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+type Record = (Day, String, Double)
 
-main :: IO ()
-main = do
-    let inputData = [1, -2, 3, 0, 5, -8]
-    if validateInput inputData
-        then do
-            let result = processData inputData
-            putStrLn $ "Processed data: " ++ show result
-        else putStrLn "Invalid input data detected"module DataProcessor where
+parseRecord :: String -> Maybe Record
+parseRecord line = case words line of
+    [dateStr, name, amountStr] -> do
+        date <- parseDate dateStr
+        amount <- readMaybe amountStr
+        return (date, name, amount)
+    _ -> Nothing
+  where
+    readMaybe :: String -> Maybe Double
+    readMaybe s = case reads s of
+        [(x, "")] -> Just x
+        _ -> Nothing
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+filterByDateRange :: Day -> Day -> [Record] -> [Record]
+filterByDateRange start end = filter (\(d, _, _) -> d >= start && d <= end)
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+loadRecords :: FilePath -> IO [Record]
+loadRecords path = do
+    content <- readFile path
+    return $ mapMaybe parseRecord (lines content)
 
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+summarizeRecords :: [Record] -> [(String, Double)]
+summarizeRecords records =
+    map (\(name, amounts) -> (name, sum amounts)) $
+    groupByNames records
+  where
+    groupByNames = foldl' insertRecord []
+    insertRecord acc (_, name, amount) =
+        case lookup name acc of
+            Just total -> (name, total + amount) : delete (name, total) acc
+            Nothing -> (name, amount) : acc
 
-validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+processData :: FilePath -> Day -> Day -> IO [(String, Double)]
+processData path start end = do
+    records <- loadRecords path
+    let filtered = filterByDateRange start end records
+    return $ summarizeRecords filtered
