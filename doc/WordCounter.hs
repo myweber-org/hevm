@@ -20,4 +20,31 @@ countWords text =
 
 mostFrequent :: Int -> String -> [WordCount]
 mostFrequent n text = 
-    take n . sortOn (Down . snd) $ countWords text
+    take n . sortOn (Down . snd) $ countWords textmodule WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (group, sort)
+
+countWords :: String -> [(String, Int)]
+countWords text = map (\xs -> (head xs, length xs)) 
+                 . group 
+                 . sort 
+                 . words 
+                 $ map toLowerClean text
+  where
+    toLowerClean c
+      | isSpace c = ' '
+      | otherwise = toLower c
+
+toLower :: Char -> Char
+toLower c
+  | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
+  | otherwise = c
+
+displayCounts :: [(String, Int)] -> String
+displayCounts counts = unlines 
+                     $ map (\(word, count) -> word ++ ": " ++ show count) 
+                     $ sortByFrequency counts
+
+sortByFrequency :: [(String, Int)] -> [(String, Int)]
+sortByFrequency = sortBy (\(_, c1) (_, c2) -> compare c2 c1)
