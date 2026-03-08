@@ -79,4 +79,58 @@ splitByComma = foldr f [""]
 catMaybes :: [Maybe a] -> [a]
 catMaybes = foldr (\x acc -> case x of
     Just val -> val : acc
-    Nothing -> acc) []
+    Nothing -> acc) []module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate that a string contains only alphabetic characters
+validateAlpha :: String -> Maybe String
+validateAlpha s
+    | all isAlpha s = Just s
+    | otherwise = Nothing
+
+-- Validate that a string contains only digits
+validateDigits :: String -> Maybe String
+validateDigits s
+    | all isDigit s = Just s
+    | otherwise = Nothing
+
+-- Transform string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
+
+-- Process user data with validation and transformation
+processUserData :: String -> String -> String -> Maybe (String, String, String)
+processUserData firstName lastName phone = do
+    validFirst <- validateAlpha firstName
+    validLast <- validateAlpha lastName
+    validPhone <- validateDigits (normalizePhone phone)
+    
+    let formattedName = formatName (toUppercase validFirst) (toUppercase validLast)
+    let formattedPhone = intercalate "-" $ chunksOf 3 validPhone
+    
+    return (formattedName, formattedPhone, show (length validPhone))
+
+-- Helper function to split string into chunks
+chunksOf :: Int -> String -> [String]
+chunksOf _ [] = []
+chunksOf n s = take n s : chunksOf n (drop n s)
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let result = processUserData "John" "Doe" "1234567890"
+    case result of
+        Just (name, phone, length) -> 
+            putStrLn $ "Processed: " ++ name ++ " | " ++ phone ++ " | Length: " ++ length
+        Nothing -> 
+            putStrLn "Invalid input data"
