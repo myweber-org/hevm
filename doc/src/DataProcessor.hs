@@ -208,4 +208,28 @@ main :: IO ()
 main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Record = (String, [Double])
+
+parseCSV :: String -> [Record]
+parseCSV content = map parseLine (lines content)
+  where
+    parseLine line = 
+        let parts = splitOn "," line
+            name = head parts
+            values = map read (tail parts)
+        in (name, values)
+
+computeAverages :: [Record] -> [(String, Double)]
+computeAverages records = map avg records
+  where
+    avg (name, vals) = 
+        let total = sum vals
+            count = fromIntegral (length vals)
+        in (name, total / count)
+
+processData :: String -> [(String, Double)]
+processData = computeAverages . parseCSV
