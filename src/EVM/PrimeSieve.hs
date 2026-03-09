@@ -167,4 +167,20 @@ main = do
     putStrLn "Enter limit:"
     input <- getLine
     let limit = read input :: Int
-    print $ primesUpTo limit
+    print $ primesUpTo limitmodule PrimeSieve where
+
+sieve :: Int -> [Int]
+sieve limit
+    | limit < 2 = []
+    | otherwise = sieveHelper [2..limit] []
+
+sieveHelper :: [Int] -> [Int] -> [Int]
+sieveHelper [] primes = reverse primes
+sieveHelper (x:xs) primes =
+    let newPrimes = x : primes
+        multiples = [x * x, x * x + x .. last (x:xs)]
+        filtered = filter (`notElem` multiples) xs
+    in sieveHelper filtered newPrimes
+
+primesUpTo :: Int -> [Int]
+primesUpTo = sieve
