@@ -163,3 +163,88 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isSpace)
+import Control.Monad (foldM)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+data ValidationError = 
+    EmptyRowError Int
+  | InvalidColumnCountError Int Int Int
+  | NumericFieldError Int Int String
+  deriving (Show, Eq)
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = 
+    if null input
+    then Left "Empty input"
+    else Right $ map parseRow $ lines input
+  where
+    parseRow line = splitOnComma line
+    splitOnComma = foldr (\c acc -> if c == ',' then []:acc else (c:head acc):tail acc) [[]]
+
+validateCSVData :: CSVData -> Either [ValidationError] CSVData
+validateCSVData rows = do
+    errors <- foldM validateRow [] (zip [1..] rows)
+    if null errors
+    then Right rows
+    else Left errors
+  where
+    validateRow acc (rowNum, row) =
+        let checks = [checkEmptyRow rowNum row, checkColumnCount rowNum row, checkNumericFields rowNum row]
+            newErrors = concatMap (\f -> f row) checks
+        in Right (acc ++ newErrors)
+    
+    checkEmptyRow rowNum [] = [EmptyRowError rowNum]
+    checkEmptyRow _ _ = []
+    
+    checkColumnCount rowNum row = 
+        if length row /= expectedColumns
+        then [InvalidColumnCountError rowNum (length row) expectedColumns]
+        else []
+      where expectedColumns = 4
+    
+    checkNumericFields rowNum row = 
+        concat $ zipWith (\colNum val -> 
+            if colNum `elem` numericColumns && not (all isDigit (filter (not . isSpace) val))
+            then [NumericFieldError rowNum colNum val]
+            else []
+        ) [1..] row
+      where numericColumns = [2, 4]
+
+processCSVFile :: String -> Either String CSVData
+processCSVFile content = do
+    parsed <- parseCSV content
+    case validateCSVData parsed of
+        Right valid -> Right valid
+        Left errors -> Left $ "Validation errors: " ++ showErrors errors
+  where
+    showErrors errs = intercalate "; " $ map showError errs
+    showError (EmptyRowError n) = "Row " ++ show n ++ " is empty"
+    showError (InvalidColumnCountError n actual expected) = 
+        "Row " ++ show n ++ " has " ++ show actual ++ " columns, expected " ++ show expected
+    showError (NumericFieldError n col val) = 
+        "Row " ++ show n ++ " column " ++ show col ++ " invalid numeric value: " ++ show val
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage rows colIndex
+    | colIndex < 1 || colIndex > length (head rows) = Left "Invalid column index"
+    | otherwise = 
+        let values = map (read . (!! (colIndex-1))) rows
+        in Right $ fromIntegral (sum values) / fromIntegral (length values)
+
+main :: IO ()
+main = do
+    let testData = "John,25,Engineer,50000\nJane,30,Manager,75000\nBob,abc,Developer,60000"
+    case processCSVFile testData of
+        Right validData -> do
+            putStrLn "Valid CSV data:"
+            mapM_ (putStrLn . intercalate ", ") validData
+            case calculateColumnAverage validData 2 of
+                Right avg -> putStrLn $ "Average age: " ++ show avg
+                Left err -> putStrLn err
+        Left err -> putStrLn $ "Error: " ++ err
