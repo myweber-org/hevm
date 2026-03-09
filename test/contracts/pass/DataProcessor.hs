@@ -190,3 +190,62 @@ main = do
     case processCSVData sampleData of
         Just avg -> putStrLn $ "Average: " ++ show avg
         Nothing -> putStrLn "Error processing data"
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, fromMaybe)
+
+-- | Validates if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
+
+-- | Safely parses an integer, returns Nothing on failure
+safeParseInt :: String -> Maybe Int
+safeParseInt s
+    | validateDigits s = Just (read s)
+    | otherwise = Nothing
+
+-- | Trims leading and trailing whitespace
+trim :: String -> String
+trim = f . f
+    where f = reverse . dropWhile isSpace
+
+-- | Transforms a list of strings into a comma-separated string
+joinWithCommas :: [String] -> String
+joinWithCommas = intercalate ", "
+
+-- | Processes a list of potential number strings, returning valid integers
+processNumbers :: [String] -> [Int]
+processNumbers = catMaybes . map safeParseInt . map trim
+
+-- | Calculates statistics from a list of numbers
+data Stats = Stats
+    { total :: Int
+    , average :: Double
+    , count :: Int
+    } deriving (Show, Eq)
+
+calculateStats :: [Int] -> Stats
+calculateStats [] = Stats 0 0.0 0
+calculateStats xs = Stats total' avg count'
+    where
+        total' = sum xs
+        count' = length xs
+        avg = fromIntegral total' / fromIntegral count'
+
+-- | Main processing pipeline
+processData :: [String] -> Maybe Stats
+processData input
+    | null validNumbers = Nothing
+    | otherwise = Just (calculateStats validNumbers)
+    where
+        validNumbers = processNumbers input
+
+-- Example utility for demonstration
+exampleUsage :: IO ()
+exampleUsage = do
+    let rawData = [" 42 ", "invalid", "  123  ", "another", "7"]
+    case processData rawData of
+        Nothing -> putStrLn "No valid numbers found"
+        Just stats -> print stats
