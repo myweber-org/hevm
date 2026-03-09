@@ -434,4 +434,45 @@ main = do
     putStrLn "Enter text to analyze word frequency:"
     input <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = group $ sort cleanedWords
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+topNWords :: Int -> [WordCount] -> [WordCount]
+topNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is fun. World says hello."
+    putStrLn "Word frequencies:"
+    let frequencies = countWords sampleText
+    printWordCounts frequencies
+    
+    putStrLn "\nWords with frequency >= 2:"
+    let filtered = filterByMinFrequency 2 frequencies
+    printWordCounts filtered
+    
+    putStrLn "\nTop 3 words:"
+    let top3 = topNWords 3 frequencies
+    printWordCounts top3
