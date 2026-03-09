@@ -161,4 +161,43 @@ main = do
     
     putStrLn "\nTop 5 words:"
     let top5 = topNFrequentWords 5 $ T.pack sampleText
-    print top5
+    print top5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordFreq = (String, Int)
+
+countWords :: String -> [WordFreq]
+countWords text = 
+    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort wordsList
+    in map (\ws -> (head ws, length ws)) grouped
+
+sortByFrequency :: [WordFreq] -> [WordFreq]
+sortByFrequency = sortOn (Down . snd)
+
+filterByMinFrequency :: Int -> [WordFreq] -> [WordFreq]
+filterByMinFrequency minFreq = filter ((>= minFreq) . snd)
+
+getTopNWords :: Int -> [WordFreq] -> [WordFreq]
+getTopNWords n = take n
+
+processText :: String -> Int -> Int -> [WordFreq]
+processText text minFreq topN = 
+    let counted = countWords text
+        filtered = filterByMinFrequency minFreq counted
+        sorted = sortByFrequency filtered
+    in getTopNWords topN sorted
+
+displayResults :: [WordFreq] -> IO ()
+displayResults freqList = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) freqList
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is functional. World says hello."
+    let results = processText sampleText 1 5
+    putStrLn "Top 5 most frequent words (minimum frequency: 1):"
+    displayResults results
