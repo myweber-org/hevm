@@ -6,10 +6,8 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
 
-validateInput :: [Int] -> Bool
-validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+validateData :: [Int] -> Bool
+validateData xs = all (> 0) xs && length xs > 3
 
-safeProcess :: [Int] -> Maybe [Int]
-safeProcess xs
-  | validateInput xs = Just (processData xs)
-  | otherwise = Nothing
+combineResults :: [Int] -> [Int] -> [Int]
+combineResults xs ys = zipWith (+) (processData xs) (processData ys)
