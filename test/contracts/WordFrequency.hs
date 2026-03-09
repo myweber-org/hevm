@@ -179,4 +179,26 @@ processTextFile filePath = do
   let freqMap = countWords content
       topWords = getTopWords 10 freqMap
   putStrLn "Top 10 most frequent words:"
-  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWordsmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = sortOn (Down . snd) $ map (\ws -> (head ws, length ws)) grouped
+  where
+    words' = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+    grouped = foldr insertWord [] words'
+    insertWord w [] = [[w]]
+    insertWord w (g@(x:_):gs)
+        | w == x = (w:g) : gs
+        | otherwise = [w] : g : gs
+
+printWordFrequencies :: [WordCount] -> IO ()
+printWordFrequencies counts = mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) counts
+
+analyzeText :: String -> IO ()
+analyzeText = printWordFrequencies . countWords
