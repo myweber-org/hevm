@@ -1,127 +1,30 @@
 module FibonacciSequence where
 
-import Data.Function (fix)
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 fibonacci :: Int -> Integer
-fibonacci n = fibList !! n
-  where
-    fibList = 0 : 1 : zipWith (+) fibList (tail fibList)
+fibonacci n = fst (fibMemo n Map.empty)
 
--- Alternative implementation using fix for demonstration
-fibonacciFix :: Int -> Integer
-fibonacciFix = fix (\rec n -> if n < 2 then fromIntegral n else rec (n-1) + rec (n-2))module FibonacciSequence where
+fibMemo :: Int -> Map Int Integer -> (Integer, Map Int Integer)
+fibMemo n memo
+    | n <= 1 = (fromIntegral n, memo)
+    | otherwise = case Map.lookup n memo of
+        Just val -> (val, memo)
+        Nothing -> let
+            (a, memo1) = fibMemo (n-1) memo
+            (b, memo2) = fibMemo (n-2) memo1
+            result = a + b
+            in (result, Map.insert n result memo2)
 
-fib :: Int -> Integer
-fib n = fibs !! n
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
-
-import Data.Function.Memoize
-
-fib :: Integer -> Integer
-fib = memoize fib'
-  where
-    fib' 0 = 0
-    fib' 1 = 1
-    fib' n = fib (n - 1) + fib (n - 2)module FibonacciSequence where
-
-import Data.Function (fix)
-
-fibMemo :: Int -> Integer
-fibMemo = fix memoize
-  where
-    memoize _ 0 = 0
-    memoize _ 1 = 1
-    memoize f n = f (n - 1) + f (n - 2)
+fibonacciList :: Int -> [Integer]
+fibonacciList n = map fibonacci [0..n-1]
 
 main :: IO ()
 main = do
-    putStrLn "Fibonacci numbers from 0 to 20:"
-    mapM_ (print . fibMemo) [0..20]module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-printFibonacci :: Int -> IO ()
-printFibonacci n = do
-    putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
-    mapM_ (putStrLn . show) (fibonacci n)
-
-main :: IO ()
-main = do
-    putStr "Enter number of terms: "
-    input <- getLine
-    let n = read input :: Int
-    if n > 0
-        then printFibonacci n
-        else putStrLn "Please enter a positive integer."module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-printFibonacci :: Int -> IO ()
-printFibonacci n = do
-    putStrLn $ "First " ++ show n ++ " Fibonacci numbers:"
-    mapM_ (putStr . (++ " ") . show) (fibonacci n)
-    putStrLn ""module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n
-    | n <= 0    = []
-    | n == 1    = [0]
-    | n == 2    = [0, 1]
-    | otherwise = let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-                  in take n fibs
-
-printFibonacci :: Int -> IO ()
-printFibonacci n = do
-    putStrLn $ "Fibonacci sequence up to " ++ show n ++ " terms:"
-    mapM_ (putStrLn . show) (fibonacci n)
-
-main :: IO ()
-main = do
-    putStr "Enter number of terms: "
-    input <- getLine
-    let n = read input :: Int
-    printFibonacci nmodule FibonacciSequence where
-
-fibonacci :: Integer -> [Integer]
-fibonacci n = takeWhile (<= n) fibs
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)module FibonacciSequence where
-
-import Data.Function (fix)
-
-fibMemo :: Int -> Integer
-fibMemo = (map fib [0..] !!)
-  where
-    fib 0 = 0
-    fib 1 = 1
-    fib n = fibMemo (n - 1) + fibMemo (n - 2)
-
-fastFib :: Int -> Integer
-fastFib = fix (\f n -> if n < 2 then fromIntegral n else f (n - 1) + f (n - 2))module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-main :: IO ()
-main = do
-  putStrLn "Fibonacci sequence up to 10 terms:"
-  print (fibonacci 10)module FibonacciSequence where
-
-fibonacci :: Int -> [Integer]
-fibonacci n = take n fibs
-  where
-    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
-
-main :: IO ()
-main = do
-  putStrLn "Fibonacci sequence up to 10 terms:"
-  print $ fibonacci 10
+    putStrLn "First 20 Fibonacci numbers:"
+    print $ fibonacciList 20
+    putStrLn "\nIndividual Fibonacci numbers:"
+    print $ fibonacci 10
+    print $ fibonacci 20
+    print $ fibonacci 30
