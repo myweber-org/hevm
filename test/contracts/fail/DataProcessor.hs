@@ -36,4 +36,7 @@ processCSVFile filePath columnIndex = do
     return $ calculateAverage numericDatamodule DataProcessor where
 
 processData :: [Int] -> [Int]
-processData xs = map (^2) (filter even xs)
+processData xs = map (^2) (filter even xs)module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter (>0)
