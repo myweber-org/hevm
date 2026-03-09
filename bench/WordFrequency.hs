@@ -20,4 +20,30 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w,c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords n
+analyzeText n = displayFrequencies . topNWords nmodule WordFrequency where
+
+import qualified Data.Map.Strict as Map
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type FrequencyMap = Map.Map String Int
+
+countWords :: String -> FrequencyMap
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word acc =
+        let cleaned = filter isAlpha (map toLower word)
+        in if null cleaned
+            then acc
+            else Map.insertWith (+) cleaned 1 acc
+
+getTopWords :: Int -> FrequencyMap -> [(String, Int)]
+getTopWords n = take n . sortOn (Down . snd) . Map.toList
+
+printTopWords :: Int -> String -> IO ()
+printTopWords n text = do
+    let freqMap = countWords text
+        topWords = getTopWords n freqMap
+    putStrLn $ "Top " ++ show n ++ " words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
