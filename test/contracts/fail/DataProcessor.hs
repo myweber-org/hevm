@@ -33,4 +33,7 @@ processCSVFile filePath columnIndex = do
     content <- readFile filePath
     let parsedData = parseCSV content
     let numericData = extractNumericColumn parsedData columnIndex
-    return $ calculateAverage numericData
+    return $ calculateAverage numericDatamodule DataProcessor where
+
+processData :: [Int] -> [Int]
+processData xs = map (^2) (filter even xs)
