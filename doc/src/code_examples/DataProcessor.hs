@@ -35,4 +35,26 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = filterAndTransform even (* 2)
+
+processOddNumbers :: [Int] -> [Int]
+processOddNumbers = filterAndTransform odd (+ 1)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = 
+    sum . filterAndTransform predicate transformer
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original: " ++ show numbers
+    putStrLn $ "Even doubled: " ++ show (processEvenNumbers numbers)
+    putStrLn $ "Odd incremented: " ++ show (processOddNumbers numbers)
+    putStrLn $ "Sum of even doubled: " ++ show (sumProcessedData even (* 2) numbers)
