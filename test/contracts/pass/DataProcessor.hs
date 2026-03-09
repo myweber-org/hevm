@@ -159,3 +159,34 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Record = (String, Double)
+
+parseCSVLine :: String -> Maybe Record
+parseCSVLine line = case words line of
+    [name, valStr] -> case readMaybe valStr of
+        Just val -> Just (name, val)
+        Nothing -> Nothing
+    _ -> Nothing
+
+calculateAverage :: [Record] -> Double
+calculateAverage records =
+    let (total, count) = foldl' (\(s, c) (_, v) -> (s + v, c + 1)) (0, 0) records
+    in if count > 0 then total / fromIntegral count else 0
+
+processCSVData :: String -> Maybe Double
+processCSVData csvContent = do
+    let linesOfContent = lines csvContent
+    records <- traverse parseCSVLine linesOfContent
+    return $ calculateAverage records
+
+main :: IO ()
+main = do
+    let sampleData = "Alice 85.5\nBob 92.0\nCharlie 78.5\nDiana 88.0"
+    case processCSVData sampleData of
+        Just avg -> putStrLn $ "Average: " ++ show avg
+        Nothing -> putStrLn "Error processing data"
