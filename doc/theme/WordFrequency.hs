@@ -1,41 +1,24 @@
 module WordFrequency where
 
-import qualified Data.Map.Strict as Map
 import Data.Char (toLower, isAlpha)
-import Data.List (sortOn)
-import Data.Ord (Down(..))
-
-type FrequencyMap = Map.Map String Int
-
-countWords :: String -> FrequencyMap
-countWords = foldr incrementWord Map.empty . words
-  where
-    incrementWord word = Map.insertWith (+) (normalize word) 1
-    normalize = map toLower . filter isAlpha
-
-topNWords :: Int -> String -> [(String, Int)]
-topNWords n text = take n $ sortOn (Down . snd) $ Map.toList (countWords text)
-
-displayFrequencies :: [(String, Int)] -> String
-displayFrequencies = unlines . map (\(w, c) -> w ++ ": " ++ show c)
-
-analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topNWords nmodule WordFrequency where
-
-import Data.Char (toLower, isAlpha)
-import Data.List (sortBy, group, sort)
+import Data.List (sortBy)
 import Data.Ord (comparing)
 
-countWords :: String -> [(String, Int)]
+type WordCount = [(String, Int)]
+
+countWords :: String -> WordCount
 countWords text = 
-    let wordsList = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
-        sortedWords = sort wordsList
-        grouped = group sortedWords
-    in sortBy (flip $ comparing snd) $ map (\ws -> (head ws, length ws)) grouped
+    let wordsList = filter (not . null) $ map (map toLower . filter isAlpha) $ words text
+        frequencyMap = foldr (\word acc -> case lookup word acc of
+                                            Just count -> (word, count + 1) : filter ((/= word) . fst) acc
+                                            Nothing -> (word, 1) : acc) [] wordsList
+    in sortBy (flip $ comparing snd) frequencyMap
 
-displayFrequencies :: [(String, Int)] -> String
-displayFrequencies freqList = 
-    unlines $ map (\(word, count) -> word ++ ": " ++ show count) freqList
+displayTopWords :: Int -> WordCount -> IO ()
+displayTopWords n counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) $ take n counts
 
-processText :: String -> String
-processText = displayFrequencies . countWords
+analyzeText :: String -> IO ()
+analyzeText text = do
+    putStrLn "Top 10 most frequent words:"
+    displayTopWords 10 $ countWords text
