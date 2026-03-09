@@ -58,3 +58,17 @@ main = do
     putStrLn $ "Even doubled: " ++ show (processEvenNumbers numbers)
     putStrLn $ "Odd incremented: " ++ show (processOddNumbers numbers)
     putStrLn $ "Sum of even doubled: " ++ show (sumProcessedData even (* 2) numbers)
+module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transform = map transform . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
