@@ -102,4 +102,41 @@ main = do
   putStrLn "Enter file path:"
   path <- getLine
   freqMap <- readFileAndCount path
-  printFrequencies freqMap
+  printFrequencies freqMapmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+import System.Environment (getArgs)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        grouped = foldr countHelper [] wordsList
+    in sortOn (Down . snd) grouped
+  where
+    cleanWord = map toLower . filter isAlpha
+    countHelper word [] = [(word, 1)]
+    countHelper word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countHelper word rest
+
+formatOutput :: [WordCount] -> String
+formatOutput counts = unlines $ map formatPair counts
+  where
+    formatPair (word, count) = word ++ ": " ++ show count
+
+processFile :: FilePath -> IO ()
+processFile filename = do
+    content <- readFile filename
+    let frequencies = countWords content
+    putStrLn $ formatOutput $ take 10 frequencies
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        [filename] -> processFile filename
+        _ -> putStrLn "Usage: wordfreq <filename>"
