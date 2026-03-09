@@ -156,4 +156,10 @@ sampleProfiles =
     [ UserProfile "alice" "alice@example.com" 25
     , UserProfile "bob" "bob@test.org" 30
     , UserProfile "charlie" "charlie@domain.net" 42
-    ]
+    ]module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
