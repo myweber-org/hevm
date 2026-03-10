@@ -47,3 +47,24 @@ countWords text =
     countWord w acc = case lookup w acc of
       Just n -> (w, n + 1) : filter ((/= w) . fst) acc
       Nothing -> (w, 1) : acc
+module WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (group, sort)
+
+countWords :: String -> [(String, Int)]
+countWords = map (\xs -> (head xs, length xs)) 
+           . group . sort 
+           . words 
+           . map normalizeChar
+  where
+    normalizeChar c
+      | c `elem` ".,!?;:\"" = ' '
+      | otherwise = toLower c
+
+wordFrequencyReport :: String -> String
+wordFrequencyReport text = 
+  unlines $ map (\(w, c) -> w ++ ": " ++ show c) sortedCounts
+  where
+    counts = countWords text
+    sortedCounts = reverse $ sortBy (comparing snd) counts
