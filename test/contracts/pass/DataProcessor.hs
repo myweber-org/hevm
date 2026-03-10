@@ -248,4 +248,10 @@ exampleUsage = do
     let rawData = [" 42 ", "invalid", "  123  ", "another", "7"]
     case processData rawData of
         Nothing -> putStrLn "No valid numbers found"
-        Just stats -> print stats
+        Just stats -> print statsmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
