@@ -311,4 +311,7 @@ sumProcessed = sum . processNumbers
 
 safeHead :: [Int] -> Maybe Int
 safeHead [] = Nothing
-safeHead (x:_) = Just x
+safeHead (x:_) = Just xmodule DataProcessor where
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = map (^2) . filter even
