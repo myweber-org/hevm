@@ -66,4 +66,48 @@ main = do
     putStrLn "Enter text to analyze word frequency:"
     input <- getContents
     putStrLn "\nWord frequencies:"
-    putStrLn $ analyzeText input
+    putStrLn $ analyzeText inputmodule WordFrequencyCounter where
+
+import qualified Data.Map as Map
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordFrequency = Map.Map String Int
+
+countWords :: String -> WordFrequency
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanWord = filter isAlpha . map toLower
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+
+getTopWords :: Int -> WordFrequency -> [(String, Int)]
+getTopWords n freqMap = 
+    take n $ sortOn (Down . snd) $ Map.toList freqMap
+
+filterByMinimum :: Int -> WordFrequency -> WordFrequency
+filterByMinimum minCount = Map.filter (>= minCount)
+
+analyzeText :: String -> Int -> Int -> IO ()
+analyzeText text topN minCount = do
+    let frequencies = countWords text
+    let filtered = filterByMinimum minCount frequencies
+    let topWords = getTopWords topN filtered
+    
+    putStrLn "Top words by frequency:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) topWords
+    
+    putStrLn $ "\nTotal unique words: " ++ show (Map.size frequencies)
+    putStrLn $ "Words meeting minimum count (" ++ show minCount ++ "): " ++ show (Map.size filtered)
+
+sampleText :: String
+sampleText = 
+    "This is a sample text. This text contains repeated words. " ++
+    "Words like this and text appear multiple times. " ++
+    "Sample text analysis helps understand word frequency patterns."
+
+main :: IO ()
+main = do
+    putStrLn "Word Frequency Analysis"
+    putStrLn "======================="
+    analyzeText sampleText 5 2
