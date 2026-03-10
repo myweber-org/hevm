@@ -209,4 +209,18 @@ exampleUsage = do
     let ma5 = movingAverage 5 dataSeries
     putStrLn $ "Original series: " ++ show dataSeries
     putStrLn $ "3-period moving average: " ++ show ma3
-    putStrLn $ "5-period moving average: " ++ show ma5
+    putStrLn $ "5-period moving average: " ++ show ma5module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processNumbers
+
+safeHead :: [Int] -> Maybe Int
+safeHead [] = Nothing
+safeHead (x:_) = Just x
