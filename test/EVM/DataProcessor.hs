@@ -75,4 +75,22 @@ main = do
     
     case processUserInput username email age of
         Just result -> putStrLn $ "Valid profile created: " ++ result
-        Nothing -> putStrLn "Invalid input. Please check username (3-20 alphanumeric chars) and age (13-120)."
+        Nothing -> putStrLn "Invalid input. Please check username (3-20 alphanumeric chars) and age (13-120)."module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenNumbers :: [Int] -> [Int]
+processEvenNumbers = 
+    filterAndTransform even (\x -> x * 2 + 1)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processEvenNumbers
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show (processEvenNumbers numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
