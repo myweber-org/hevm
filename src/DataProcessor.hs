@@ -75,4 +75,14 @@ filterCSVByDate startDate endDate (CSV header rows) =
     isWithinDateRange start end (day, _) = day >= start && day <= end
     
     showRow :: (Day, Record) -> Record
-    showRow (_, row) = row
+    showRow (_, row) = rowmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
