@@ -42,4 +42,16 @@ processCSVData :: String -> Int -> Either String (String, Double)
 processCSVData rawData colIndex = do
     parsed <- parseCSV rawData
     sumResult <- calculateColumnSum parsed colIndex
-    return (formatCSVOutput parsed, sumResult)
+    return (formatCSVOutput parsed, sumResult)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    print result
