@@ -63,4 +63,24 @@ processPipeline input = do
     
     case safeDivide (snd stats) (fromIntegral $ fst stats) of
         Just val -> putStrLn $ "Average per valid numeric: " ++ show val
-        Nothing -> putStrLn "No valid numeric data for division"
+        Nothing -> putStrLn "No valid numeric data for division"module DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+    where
+        windows :: Int -> [a] -> [[a]]
+        windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
+        
+        average :: [Double] -> Double
+        average ys = sum ys / fromIntegral (length ys)
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let dataSeries = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    putStrLn $ "Original data: " ++ show dataSeries
+    putStrLn $ "3-period moving average: " ++ show (movingAverage 3 dataSeries)
+    putStrLn $ "5-period moving average: " ++ show (movingAverage 5 dataSeries)
