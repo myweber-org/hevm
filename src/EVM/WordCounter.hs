@@ -34,4 +34,28 @@ main :: IO ()
 main = do
     putStrLn "Enter text to count words:"
     input <- getContents
-    putStrLn $ processText input
+    putStrLn $ processText inputmodule WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower . filter (not . isSpace)
+      where
+        toLower c
+          | 'A' <= c && c <= 'Z' = toEnum (fromEnum c + 32)
+          | otherwise = c
+
+topWords :: Int -> String -> [(String, Int)]
+topWords n = take n . sortOn (negate . snd) . Map.toList . countWords
+
+main :: IO ()
+main = do
+  let text = "Hello world! Hello Haskell. Haskell is great. World says hello."
+  putStrLn "Word frequencies:"
+  mapM_ print $ topWords 5 text
