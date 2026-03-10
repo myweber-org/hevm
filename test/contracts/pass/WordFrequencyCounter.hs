@@ -32,4 +32,36 @@ main :: IO ()
 main = do
     let sampleText = "Hello world hello Haskell world of functional programming"
     let result = analyzeText sampleText 1 5
-    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) result
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) resultmodule WordFrequencyCounter where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortBy)
+import Data.Ord (comparing)
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleanedWords = filter (all isAlpha) wordsList
+        grouped = foldr countWord [] cleanedWords
+    in sortBy (comparing (negate . snd)) grouped
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+    
+    countWord :: String -> [WordCount] -> [WordCount]
+    countWord word [] = [(word, 1)]
+    countWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : countWord word rest
+
+getTopWords :: Int -> String -> [WordCount]
+getTopWords n text = take n $ countWords text
+
+formatResults :: [WordCount] -> String
+formatResults counts = unlines $ map formatPair counts
+  where
+    formatPair (word, count) = word ++ ": " ++ show count
+
+processText :: String -> String
+processText text = formatResults $ getTopWords 10 text
