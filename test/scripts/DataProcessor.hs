@@ -301,4 +301,13 @@ processCSVData :: Day -> Day -> String -> Either String [(String, Double)]
 processCSVData start end csvData = do
     records <- parseCSVToRecords csvData
     let filtered = filterByDateRange start end records
-    return $ summarizeByCategory filtered
+    return $ summarizeByCategory filteredmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (*2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
