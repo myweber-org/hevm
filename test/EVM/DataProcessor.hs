@@ -17,4 +17,62 @@ smoothData = movingAverage 3
 
 calculateTrend :: [Double] -> Maybe Double
 calculateTrend [] = Nothing
-calculateTrend xs = Just (last xs - head xs)
+calculateTrend xs = Just (last xs - head xs)module DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+
+type Username = String
+type Email = String
+type UserProfile = (Username, Email, Int)
+
+validateUsername :: Username -> Maybe Username
+validateUsername name
+    | length name >= 3 && length name <= 20 &&
+      all (\c -> isAlpha c || c == '_' || c == '-') name = Just name
+    | otherwise = Nothing
+
+normalizeEmail :: Email -> Email
+normalizeEmail = map toLower
+
+validateAge :: Int -> Maybe Int
+validateAge age
+    | age >= 13 && age <= 120 = Just age
+    | otherwise = Nothing
+
+createUserProfile :: Username -> Email -> Int -> Maybe UserProfile
+createUserProfile username email age = do
+    validName <- validateUsername username
+    validAge <- validateAge age
+    return (validName, normalizeEmail email, validAge)
+
+formatProfile :: UserProfile -> String
+formatProfile (username, email, age) =
+    intercalate " | " ["User: " ++ username, "Email: " ++ email, "Age: " ++ show age]
+
+processUserInput :: String -> String -> String -> Maybe String
+processUserInput username email ageStr = do
+    age <- readMaybe ageStr
+    profile <- createUserProfile username email age
+    return $ formatProfile profile
+  where
+    readMaybe :: String -> Maybe Int
+    readMaybe s = case reads s of
+        [(n, "")] -> Just n
+        _ -> Nothing
+
+sanitizeInput :: String -> String
+sanitizeInput = unwords . words . filter (\c -> not (c == '\n' || c == '\r'))
+
+main :: IO ()
+main = do
+    putStrLn "Enter username:"
+    username <- sanitizeInput <$> getLine
+    putStrLn "Enter email:"
+    email <- sanitizeInput <$> getLine
+    putStrLn "Enter age:"
+    age <- sanitizeInput <$> getLine
+    
+    case processUserInput username email age of
+        Just result -> putStrLn $ "Valid profile created: " ++ result
+        Nothing -> putStrLn "Invalid input. Please check username (3-20 alphanumeric chars) and age (13-120)."
