@@ -63,4 +63,13 @@ main = do
     let sampleData = "123,456,Product A,Active\n789,012,Product B,Inactive"
     case processCSV sampleData of
         Left err -> putStrLn $ "Error: " ++ err
-        Right data' -> putStrLn $ "Processed data:\n" ++ formatOutput data'
+        Right data' -> putStrLn $ "Processed data:\n" ++ formatOutput data'module DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+  where
+    windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
+    average zs = sum zs / fromIntegral (length zs)
