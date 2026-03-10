@@ -27,4 +27,9 @@ main = do
     putStrLn "\nIndividual Fibonacci numbers:"
     print $ fibonacci 10
     print $ fibonacci 20
-    print $ fibonacci 30
+    print $ fibonacci 30module FibonacciSequence where
+
+fibonacci :: Integer -> [Integer]
+fibonacci n = takeWhile (<= n) fibs
+  where
+    fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
