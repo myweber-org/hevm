@@ -253,3 +253,52 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processNumbers input
     print result
+module DataProcessor where
+
+import Data.Time
+import Data.Time.Format
+import Data.List
+import Data.Maybe
+import Text.CSV
+
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+
+filterByDateRange :: Day -> Day -> [(Day, String, Double)] -> [(Day, String, Double)]
+filterByDateRange start end = filter (\(date, _, _) -> date >= start && date <= end)
+
+parseCSVToRecords :: String -> Either String [(Day, String, Double)]
+parseCSVToRecords csvData = do
+    parsed <- parseCSV "data" csvData
+    let records = tail parsed
+    traverse parseRow records
+  where
+    parseRow [dateStr, name, valueStr] = do
+        date <- maybeToEither ("Invalid date: " ++ dateStr) (parseDate dateStr)
+        value <- maybeToEither ("Invalid value: " ++ valueStr) (readMaybe valueStr)
+        return (date, name, value)
+    parseRow row = Left $ "Invalid row format: " ++ show row
+
+    maybeToEither err Nothing = Left err
+    maybeToEither _ (Just x) = Right x
+
+    readMaybe :: String -> Maybe Double
+    readMaybe s = case reads s of
+        [(x, "")] -> Just x
+        _ -> Nothing
+
+summarizeByCategory :: [(Day, String, Double)] -> [(String, Double)]
+summarizeByCategory = map combine . groupBy sameCategory . sortBy categoryOrder
+  where
+    sameCategory (_, cat1, _) (_, cat2, _) = cat1 == cat2
+    categoryOrder (_, cat1, _) (_, cat2, _) = compare cat1 cat2
+    combine group = (category, sum values)
+      where
+        category = let (_, cat, _) = head group in cat
+        values = map (\(_, _, val) -> val) group
+
+processCSVData :: Day -> Day -> String -> Either String [(String, Double)]
+processCSVData start end csvData = do
+    records <- parseCSVToRecords csvData
+    let filtered = filterByDateRange start end records
+    return $ summarizeByCategory filtered
