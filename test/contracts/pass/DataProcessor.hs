@@ -255,3 +255,46 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+import Data.List (intercalate)
+
+-- Validate if a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate if a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Convert string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Normalize phone number by removing non-digit characters
+normalizePhone :: String -> String
+normalizePhone = filter isDigit
+
+-- Format name as "Last, First"
+formatName :: String -> String -> String
+formatName first last = last ++ ", " ++ first
+
+-- Process a list of strings by applying multiple transformations
+processStrings :: (String -> String) -> [String] -> [String]
+processStrings f = map f
+
+-- Combine validation and transformation in a pipeline
+processUserData :: String -> String -> Either String (String, String)
+processUserData name phone
+    | not (validateAlpha name) = Left "Invalid name: must contain only letters"
+    | not (validateNumeric (normalizePhone phone)) = Left "Invalid phone: must contain digits"
+    | otherwise = Right (toUppercase name, normalizePhone phone)
+
+-- Example utility function to demonstrate composition
+createUserReport :: String -> String -> String
+createUserReport name phone =
+    case processUserData name phone of
+        Left err -> "Error: " ++ err
+        Right (processedName, processedPhone) ->
+            "User: " ++ processedName ++ ", Phone: " ++ processedPhone
