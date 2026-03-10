@@ -158,4 +158,76 @@ calculateAverageAge :: [UserProfile] -> Double
 calculateAverageAge users =
   if null users
     then 0.0
-    else fromIntegral (sum (map age users)) / fromIntegral (length users)
+    else fromIntegral (sum (map age users)) / fromIntegral (length users)module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isSpace)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null (trim input) = Right []
+    | otherwise = traverse parseRow (lines input)
+  where
+    parseRow line = case parseFields line [] "" False of
+        Left err -> Left $ "Row parse error: " ++ err
+        Right fields -> Right fields
+
+    parseFields :: String -> [String] -> String -> Bool -> Either String [String]
+    parseFields [] acc current inQuotes
+        | inQuotes = Left "Unclosed quote"
+        | otherwise = Right $ reverse (if null current then acc else current:acc)
+    parseFields (c:cs) acc current inQuotes
+        | c == '"' && not inQuotes = parseFields cs acc current True
+        | c == '"' && inQuotes = 
+            case cs of
+                '"':rest -> parseFields rest acc (current ++ [c]) True
+                ',':rest -> parseFields rest (current:acc) "" False
+                [] -> Right $ reverse (current:acc)
+                _ -> Left "Invalid quote escape"
+        | c == ',' && not inQuotes = parseFields cs (current:acc) "" False
+        | otherwise = parseFields cs acc (current ++ [c]) inQuotes
+
+validateCSV :: CSVData -> Either String CSVData
+validateCSV [] = Right []
+validateCSV (header:rows) 
+    | null header = Left "Empty header row"
+    | any null header = Left "Header contains empty fields"
+    | otherwise = do
+        validatedRows <- traverse validateRow rows
+        return (header:validatedRows)
+  where
+    validateRow row
+        | length row /= length header = Left $ "Row length mismatch. Expected " ++ show (length header) ++ " got " ++ show (length row)
+        | any null row = Left "Row contains empty fields"
+        | otherwise = Right row
+
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
+
+processCSV :: String -> Either String CSVData
+processCSV input = parseCSV input >>= validateCSV
+
+formatCSV :: CSVData -> String
+formatCSV = intercalate "\n" . map (intercalate "," . map escapeField)
+  where
+    escapeField field
+        | any (\c -> c == ',' || c == '"' || c == '\n') field = "\"" ++ concatMap escapeChar field ++ "\""
+        | otherwise = field
+    escapeChar '"' = "\"\""
+    escapeChar c = [c]
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let csvContent = "Name,Age,City\nJohn,25,\"New York\"\nAlice,30,London"
+    case processCSV csvContent of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right data -> do
+            putStrLn "Parsed CSV data:"
+            mapM_ print data
+            putStrLn "\nFormatted output:"
+            putStrLn $ formatCSV data
