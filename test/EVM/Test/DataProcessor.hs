@@ -241,4 +241,45 @@ filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
 filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+processData = filterAndTransform (> 0) (* 2)module DataProcessor where
+
+import Data.List (foldl')
+import Text.Read (readMaybe)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitter [""]
+      where
+        splitter char acc@(x:xs)
+          | char == delimiter = "":acc
+          | otherwise = (char:x):xs
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows columnIndex
+  | null validNumbers = Nothing
+  | otherwise = Just (sum validNumbers / fromIntegral (length validNumbers))
+  where
+    extractNumber :: Row -> Maybe Double
+    extractNumber row
+      | columnIndex < length row = readMaybe (row !! columnIndex)
+      | otherwise = Nothing
+    
+    validNumbers = [num | Just num <- map extractNumber rows]
+
+processCSVFile :: String -> IO (Maybe Double)
+processCSVFile filePath = do
+  content <- readFile filePath
+  let parsedData = parseCSV content
+  return $ calculateColumnAverage parsedData 2  -- Default to column index 2
+
+main :: IO ()
+main = do
+  result <- processCSVFile "data.csv"
+  case result of
+    Just avg -> putStrLn $ "Average: " ++ show avg
+    Nothing -> putStrLn "Could not calculate average"
