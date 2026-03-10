@@ -268,3 +268,39 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
     print result
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (mapMaybe)
+
+-- | Validates if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
+
+-- | Safely parses an integer from a string
+safeParseInt :: String -> Maybe Int
+safeParseInt str
+  | validateDigits str = Just (read str)
+  | otherwise = Nothing
+
+-- | Trims leading and trailing whitespace
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
+
+-- | Normalizes a string by trimming and converting to lowercase
+normalizeString :: String -> String
+normalizeString = map toLower . trim
+
+-- | Processes a list of strings into valid integers
+processNumbers :: [String] -> [Int]
+processNumbers = mapMaybe safeParseInt . map trim
+
+-- | Formats a list of integers as a comma-separated string
+formatNumbers :: [Int] -> String
+formatNumbers = intercalate ", " . map show
+
+-- | Main processing pipeline
+processData :: [String] -> String
+processData = formatNumbers . processNumbers
