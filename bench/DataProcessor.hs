@@ -94,3 +94,68 @@ main = do
     let numbers = [-3, 1, 0, 5, -2, 8]
     let result = processNumbers numbers
     print result
+module DataProcessor where
+
+import Data.Char (toLower, isAlpha, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes)
+
+type Username = String
+type Email = String
+type Age = Int
+
+data UserProfile = UserProfile
+  { username :: Username
+  , email :: Email
+  , age :: Age
+  } deriving (Show, Eq)
+
+validateUsername :: Username -> Maybe Username
+validateUsername name
+  | length name < 3 = Nothing
+  | length name > 20 = Nothing
+  | not (all isValidUsernameChar name) = Nothing
+  | otherwise = Just (normalizeUsername name)
+  where
+    isValidUsernameChar c = isAlpha c || c == '_' || c == '-'
+    normalizeUsername = map toLower
+
+validateEmail :: Email -> Maybe Email
+validateEmail emailStr
+  | '@' `notElem` emailStr = Nothing
+  | '.' `notElem` (dropWhile (/= '@') emailStr) = Nothing
+  | any isSpace emailStr = Nothing
+  | otherwise = Just (map toLower emailStr)
+
+validateAge :: Age -> Maybe Age
+validateAge a
+  | a < 0 = Nothing
+  | a > 150 = Nothing
+  | otherwise = Just a
+
+createUserProfile :: Username -> Email -> Age -> Maybe UserProfile
+createUserProfile un em ag = do
+  validUsername <- validateUsername un
+  validEmail <- validateEmail em
+  validAge <- validateAge ag
+  return $ UserProfile validUsername validEmail validAge
+
+sanitizeInput :: String -> String
+sanitizeInput = unwords . words . filter (/= '\0')
+
+formatUserDisplay :: UserProfile -> String
+formatUserDisplay user =
+  intercalate " | "
+    [ "User: " ++ username user
+    , "Email: " ++ email user
+    , "Age: " ++ show (age user)
+    ]
+
+processUserBatch :: [(Username, Email, Age)] -> [UserProfile]
+processUserBatch = catMaybes . map (\(u,e,a) -> createUserProfile u e a)
+
+calculateAverageAge :: [UserProfile] -> Double
+calculateAverageAge users =
+  if null users
+    then 0.0
+    else fromIntegral (sum (map age users)) / fromIntegral (length users)
