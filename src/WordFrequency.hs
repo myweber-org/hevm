@@ -95,4 +95,33 @@ displayFrequency freqList =
     unlines $ map (\(w, c) -> w ++ ": " ++ show c) freqList
 
 processText :: Int -> String -> String
-processText n = displayFrequency . topNWords n
+processText n = displayFrequency . topNWords nmodule WordFrequency where
+
+import Data.Char (isAlpha, toLower)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = map (map toLower) wordsList
+        freqMap = foldr (\w m -> insertWord w m) [] cleaned
+        sorted = sortOn (Down . snd) freqMap
+    in sorted
+  where
+    cleanWord = filter isAlpha
+    
+    insertWord :: String -> [WordCount] -> [WordCount]
+    insertWord w [] = [(w, 1)]
+    insertWord w ((word, count):rest)
+        | w == word = (word, count + 1) : rest
+        | otherwise = (word, count) : insertWord w rest
+
+mostFrequentWords :: Int -> String -> [WordCount]
+mostFrequentWords n text = take n $ countWords text
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
