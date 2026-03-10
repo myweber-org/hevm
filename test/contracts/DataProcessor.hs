@@ -121,4 +121,62 @@ safeHead [] = Nothing
 safeHead (x:_) = Just x
 
 sumPositiveDoubles :: [Int] -> Int
-sumPositiveDoubles = sum . processData
+sumPositiveDoubles = sum . processDatamodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input
+    | null input = Right []
+    | otherwise = mapM parseRow (lines input)
+  where
+    parseRow line = case splitOnComma line of
+        [] -> Left "Empty row"
+        cells -> Right cells
+
+splitOnComma :: String -> [String]
+splitOnComma = foldr splitHelper [""]
+  where
+    splitHelper ',' (current:rest) = "":current:rest
+    splitHelper char (current:rest) = (char:current):rest
+
+validateRow :: CSVRow -> Either String CSVRow
+validateRow row = do
+    when (length row < 2) $ Left "Row must have at least 2 columns"
+    validateId (head row)
+    validateName (row !! 1)
+    return row
+
+validateId :: String -> Either String String
+validateId idStr
+    | all isDigit idStr && not (null idStr) = Right idStr
+    | otherwise = Left $ "Invalid ID: " ++ idStr
+
+validateName :: String -> Either String String
+validateName name
+    | all isAlpha name && not (null name) = Right name
+    | otherwise = Left $ "Invalid name: " ++ name
+
+processCSVData :: String -> Either String CSVData
+processCSVData input = do
+    parsed <- parseCSV input
+    mapM validateRow parsed
+
+formatOutput :: CSVData -> String
+formatOutput rows = intercalate "\n" $ map formatRow rows
+  where
+    formatRow cells = intercalate "," $ map escapeComma cells
+    escapeComma cell
+        | ',' `elem` cell = "\"" ++ cell ++ "\""
+        | otherwise = cell
+
+main :: IO ()
+main = do
+    let testData = "123,John\n456,Alice Smith\n789,Bob"
+    case processCSVData testData of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right data' -> putStrLn $ "Processed data:\n" ++ formatOutput data'
