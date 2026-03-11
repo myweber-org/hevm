@@ -86,4 +86,17 @@ main = do
             putStrLn $ "Original: " ++ show validData
             putStrLn $ "Processed: " ++ show (processNumbers validData)
             putStrLn $ "Sum: " ++ show (sumProcessed validData)
-        Nothing -> putStrLn "Input contains invalid numbers"
+        Nothing -> putStrLn "Input contains invalid numbers"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (* 2)
+
+main :: IO ()
+main = do
+    let numbers = [1..10]
+    let result = processNumbers numbers
+    putStrLn $ "Original list: " ++ show numbers
+    putStrLn $ "Processed list: " ++ show result
