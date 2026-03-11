@@ -67,4 +67,28 @@ wordFrequencyReport text =
   unlines $ map (\(w, c) -> w ++ ": " ++ show c) sortedCounts
   where
     counts = countWords text
-    sortedCounts = reverse $ sortBy (comparing snd) counts
+    sortedCounts = reverse $ sortBy (comparing snd) countsmodule WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (group, sort)
+
+countWords :: String -> [(String, Int)]
+countWords = map (\ws -> (head ws, length ws)) . group . sort . words . normalize
+  where
+    normalize = map toLower . filter (not . isPunctuation)
+    toLower c
+      | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
+      | otherwise = c
+    isPunctuation c = c `elem` ".,!?;:\"'()[]{}"
+
+wordFrequency :: String -> IO ()
+wordFrequency text = do
+  let freq = countWords text
+  putStrLn "Word frequencies:"
+  mapM_ (\(w, c) -> putStrLn $ w ++ ": " ++ show c) freq
+  putStrLn $ "Total unique words: " ++ show (length freq)
+
+processFile :: FilePath -> IO ()
+processFile path = do
+  content <- readFile path
+  wordFrequency content
