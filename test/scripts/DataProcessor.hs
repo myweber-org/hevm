@@ -365,4 +365,33 @@ main = do
     let numbers = [1..10]
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
+    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)module DataProcessor where
+
+import Data.Char (isDigit, toUpper)
+
+-- Validate that a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
+
+-- Transform a string to uppercase
+toUppercase :: String -> String
+toUppercase = map toUpper
+
+-- Process a list of strings: validate digits and transform to uppercase
+processData :: [String] -> [Maybe String]
+processData = map processSingle
+  where
+    processSingle str
+      | validateDigits str = Just (toUppercase str)
+      | otherwise = Nothing
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+  let testData = ["123", "abc", "456def", "789"]
+  putStrLn "Processing test data:"
+  mapM_ (print . processSingle) testData
+  where
+    processSingle str
+      | validateDigits str = "Valid: " ++ toUppercase str
+      | otherwise = "Invalid: " ++ str
