@@ -1,41 +1,23 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.Time
+import Text.CSV
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
+filterCSVByDate :: String -> Day -> Day -> Either String [Record]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (isWithinDateRange startDate endDate) csv
+    return filtered
 
-main :: IO ()
-main = do
-    let input = [1, -2, 3, 0, 5, -8]
-    let result = processNumbers input
-    print resultmodule DataProcessor where
+isWithinDateRange :: Day -> Day -> Record -> Bool
+isWithinDateRange start end record =
+    case record of
+        (dateStr:_) -> 
+            case parseDate dateStr of
+                Just date -> date >= start && date <= end
+                Nothing -> False
+        _ -> False
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform (> 0) (* 2)
-
-sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
-
-safeHead :: [Int] -> Maybe Int
-safeHead [] = Nothing
-safeHead (x:_) = Just x
-
-main :: IO ()
-main = do
-    let numbers = [-3, 1, 0, 4, -2, 5]
-    putStrLn $ "Original list: " ++ show numbers
-    putStrLn $ "Processed list: " ++ show (processNumbers numbers)
-    putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
