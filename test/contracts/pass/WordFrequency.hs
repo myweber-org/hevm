@@ -99,4 +99,25 @@ printWordFrequencies counts =
 analyzeText :: String -> IO ()
 analyzeText text = do
     putStrLn "Word frequencies:"
-    printWordFrequencies $ countWords text
+    printWordFrequencies $ countWords textmodule WordFrequency where
+
+import Data.Char (toLower)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords = foldr incrementWord Map.empty . words
+  where
+    incrementWord word = Map.insertWith (+) (normalize word) 1
+    normalize = map toLower
+
+sortedWordFrequencies :: String -> [(String, Int)]
+sortedWordFrequencies = 
+  sortOn (\(word, count) -> (-count, word)) . Map.toList . countWords
+
+printFrequencies :: String -> IO ()
+printFrequencies text = do
+  putStrLn "Word frequencies:"
+  mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) 
+        (sortedWordFrequencies text)
