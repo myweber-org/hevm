@@ -94,4 +94,30 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List (tails)
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | n > length xs = error "Window size exceeds list length"
+    | otherwise = map avg $ filter (\w -> length w == n) $ tails xs
+  where
+    avg window = sum window / fromIntegral n
+
+smoothData :: Fractional a => Int -> [a] -> [a]
+smoothData windowSize dataPoints =
+    movingAverage windowSize dataPoints
+
+validateData :: (Ord a, Num a) => [a] -> Maybe String
+validateData [] = Just "Empty dataset"
+validateData xs
+    | any (< 0) xs = Just "Negative values detected"
+    | otherwise = Nothing
+
+processDataset :: Fractional a => Int -> [a] -> Either String [a]
+processDataset windowSize dataset =
+    case validateData dataset of
+        Just err -> Left err
+        Nothing -> Right $ smoothData windowSize dataset
