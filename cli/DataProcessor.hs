@@ -92,4 +92,65 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> Either String CSVData
+parseCSV input = 
+    if null input 
+    then Left "Empty input"
+    else Right $ map parseRow (lines input)
+  where
+    parseRow :: String -> CSVRow
+    parseRow = splitByComma
+    
+    splitByComma :: String -> [String]
+    splitByComma [] = []
+    splitByComma str = 
+        let (field, rest) = break (== ',') str
+        in trim field : case rest of
+            ',' : xs -> splitByComma xs
+            _        -> []
+    
+    trim :: String -> String
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+validateNumericField :: String -> Either String Int
+validateNumericField str
+    | all isDigit trimmed = Right (read trimmed)
+    | otherwise = Left $ "Invalid numeric value: " ++ str
+  where
+    trimmed = trim str
+
+processCSVData :: CSVData -> Either String [(String, Int)]
+processCSVData [] = Left "No data to process"
+processCSVData rows = 
+    sequence $ map validateRow rows
+  where
+    validateRow :: CSVRow -> Either String (String, Int)
+    validateRow [name, valueStr] = do
+        numericValue <- validateNumericField valueStr
+        return (trim name, numericValue)
+    validateRow row = 
+        Left $ "Invalid row format: " ++ intercalate "," row
+
+calculateTotal :: [(String, Int)] -> Int
+calculateTotal = sum . map snd
+
+main :: IO ()
+main = do
+    let sampleData = "Alice, 100\nBob, 200\nCharlie, invalid"
+    case parseCSV sampleData of
+        Left err -> putStrLn $ "Parse error: " ++ err
+        Right csv -> 
+            case processCSVData csv of
+                Left err -> putStrLn $ "Validation error: " ++ err
+                Right processed -> do
+                    putStrLn "Processed data:"
+                    mapM_ (\(name, val) -> putStrLn $ name ++ ": " ++ show val) processed
+                    putStrLn $ "Total: " ++ show (calculateTotal processed)
