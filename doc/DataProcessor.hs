@@ -73,3 +73,74 @@ movingAverage n xs
   where
     windows m ys = take (length ys - m + 1) $ zipWith (++) (tails ys) (repeat [])
     average zs = sum zs / fromIntegral (length zs)
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+import Control.Monad (foldM)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+data ValidationError = 
+    EmptyRowError Int
+  | InvalidColumnCountError Int Int Int
+  | InvalidNumericFieldError Int Int String
+  | InvalidAlphaFieldError Int Int String
+  deriving (Show, Eq)
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper ch acc@(current:rest)
+          | ch == delimiter = "":acc
+          | otherwise = (ch:current):rest
+
+validateCSVData :: CSVData -> Either [ValidationError] CSVData
+validateCSVData rows = case errors of
+  [] -> Right rows
+  _  -> Left errors
+  where
+    errors = concatMap validateRow (zip [1..] rows)
+    
+    validateRow :: (Int, CSVRow) -> [ValidationError]
+    validateRow (rowNum, row)
+      | null row = [EmptyRowError rowNum]
+      | length row /= expectedColumns = [InvalidColumnCountError rowNum (length row) expectedColumns]
+      | otherwise = concat $ zipWith (validateField rowNum) [1..] row
+    
+    expectedColumns = 4
+    
+    validateField :: Int -> Int -> String -> [ValidationError]
+    validateField rowNum colNum value
+      | colNum == 1 && not (all isAlpha value) = [InvalidAlphaFieldError rowNum colNum value]
+      | colNum == 2 && not (all isDigit value) = [InvalidNumericFieldError rowNum colNum value]
+      | colNum == 3 && not (all isDigit value) = [InvalidNumericFieldError rowNum colNum value]
+      | colNum == 4 && not (all isAlpha value) = [InvalidAlphaFieldError rowNum colNum value]
+      | otherwise = []
+
+processValidatedData :: CSVData -> (Int, Int, [String])
+processValidatedData rows = (totalCount, numericSum, names)
+  where
+    totalCount = length rows
+    numericSum = sum $ map (read . (!!1)) rows
+    names = map head rows
+
+formatReport :: (Int, Int, [String]) -> String
+formatReport (count, sum, names) = 
+  "Total records: " ++ show count ++ "\n" ++
+  "Sum of second column: " ++ show sum ++ "\n" ++
+  "Names: " ++ intercalate ", " names
+
+main :: IO ()
+main = do
+  let sampleData = "John,25,100,USA\nAlice,30,200,UK\nBob,35,150,Canada"
+  let parsed = parseCSV sampleData
+  case validateCSVData parsed of
+    Left errs -> putStrLn $ "Validation errors:\n" ++ unlines (map show errs)
+    Right validData -> do
+      let result = processValidatedData validData
+      putStrLn $ formatReport result
