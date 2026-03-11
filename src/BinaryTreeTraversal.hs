@@ -92,4 +92,36 @@ sampleTree = Node 1
                     (Node 5 Empty Empty))
                 (Node 3
                     (Node 6 Empty Empty)
-                    Empty)
+                    Empty)module BinaryTreeTraversal where
+
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Show)
+
+inorderIterative :: BinaryTree a -> [a]
+inorderIterative tree = go [] tree []
+  where
+    go stack Leaf result = processStack stack result
+    go stack (Node left val right) result =
+      go (val : stack) left (go [] right result)
+    
+    processStack [] result = result
+    processStack (x:xs) result = x : processStack xs result
+
+preorderIterative :: BinaryTree a -> [a]
+preorderIterative tree = go [] [tree]
+  where
+    go result [] = reverse result
+    go result (Leaf:rest) = go result rest
+    go result (Node left val right:rest) =
+      go (val:result) (left:right:rest)
+
+postorderIterative :: BinaryTree a -> [a]
+postorderIterative tree = reverse $ go [] [tree]
+  where
+    go result [] = result
+    go result (Leaf:rest) = go result rest
+    go result (Node left val right:rest) =
+      go (val:result) (left:right:rest)
+
+-- Example tree for testing
+sampleTree :: BinaryTree Int
+sampleTree = Node (Node Leaf 2 (Node Leaf 3 Leaf)) 1 (Node (Node Leaf 5 Leaf) 4 Leaf)
