@@ -95,4 +95,52 @@ processEvenSquares :: [Int] -> [Int]
 processEvenSquares = filterAndTransform even (^2)
 
 sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processEvenSquares
+sumProcessedData = sum . processEvenSquaresmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitter [[]]
+      where
+        splitter char acc@(current:rest)
+          | char == delimiter = []:acc
+          | otherwise = (char:current):rest
+
+validateNumericColumn :: CSVData -> Int -> Either String CSVData
+validateNumericColumn [] _ = Right []
+validateNumericColumn (header:rows) colIndex
+  | colIndex < 0 || colIndex >= length header = 
+      Left $ "Column index " ++ show colIndex ++ " out of bounds"
+  | otherwise = do
+      validatedRows <- mapM validateRow rows
+      Right (header:validatedRows)
+  where
+    validateRow :: CSVRow -> Either String CSVRow
+    validateRow row
+      | colIndex >= length row = Left "Row has insufficient columns"
+      | all isDigit (row !! colIndex) = Right row
+      | otherwise = Left $ "Non-numeric value in column " ++ show colIndex ++ ": " ++ (row !! colIndex)
+
+calculateColumnAverage :: CSVData -> Int -> Either String Double
+calculateColumnAverage [] _ = Left "Empty CSV data"
+calculateColumnAverage [_] _ = Left "No data rows available"
+calculateColumnAverage (header:rows) colIndex = do
+  validatedData <- validateNumericColumn (header:rows) colIndex
+  let values = map (read . (!! colIndex)) (tail validatedData)
+  return $ sum values / fromIntegral (length values)
+
+formatCSVOutput :: CSVData -> String
+formatCSVOutput = intercalate "\n" . map (intercalate ",")
+
+processCSVFile :: String -> Int -> Either String (String, Double)
+processCSVFile content colIndex = do
+  let parsed = parseCSV content
+  average <- calculateColumnAverage parsed colIndex
+  return (formatCSVOutput parsed, average)
