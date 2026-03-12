@@ -20,4 +20,10 @@ isWithinDateRange start end record =
         _ -> False
 
 parseDate :: String -> Maybe Day
-parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
