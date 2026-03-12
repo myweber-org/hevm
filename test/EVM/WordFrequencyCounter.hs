@@ -223,4 +223,30 @@ getTopWords :: Int -> String -> [(String, Int)]
 getTopWords n text = take n $ sortOn (\(_, count) -> negate count) $ Map.toList $ countWords text
 
 displayFrequencies :: [(String, Int)] -> String
-displayFrequencies = unlines . map (\(word, count) -> word ++ ": " ++ show count)
+displayFrequencies = unlines . map (\(word, count) -> word ++ ": " ++ show count)module WordFrequencyCounter where
+
+import qualified Data.Char as Char
+import qualified Data.List as List
+import qualified Data.Map.Strict as Map
+
+type WordCount = Map.Map String Int
+
+countWords :: String -> WordCount
+countWords = foldr incrementWord Map.empty . words . normalize
+  where
+    normalize = map Char.toLower . filter (\c -> Char.isAlpha c || Char.isSpace c)
+    incrementWord word = Map.insertWith (+) word 1
+
+sortByFrequency :: WordCount -> [(String, Int)]
+sortByFrequency = List.sortOn (\(_, count) -> negate count) . Map.toList
+
+formatResults :: [(String, Int)] -> String
+formatResults = unlines . map (\(word, count) -> word ++ ": " ++ show count)
+
+processText :: String -> String
+processText = formatResults . sortByFrequency . countWords
+
+main :: IO ()
+main = do
+    input <- getContents
+    putStrLn $ processText input
