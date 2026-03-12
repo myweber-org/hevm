@@ -1,18 +1,23 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+import Data.Time
+import Text.CSV
 
-processNumbers :: [Int] -> [Int]
-processNumbers = filterAndTransform isEven square
-    where
-        isEven n = n `mod` 2 == 0
-        square n = n * n
+filterCSVByDate :: String -> Day -> Day -> Either String [Record]
+filterCSVByDate csvContent startDate endDate = do
+    csv <- parseCSV "input" csvContent
+    let filtered = filter (isWithinDateRange startDate endDate) csv
+    return filtered
 
-main :: IO ()
-main = do
-    let numbers = [1..10]
-    let result = processNumbers numbers
-    putStrLn $ "Original: " ++ show numbers
-    putStrLn $ "Processed: " ++ show result
+isWithinDateRange :: Day -> Day -> Record -> Bool
+isWithinDateRange start end record =
+    case record of
+        (dateStr:_) -> 
+            case parseDate dateStr of
+                Just date -> date >= start && date <= end
+                Nothing -> False
+        _ -> False
+
+parseDate :: String -> Maybe Day
+parseDate = parseTimeM True defaultTimeLocale "%Y-%m-%d"
