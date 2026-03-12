@@ -78,4 +78,47 @@ sumProcessed :: [Int] -> Int
 sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
-validateInput xs = if all (> -100) xs then Just xs else Nothing
+validateInput xs = if all (> -100) xs then Just xs else Nothingmodule DataProcessor where
+
+import Data.List (foldl')
+import Data.Maybe (catMaybes)
+
+data StatRecord = StatRecord
+    { value :: Double
+    , category :: String
+    } deriving (Show, Eq)
+
+parseCSVLine :: String -> Maybe StatRecord
+parseCSVLine line = case words line of
+    [valStr, cat] -> case reads valStr of
+        [(val, "")] -> Just $ StatRecord val cat
+        _ -> Nothing
+    _ -> Nothing
+
+parseCSVData :: String -> [StatRecord]
+parseCSVData = catMaybes . map parseCSVLine . lines
+
+computeStats :: [StatRecord] -> (Double, Double, Double)
+computeStats records =
+    let values = map value records
+        count = fromIntegral $ length values
+        sumVals = foldl' (+) 0 values
+        mean = sumVals / count
+        variance = foldl' (\acc x -> acc + (x - mean) ** 2) 0 values / count
+        stdDev = sqrt variance
+    in (mean, variance, stdDev)
+
+filterByCategory :: String -> [StatRecord] -> [StatRecord]
+filterByCategory cat = filter (\r -> category r == cat)
+
+processCSVData :: String -> String -> IO ()
+processCSVData cat input = do
+    let records = parseCSVData input
+        filtered = filterByCategory cat records
+        (mean, var, std) = computeStats filtered
+    
+    putStrLn $ "Category: " ++ cat
+    putStrLn $ "Record count: " ++ show (length filtered)
+    putStrLn $ "Mean: " ++ show mean
+    putStrLn $ "Variance: " ++ show var
+    putStrLn $ "Standard deviation: " ++ show std
