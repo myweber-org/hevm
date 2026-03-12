@@ -145,4 +145,22 @@ computeAverages records = map avg records
         in (name, total / count)
 
 processData :: String -> [(String, Double)]
-processData = computeAverages . parseCSV
+processData = computeAverages . parseCSVmodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage n xs
+    | length xs < n = []
+    | otherwise = avg : movingAverage n (tail xs)
+  where
+    window = take n xs
+    avg = sum window / fromIntegral n
+
+-- Example usage with a helper function
+exampleData :: [Double]
+exampleData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+main :: IO ()
+main = do
+    let result = movingAverage 3 exampleData
+    putStrLn "Moving average with window size 3:"
+    print result
