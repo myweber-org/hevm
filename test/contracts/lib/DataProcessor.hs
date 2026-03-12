@@ -1,33 +1,39 @@
+
 module DataProcessor where
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
+import Data.List (intercalate)
+import Data.Char (isDigit)
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+type CSVRow = [String]
 
-validateData :: [Int] -> Bool
-validateData = all (> 0)module DataProcessor where
+parseCSV :: String -> [CSVRow]
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr splitHelper [""]
+      where
+        splitHelper :: Char -> [String] -> [String]
+        splitHelper ch (x:xs)
+          | ch == delimiter = "":x:xs
+          | otherwise = (ch:x):xs
 
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = 
-    map transformer . filter predicate
+filterRows :: (CSVRow -> Bool) -> [CSVRow] -> [CSVRow]
+filterRows predicate = filter predicate
 
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 10) (* 2)
+containsOnlyDigits :: String -> Bool
+containsOnlyDigits = all isDigit
 
-sumProcessedData :: [Int] -> Int
-sumProcessedData = sum . processData
+filterNumericColumns :: CSVRow -> Bool
+filterNumericColumns row = any containsOnlyDigits row
+
+processCSVData :: String -> String
+processCSVData input =
+  let rows = parseCSV input
+      filtered = filterRows filterNumericColumns rows
+      outputRows = map (intercalate ",") filtered
+  in unlines outputRows
 
 main :: IO ()
 main = do
-    let sampleData = [5, 12, 8, 20, 3, 15]
-    putStrLn $ "Original data: " ++ show sampleData
-    putStrLn $ "Processed data: " ++ show (processData sampleData)
-    putStrLn $ "Sum of processed data: " ++ show (sumProcessedData sampleData)module DataProcessor where
-
-filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
-filterAndTransform predicate transformer = map transformer . filter predicate
-
-processData :: [Int] -> [Int]
-processData = filterAndTransform (> 0) (* 2)
+  let sampleData = "name,age,city\nAlice,30,London\nBob,xyz,Paris\nCharlie,25,Berlin"
+  putStrLn $ processCSVData sampleData
