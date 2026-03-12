@@ -121,4 +121,28 @@ main = do
     putStrLn $ "Original list: " ++ show numbers
     putStrLn $ "Processed list: " ++ show (processEvenSquares numbers)
     putStrLn $ "Sum of processed: " ++ show (sumProcessed numbers)
-    putStrLn $ "First element: " ++ show (safeHead numbers)
+    putStrLn $ "First element: " ++ show (safeHead numbers)module DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Record = (String, [Double])
+
+parseCSV :: String -> [Record]
+parseCSV content = map parseLine (lines content)
+  where
+    parseLine line = 
+        let parts = splitOn "," line
+            name = head parts
+            values = map read (tail parts)
+        in (name, values)
+
+computeAverages :: [Record] -> [(String, Double)]
+computeAverages records = map avg records
+  where
+    avg (name, vals) = 
+        let total = sum vals
+            count = fromIntegral (length vals)
+        in (name, total / count)
+
+processData :: String -> [(String, Double)]
+processData = computeAverages . parseCSV
