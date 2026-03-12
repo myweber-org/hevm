@@ -389,4 +389,44 @@ main :: IO ()
 main = do
     putStrLn "Word Frequency Counter"
     putStrLn "======================"
-    processText sampleText 2 5
+    processText sampleText 2 5module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let words' = filter (not . null) $ map (filter isAlpha . map toLower) $ words text
+        grouped = group $ sort words'
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+
+filterByMinFrequency :: Int -> [WordCount] -> [WordCount]
+filterByMinFrequency minFreq = filter (\(_, count) -> count >= minFreq)
+
+topNWords :: Int -> [WordCount] -> [WordCount]
+topNWords n = take n
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+analyzeText :: String -> Int -> Int -> IO ()
+analyzeText text minFreq topN = do
+    let allCounts = countWords text
+    let filtered = filterByMinFrequency minFreq allCounts
+    let topWords = topNWords topN filtered
+    
+    putStrLn "Word frequency analysis:"
+    printWordCounts topWords
+    putStrLn $ "Total unique words: " ++ show (length allCounts)
+    putStrLn $ "Words with frequency >= " ++ show minFreq ++ ": " ++ show (length filtered)
+
+sampleText :: String
+sampleText = "Hello world! This is a test. Hello again world. Testing word frequency counter."
+
+main :: IO ()
+main = analyzeText sampleText 2 5
