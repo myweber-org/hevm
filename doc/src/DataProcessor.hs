@@ -121,4 +121,14 @@ processCSVData cat input = do
     putStrLn $ "Record count: " ++ show (length filtered)
     putStrLn $ "Mean: " ++ show mean
     putStrLn $ "Variance: " ++ show var
-    putStrLn $ "Standard deviation: " ++ show std
+    putStrLn $ "Standard deviation: " ++ show stdmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
+
+sumPositiveDoubles :: [Int] -> Int
+sumPositiveDoubles = sum . processData
