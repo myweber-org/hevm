@@ -57,4 +57,39 @@ main = do
             putStrLn $ "Input: " ++ show sampleData
             putStrLn $ "Result: " ++ show result
         else
-            putStrLn "Invalid input data detected"
+            putStrLn "Invalid input data detected"module DataProcessor where
+
+import Data.List.Split (splitOn)
+import Text.Read (readMaybe)
+
+type Row = [Double]
+type Dataset = [Row]
+
+parseCSV :: String -> Maybe Dataset
+parseCSV content = mapM parseRow (lines content)
+  where
+    parseRow line = mapM readMaybe (splitOn "," line)
+
+calculateAverages :: Dataset -> Maybe [Double]
+calculateAverages [] = Nothing
+calculateAverages rows = 
+    let transposed = transpose rows
+    in mapM average transposed
+  where
+    transpose :: [[a]] -> [[a]]
+    transpose ([]:_) = []
+    transpose x = map head x : transpose (map tail x)
+    
+    average :: [Double] -> Maybe Double
+    average xs = 
+        if null xs 
+        then Nothing 
+        else Just (sum xs / fromIntegral (length xs))
+
+processData :: String -> Maybe [Double]
+processData csvContent = do
+    dataset <- parseCSV csvContent
+    calculateAverages dataset
+
+sampleData :: String
+sampleData = "1.0,2.0,3.0\n4.0,5.0,6.0\n7.0,8.0,9.0"
