@@ -163,4 +163,10 @@ main :: IO ()
 main = do
     let result = movingAverage 3 exampleData
     putStrLn "Moving average with window size 3:"
-    print result
+    print resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
