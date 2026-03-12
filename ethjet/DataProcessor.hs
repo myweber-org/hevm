@@ -10,4 +10,10 @@ movingAverage n xs
         windows m = takeWhile ((== m) . length) . map (take m) . iterate tail
         
         average :: (Fractional a) => [a] -> a
-        average ys = sum ys / fromIntegral (length ys)
+        average ys = sum ys / fromIntegral (length ys)module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processData :: [Int] -> [Int]
+processData = filterAndTransform (> 0) (* 2)
