@@ -99,4 +99,29 @@ processCSVFile filename = do
   let parsed = parseCSV content
   case calculateColumnAverages parsed of
     Just averages -> putStrLn $ formatAverages averages
-    Nothing -> putStrLn "No data to process or invalid format"
+    Nothing -> putStrLn "No data to process or invalid format"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processEvenSquares :: [Int] -> [Int]
+processEvenSquares = filterAndTransform even (^2)
+
+sumProcessedData :: (Int -> Bool) -> (Int -> Int) -> [Int] -> Int
+sumProcessedData predicate transformer = 
+    sum . filterAndTransform predicate transformer
+
+validateInput :: [Int] -> Bool
+validateInput = all (>0)
+
+main :: IO ()
+main = do
+    let sampleData = [1..10]
+    if validateInput sampleData
+        then do
+            putStrLn "Processing even numbers:"
+            print $ processEvenSquares sampleData
+            putStrLn "Sum of processed data:"
+            print $ sumProcessedData even (^2) sampleData
+        else putStrLn "Invalid input data"
