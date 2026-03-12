@@ -143,4 +143,13 @@ main = do
     Left errs -> putStrLn $ "Validation errors:\n" ++ unlines (map show errs)
     Right validData -> do
       let result = processValidatedData validData
-      putStrLn $ formatReport result
+      putStrLn $ formatReport resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
