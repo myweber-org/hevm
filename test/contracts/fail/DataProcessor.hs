@@ -64,4 +64,18 @@ main = do
         Just validData -> do
             let result = processData validData
             putStrLn $ "Processed data: " ++ show result
-        Nothing -> putStrLn "Input validation failed"
+        Nothing -> putStrLn "Input validation failed"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+validateInput :: [Int] -> Bool
+validateInput xs = all (\x -> x >= -100 && x <= 100) xs
+
+safeProcess :: [Int] -> Maybe [Int]
+safeProcess xs
+  | validateInput xs = Just (processNumbers xs)
+  | otherwise = Nothing
