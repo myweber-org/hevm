@@ -65,3 +65,40 @@ processData inputs =
         , "Average: " ++ show avg
         , "All valid numbers: " ++ show numbers
         ]
+module DataProcessor where
+
+import Data.Char (isDigit, isAlpha, toUpper)
+
+-- Validate that a string contains only digits
+validateNumeric :: String -> Bool
+validateNumeric = all isDigit
+
+-- Validate that a string contains only alphabetic characters
+validateAlpha :: String -> Bool
+validateAlpha = all isAlpha
+
+-- Normalize string by converting to uppercase and trimming whitespace
+normalizeString :: String -> String
+normalizeString = map toUpper . trim
+  where
+    trim = reverse . dropWhile (== ' ') . reverse . dropWhile (== ' ')
+
+-- Process a list of strings: validate, normalize, and filter invalid entries
+processData :: [String] -> [String]
+processData = map normalizeString . filter validateAlpha
+
+-- Calculate statistics on numeric data
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats [] = (0, 0, 0.0)
+calculateStats xs = (minimum xs, maximum xs, average xs)
+  where
+    average ys = fromIntegral (sum ys) / fromIntegral (length ys)
+
+-- Safe division with error handling
+safeDivide :: Int -> Int -> Maybe Double
+safeDivide _ 0 = Nothing
+safeDivide x y = Just (fromIntegral x / fromIntegral y)
+
+-- Transform a list with a function and accumulate results
+transformAndAccumulate :: (a -> b) -> [a] -> [b]
+transformAndAccumulate f = foldr (\x acc -> f x : acc) []
