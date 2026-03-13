@@ -105,3 +105,7 @@ main = do
     let result = processData sampleData
     putStrLn $ "Original: " ++ show sampleData
     putStrLn $ "Processed: " ++ show result
+module DataProcessor where
+
+processData :: [Int] -> [Int]
+processData = map (^2) . filter (>0)
