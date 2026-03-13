@@ -58,4 +58,10 @@ main :: IO ()
 main = do
   let text = "Hello world! Hello Haskell. Haskell is great. World says hello."
   putStrLn "Word frequencies:"
-  mapM_ print $ topWords 5 text
+  mapM_ print $ topWords 5 textmodule WordCounter where
+
+import Data.Char (isSpace)
+import Data.List (groupBy)
+
+countWords :: String -> Int
+countWords = length . filter (not . all isSpace) . groupBy (\x y -> not (isSpace x && isSpace y))
