@@ -133,4 +133,55 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit, isAlpha)
+
+data ValidationError = InvalidFormat String | MissingField String | InvalidValue String
+    deriving (Show, Eq)
+
+type CSVRow = [String]
+type ValidatedRow = Either ValidationError CSVRow
+
+validateRow :: CSVRow -> ValidatedRow
+validateRow row
+    | length row < 3 = Left $ MissingField "Row must contain at least 3 fields"
+    | not (isValidId (row !! 0)) = Left $ InvalidValue "First field must be numeric ID"
+    | not (isValidName (row !! 1)) = Left $ InvalidValue "Second field must be alphabetic name"
+    | not (isValidAge (row !! 2)) = Left $ InvalidValue "Third field must be valid age (1-120)"
+    | otherwise = Right row
+  where
+    isValidId str = not (null str) && all isDigit str
+    isValidName str = not (null str) && all isAlpha str
+    isValidAge str = case reads str of
+        [(age, "")] -> age >= 1 && age <= 120
+        _ -> False
+
+parseCSV :: String -> [CSVRow]
+parseCSV content = map (splitOn ',') (lines content)
+  where
+    splitOn :: Char -> String -> [String]
+    splitOn delimiter = foldr f [[]]
+      where
+        f c (x:xs)
+            | c == delimiter = []:x:xs
+            | otherwise = (c:x):xs
+
+processCSVData :: String -> ([CSVRow], [ValidationError])
+processCSVData input = partitionResults $ map validateRow (parseCSV input)
+  where
+    partitionResults :: [ValidatedRow] -> ([CSVRow], [ValidationError])
+    partitionResults = foldr categorize ([], [])
+    
+    categorize :: ValidatedRow -> ([CSVRow], [ValidationError]) -> ([CSVRow], [ValidationError])
+    categorize (Right row) (rows, errors) = (row:rows, errors)
+    categorize (Left err) (rows, errors) = (rows, err:errors)
+
+formatResults :: ([CSVRow], [ValidationError]) -> String
+formatResults (validRows, errors) =
+    "Valid rows: " ++ show (length validRows) ++ "\n" ++
+    "Errors: " ++ show (length errors) ++ "\n" ++
+    if null errors 
+        then "All data processed successfully"
+        else "Error details:\n" ++ intercalate "\n" (map show errors)
