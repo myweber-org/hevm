@@ -293,3 +293,44 @@ main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
     print result
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+type CSVRow = [String]
+type ValidationError = String
+
+validateRow :: CSVRow -> Either ValidationError CSVRow
+validateRow [] = Left "Empty row"
+validateRow row
+    | length row < 3 = Left "Row must have at least 3 columns"
+    | not (all validField row) = Left "All fields must be non-empty"
+    | not (validAge (row !! 1)) = Left "Second column must be a valid age"
+    | otherwise = Right row
+  where
+    validField field = not (null field) && not (any (==',') field)
+    validAge ageStr = all isDigit ageStr && not (null ageStr)
+
+parseCSV :: String -> Either ValidationError [CSVRow]
+parseCSV content = 
+    let rows = map (splitOn ',') (lines content)
+        validatedRows = map validateRow rows
+    in sequence validatedRows
+
+splitOn :: Char -> String -> [String]
+splitOn delimiter = foldr splitHelper [""]
+  where
+    splitHelper char acc@(current:rest)
+        | char == delimiter = "":acc
+        | otherwise = (char:current):rest
+
+formatOutput :: [CSVRow] -> String
+formatOutput rows = 
+    let formattedRows = map (intercalate " | ") rows
+    in unlines formattedRows
+
+processCSVData :: String -> Either ValidationError String
+processCSVData input = do
+    parsed <- parseCSV input
+    return $ formatOutput parsed
