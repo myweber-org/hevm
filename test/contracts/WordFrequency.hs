@@ -55,4 +55,30 @@ main :: IO ()
 main = do
     let sampleText = "Hello world! Hello Haskell. Haskell is fun. World of Haskell."
     putStrLn "Word frequency analysis:"
-    displayResults $ analyzeText sampleText 1 5
+    displayResults $ analyzeText sampleText 1 5module WordFrequency where
+
+import Data.Char (toLower, isAlphaNum)
+import Data.List (sortOn)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        freqMap = foldr (\word acc -> insertWord word acc) [] wordsList
+    in take 10 $ sortOn (Down . snd) freqMap
+  where
+    cleanWord = map toLower . filter isAlphaNum
+    
+    insertWord :: String -> [WordCount] -> [WordCount]
+    insertWord word [] = [(word, 1)]
+    insertWord word ((w, c):rest)
+        | w == word = (w, c + 1) : rest
+        | otherwise = (w, c) : insertWord word rest
+
+displayResults :: [WordCount] -> String
+displayResults counts = 
+    unlines $ "Top 10 most frequent words:" : map formatCount counts
+  where
+    formatCount (word, count) = word ++ ": " ++ show count
