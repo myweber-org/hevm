@@ -106,3 +106,56 @@ sumProcessed = sum . processNumbers
 
 validateInput :: [Int] -> Maybe [Int]
 validateInput xs = if all (> -100) xs then Just xs else Nothing
+module DataProcessor where
+
+import Data.List (intercalate)
+import Data.List.Split (splitOn)
+
+type CSVRow = [String]
+type CSVData = [CSVRow]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+numericColumns :: CSVData -> [Int]
+numericColumns rows = 
+    case rows of
+        [] -> []
+        (header:_) -> 
+            [i | (i, cell) <- zip [0..] header, 
+                 all (isNumeric . (!! i)) (tail rows)]
+    where
+        isNumeric str = case reads str :: [(Double, String)] of
+            [(_, "")] -> True
+            _         -> False
+
+columnStats :: CSVData -> Int -> (Double, Double, Double)
+columnStats rows colIndex = 
+    let values = [read (row !! colIndex) :: Double | row <- tail rows]
+        count = fromIntegral (length values)
+        total = sum values
+        avg = total / count
+        variance = sum [(v - avg)^2 | v <- values] / count
+        stddev = sqrt variance
+    in (avg, variance, stddev)
+
+generateReport :: CSVData -> String
+generateReport csvData = 
+    let cols = numericColumns csvData
+        stats = map (columnStats csvData) cols
+        header = case csvData of
+            [] -> []
+            (h:_) -> h
+        reportLines = zipWith formatStat cols stats
+        formatStat col (avg, var, std) =
+            "Column " ++ show col ++ " (" ++ header !! col ++ "): " ++
+            "Mean=" ++ show avg ++ ", " ++
+            "Variance=" ++ show var ++ ", " ++
+            "StdDev=" ++ show std
+    in intercalate "\n" reportLines
+
+processCSVFile :: FilePath -> IO String
+processCSVFile path = do
+    content <- readFile path
+    let parsed = parseCSV content
+    return $ generateReport parsed
