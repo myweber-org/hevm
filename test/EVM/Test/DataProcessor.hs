@@ -55,4 +55,13 @@ main = do
             putStrLn $ "Mean: " ++ show mean
             putStrLn $ "Variance: " ++ show variance
             putStrLn $ "Standard Deviation: " ++ show stdDev
-        Left err -> putStrLn $ "Error processing CSV: " ++ show err
+        Left err -> putStrLn $ "Error processing CSV: " ++ show errmodule DataProcessor where
+
+movingAverage :: Fractional a => Int -> [a] -> [a]
+movingAverage windowSize xs
+    | windowSize <= 0 = error "Window size must be positive"
+    | length xs < windowSize = []
+    | otherwise = map average $ windows windowSize xs
+  where
+    windows n = takeWhile (\w -> length w == n) . map (take n) . tails
+    average lst = sum lst / fromIntegral (length lst)
