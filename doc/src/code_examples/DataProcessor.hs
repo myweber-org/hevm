@@ -109,3 +109,63 @@ module DataProcessor where
 
 processData :: [Int] -> [Int]
 processData = map (^2) . filter (>0)
+module DataProcessor where
+
+import Data.Char (isDigit, isSpace)
+import Data.List (intercalate)
+import Data.Maybe (catMaybes, fromMaybe)
+
+-- | Validates if a string contains only digits
+validateDigits :: String -> Bool
+validateDigits = all isDigit
+
+-- | Safely parses an integer from string, returns Nothing on failure
+safeParseInt :: String -> Maybe Int
+safeParseInt str
+    | validateDigits str = Just (read str)
+    | otherwise = Nothing
+
+-- | Normalizes whitespace in a string
+normalizeWhitespace :: String -> String
+normalizeWhitespace = unwords . words
+
+-- | Transforms a list of strings into a comma-separated string
+joinWithCommas :: [String] -> String
+joinWithCommas = intercalate ", "
+
+-- | Processes a list of potential numeric strings, returning valid integers
+processNumericList :: [String] -> [Int]
+processNumericList = catMaybes . map safeParseInt
+
+-- | Calculates statistics from a list of integers
+calculateStats :: [Int] -> (Int, Int, Double)
+calculateStats [] = (0, 0, 0.0)
+calculateStats xs = (minimum xs, maximum xs, average)
+  where
+    average = fromIntegral (sum xs) / fromIntegral (length xs)
+
+-- | Validates email format (simple version)
+validateEmail :: String -> Bool
+validateEmail email =
+    let (local, rest) = break (== '@') email
+        (domain, tld) = break (== '.') (drop 1 rest)
+    in not (null local) && 
+       not (null domain) && 
+       not (null tld) && 
+       '.' `elem` rest
+
+-- | Cleans user input by trimming and normalizing
+cleanUserInput :: String -> String
+cleanUserInput = normalizeWhitespace . filter (/= '\r')
+
+-- Example usage function
+exampleUsage :: IO ()
+exampleUsage = do
+    let numbers = ["123", "456", "abc", "789"]
+    let processed = processNumericList numbers
+    let (minVal, maxVal, avgVal) = calculateStats processed
+    
+    putStrLn $ "Processed numbers: " ++ show processed
+    putStrLn $ "Min: " ++ show minVal ++ ", Max: " ++ show maxVal ++ ", Avg: " ++ show avgVal
+    putStrLn $ "Email 'test@example.com' valid: " ++ show (validateEmail "test@example.com")
+    putStrLn $ "Cleaned input: '" ++ cleanUserInput "  hello   world  " ++ "'"
