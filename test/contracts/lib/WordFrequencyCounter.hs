@@ -110,4 +110,28 @@ main :: IO ()
 main = do
     putStrLn "Word Frequency Analysis"
     putStrLn "======================="
-    analyzeText sampleText 5 2
+    analyzeText sampleText 5 2module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn)
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+countWords :: String -> Map String Int
+countWords text = 
+    let wordsList = filter (not . null) $ map (map toLower . filter isAlpha) $ words text
+    in foldr (\word -> Map.insertWith (+) word 1) Map.empty wordsList
+
+getTopWords :: Int -> String -> [(String, Int)]
+getTopWords n text = 
+    take n $ sortOn (\(_, count) -> negate count) $ Map.toList $ countWords text
+
+displayTopWords :: Int -> String -> IO ()
+displayTopWords n text = do
+    putStrLn $ "Top " ++ show n ++ " most frequent words:"
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) $ getTopWords n text
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! This is a test. Hello again, world. Testing word frequency."
+    displayTopWords 5 sampleText
