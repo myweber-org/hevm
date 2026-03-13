@@ -101,4 +101,13 @@ safeDivide x y = Just (fromIntegral x / fromIntegral y)
 
 -- Transform a list with a function and accumulate results
 transformAndAccumulate :: (a -> b) -> [a] -> [b]
-transformAndAccumulate f = foldr (\x acc -> f x : acc) []
+transformAndAccumulate f = foldr (\x acc -> f x : acc) []module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
