@@ -82,4 +82,40 @@ main :: IO ()
 main = do
     let input = [1, -2, 3, -4, 5]
     let result = processData input
-    print result
+    print resultmodule DataProcessor where
+
+import Data.List.Split (splitOn)
+
+type Row = [String]
+type CSVData = [Row]
+
+parseCSV :: String -> CSVData
+parseCSV content = map (splitOn ",") (lines content)
+
+numericColumns :: CSVData -> [Int]
+numericColumns [] = []
+numericColumns (header:_) = 
+    map fst $ filter (\(_, h) -> h == "numeric") $ zip [0..] header
+
+calculateColumnAverage :: CSVData -> Int -> Maybe Double
+calculateColumnAverage rows colIndex
+    | null numericRows = Nothing
+    | otherwise = Just (sum numericValues / fromIntegral (length numericValues))
+  where
+    numericRows = filter (\row -> 
+        length row > colIndex && 
+        all (\c -> c `elem` "0123456789.") (row !! colIndex)) rows
+    numericValues = map (read . (!! colIndex)) numericRows
+
+processCSVFile :: String -> IO ()
+processCSVFile filename = do
+    content <- readFile filename
+    let csvData = parseCSV content
+    let numericCols = numericColumns csvData
+    
+    putStrLn "Column averages:"
+    mapM_ (\col -> 
+        case calculateColumnAverage csvData col of
+            Just avg -> putStrLn $ "Column " ++ show col ++ ": " ++ show avg
+            Nothing -> putStrLn $ "Column " ++ show col ++ ": No numeric data"
+        ) numericCols
