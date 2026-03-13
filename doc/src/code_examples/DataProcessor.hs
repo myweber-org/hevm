@@ -58,3 +58,37 @@ filterAndTransform predicate transformer = map transformer . filter predicate
 
 processData :: [Int] -> [Int]
 processData = filterAndTransform (> 0) (* 2)
+module DataProcessor where
+
+import Data.List (transpose)
+import Data.List.Split (splitOn)
+
+parseCSV :: String -> Either String [[String]]
+parseCSV content =
+    let rows = lines content
+        parsedRows = map (splitOn ",") rows
+        colCounts = map length parsedRows
+        uniform = all (== head colCounts) (tail colCounts)
+    in if null rows
+        then Left "Empty CSV content"
+        else if not uniform
+            then Left "Rows have inconsistent column counts"
+            else Right parsedRows
+
+validateRows :: [[String]] -> [Bool]
+validateRows rows =
+    let transposed = transpose rows
+        columnValidators = map (all (not . null)) transposed
+    in columnValidators
+
+processCSVFile :: String -> IO ()
+processCSVFile filename = do
+    content <- readFile filename
+    case parseCSV content of
+        Left err -> putStrLn $ "Error: " ++ err
+        Right rows -> do
+            putStrLn "CSV parsed successfully."
+            let valResults = validateRows rows
+            if and valResults
+                then putStrLn "All columns contain non-empty values."
+                else putStrLn "Some columns contain empty values."
