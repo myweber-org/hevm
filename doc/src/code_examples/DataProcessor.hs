@@ -177,4 +177,49 @@ processNumbers :: [Int] -> [Int]
 processNumbers = filterAndTransform (> 0) (* 2)
 
 sumProcessed :: [Int] -> Int
-sumProcessed = sum . processNumbers
+sumProcessed = sum . processNumbersmodule DataProcessor where
+
+import Data.List (intercalate)
+import Data.Char (isDigit)
+
+data ValidationError = InvalidRow Int String | MissingField Int String
+    deriving (Show, Eq)
+
+type CSVRow = [String]
+type ValidatedRow = Either ValidationError CSVRow
+
+validateRow :: Int -> CSVRow -> ValidatedRow
+validateRow rowNum fields
+    | length fields < 3 = Left $ MissingField rowNum "At least 3 fields required"
+    | not (all validNumber [fields !! 0, fields !! 2]) = Left $ InvalidRow rowNum "Numeric fields invalid"
+    | otherwise = Right fields
+    where
+        validNumber str = not (null str) && all isDigit str
+
+parseCSV :: String -> [ValidatedRow]
+parseCSV content = zipWith validateRow [1..] rows
+    where
+        rows = map (splitOn ',') (lines content)
+        splitOn :: Char -> String -> [String]
+        splitOn delimiter = foldr splitHelper [""]
+            where
+                splitHelper ch (x:xs)
+                    | ch == delimiter = "":x:xs
+                    | otherwise = (ch:x):xs
+
+formatResults :: [ValidatedRow] -> String
+formatResults rows = intercalate "\n" $ map formatRow rows
+    where
+        formatRow (Left err) = "ERROR: " ++ show err
+        formatRow (Right fields) = "VALID: " ++ intercalate " | " fields
+
+processCSVData :: String -> IO ()
+processCSVData input = do
+    let results = parseCSV input
+    putStrLn $ formatResults results
+    let (validCount, errorCount) = countResults results
+    putStrLn $ "Valid rows: " ++ show validCount ++ ", Errors: " ++ show errorCount
+    where
+        countResults = foldr countHelper (0,0)
+        countHelper (Left _) (v,e) = (v, e+1)
+        countHelper (Right _) (v,e) = (v+1, e)
