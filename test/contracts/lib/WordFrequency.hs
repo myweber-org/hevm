@@ -63,4 +63,34 @@ displayFrequencies :: [(String, Int)] -> String
 displayFrequencies = unlines . map (\(w,c) -> w ++ ": " ++ show c)
 
 analyzeText :: Int -> String -> String
-analyzeText n = displayFrequencies . topWords n
+analyzeText n = displayFrequencies . topWords nmodule WordFrequency where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type Histogram = [(String, Int)]
+
+wordFrequency :: String -> Histogram
+wordFrequency text =
+  let wordsList = filter (not . null) $ map clean $ words text
+      cleaned = map (map toLower) wordsList
+      grouped = group $ sort cleaned
+      counts = map (\ws -> (head ws, length ws)) grouped
+  in sortOn (Down . snd) counts
+  where
+    clean = filter isAlpha
+
+printHistogram :: Histogram -> IO ()
+printHistogram hist = do
+  putStrLn "Word Frequency Histogram:"
+  putStrLn "=========================="
+  mapM_ (\(word, count) -> 
+    putStrLn $ word ++ ": " ++ replicate count '*' ++ " (" ++ show count ++ ")") hist
+  putStrLn "=========================="
+
+main :: IO ()
+main = do
+  let sampleText = "Hello world hello haskell world programming haskell hello"
+  let freq = wordFrequency sampleText
+  printHistogram freq
