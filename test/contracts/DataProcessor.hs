@@ -333,4 +333,24 @@ formatOutput rows =
 processCSVData :: String -> Either ValidationError String
 processCSVData input = do
     parsed <- parseCSV input
-    return $ formatOutput parsed
+    return $ formatOutput parsedmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = 
+    map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = 
+    filterAndTransform (> 10) (\x -> x * 2 + 1)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
+
+validateInput :: [Int] -> Maybe [Int]
+validateInput xs
+    | null xs = Nothing
+    | any (< 0) xs = Nothing
+    | otherwise = Just xs
+
+safeProcess :: [Int] -> Maybe Int
+safeProcess = fmap sumProcessed . validateInput
