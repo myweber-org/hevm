@@ -168,4 +168,13 @@ exampleUsage = do
     putStrLn $ "Processed numbers: " ++ show processed
     putStrLn $ "Min: " ++ show minVal ++ ", Max: " ++ show maxVal ++ ", Avg: " ++ show avgVal
     putStrLn $ "Email 'test@example.com' valid: " ++ show (validateEmail "test@example.com")
-    putStrLn $ "Cleaned input: '" ++ cleanUserInput "  hello   world  " ++ "'"
+    putStrLn $ "Cleaned input: '" ++ cleanUserInput "  hello   world  " ++ "'"module DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform (> 0) (* 2)
+
+sumProcessed :: [Int] -> Int
+sumProcessed = sum . processNumbers
