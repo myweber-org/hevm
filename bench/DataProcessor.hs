@@ -56,4 +56,61 @@ safeHead [] = Nothing
 safeHead (x:_) = Just x
 
 validateHeader :: Header -> Bool
-validateHeader header = not (null header) && length header <= 20 && all (not . null) header
+validateHeader header = not (null header) && length header <= 20 && all (not . null) headermodule DataProcessor where
+
+import Data.Char (isDigit)
+import Data.Maybe (mapMaybe)
+import Text.Read (readMaybe)
+
+-- | Safely parse an integer from a string
+safeParseInt :: String -> Maybe Int
+safeParseInt str
+    | all isDigit str = readMaybe str
+    | otherwise = Nothing
+
+-- | Validate email format (basic check)
+validateEmail :: String -> Bool
+validateEmail email =
+    let parts = split '@' email
+    in length parts == 2 &&
+       not (null (head parts)) &&
+       '.' `elem` (last parts)
+  where
+    split delimiter = foldr (\c acc -> if c == delimiter then []:acc else (c:head acc):tail acc) [[]]
+
+-- | Transform a list of strings to valid integers
+extractValidNumbers :: [String] -> [Int]
+extractValidNumbers = mapMaybe safeParseInt
+
+-- | Calculate statistics from numeric data
+data Stats = Stats
+    { count :: Int
+    , sum   :: Int
+    , avg   :: Double
+    } deriving (Show, Eq)
+
+calculateStats :: [Int] -> Maybe Stats
+calculateStats [] = Nothing
+calculateStats nums =
+    let total = length nums
+        s = Prelude.sum nums
+        average = fromIntegral s / fromIntegral total
+    in Just $ Stats total s average
+
+-- | Process raw string data into statistics
+processData :: [String] -> Maybe Stats
+processData = calculateStats . extractValidNumbers
+
+-- | Example usage
+exampleData :: [String]
+exampleData = ["42", "100", "invalid", "255", "3.14", "999"]
+
+main :: IO ()
+main = do
+    putStrLn "Processing example data:"
+    print exampleData
+    case processData exampleData of
+        Just stats -> do
+            putStrLn "Valid statistics computed:"
+            print stats
+        Nothing -> putStrLn "No valid data to process"
