@@ -366,4 +366,10 @@ main = do
     let input = [1, -2, 3, 0, 5, -8]
     let result = processNumbers input
     putStrLn $ "Input list: " ++ show input
-    putStrLn $ "Filtered and transformed: " ++ show result
+    putStrLn $ "Filtered and transformed: " ++ show resultmodule DataProcessor where
+
+filterAndTransform :: (Int -> Bool) -> (Int -> Int) -> [Int] -> [Int]
+filterAndTransform predicate transformer = map transformer . filter predicate
+
+processNumbers :: [Int] -> [Int]
+processNumbers = filterAndTransform even (*2)
