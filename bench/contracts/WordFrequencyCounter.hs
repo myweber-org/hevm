@@ -113,4 +113,38 @@ main = do
     args <- getArgs
     case args of
         [filename] -> processFile filename
-        _ -> putStrLn "Usage: wordfreq <filename>"
+        _ -> putStrLn "Usage: wordfreq <filename>"module WordFrequencyCounter where
+
+import Data.Char (toLower, isAlpha)
+import Data.List (sortOn, group, sort)
+import Data.Ord (Down(..))
+
+type WordCount = (String, Int)
+
+countWords :: String -> [WordCount]
+countWords text = 
+    let wordsList = filter (not . null) $ map cleanWord $ words text
+        cleaned = filter (all isAlpha) wordsList
+        grouped = group $ sort cleaned
+        counts = map (\ws -> (head ws, length ws)) grouped
+    in sortOn (Down . snd) counts
+  where
+    cleanWord = map toLower . filter (\c -> isAlpha c || c == '\'')
+
+filterByFrequency :: Int -> [WordCount] -> [WordCount]
+filterByFrequency minCount = filter (\(_, count) -> count >= minCount)
+
+printWordCounts :: [WordCount] -> IO ()
+printWordCounts counts = 
+    mapM_ (\(word, count) -> putStrLn $ word ++ ": " ++ show count) counts
+
+main :: IO ()
+main = do
+    let sampleText = "Hello world! Hello Haskell. Haskell is great. World says hello back."
+    let wordCounts = countWords sampleText
+    putStrLn "All word frequencies:"
+    printWordCounts wordCounts
+    
+    putStrLn "\nWords appearing at least 2 times:"
+    let filtered = filterByFrequency 2 wordCounts
+    printWordCounts filtered
