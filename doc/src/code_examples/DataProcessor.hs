@@ -222,4 +222,27 @@ processCSVData input = do
     where
         countResults = foldr countHelper (0,0)
         countHelper (Left _) (v,e) = (v, e+1)
-        countHelper (Right _) (v,e) = (v+1, e)
+        countHelper (Right _) (v,e) = (v+1, e)module DataProcessor where
+
+movingAverage :: Int -> [Double] -> [Double]
+movingAverage n xs
+    | n <= 0 = error "Window size must be positive"
+    | length xs < n = []
+    | otherwise = map average $ windows n xs
+    where
+        average ys = sum ys / fromIntegral (length ys)
+        windows _ [] = []
+        windows m ys = take m ys : windows m (tail ys)
+
+-- Example usage
+sampleData :: [Double]
+sampleData = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+main :: IO ()
+main = do
+    putStrLn "Original data:"
+    print sampleData
+    putStrLn "\nMoving average with window size 3:"
+    print $ movingAverage 3 sampleData
+    putStrLn "\nMoving average with window size 5:"
+    print $ movingAverage 5 sampleData
